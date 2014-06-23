@@ -10,6 +10,10 @@ extern crate time;
 
 pub use SoundStream = sound_stream::SoundStream;
 pub use SoundStreamSettings = sound_stream_settings::SoundStreamSettings;
+pub use Node = node::Node;
+pub use IsNode = node::IsNode;
+pub use Signal = signal::Signal;
+pub use Waveform = waveform::Waveform;
 
 mod port_audio_back_end;
 mod sound_stream;
