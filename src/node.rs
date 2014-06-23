@@ -7,7 +7,7 @@ use std::fmt::Result;
 use std::fmt::Show;
 
 /// The mixer input for handling volume and
-/// panning of incoming audio from children.
+/// panning of incoming audio from inputs.
 #[deriving(Clone)]
 pub struct MixerInput {
     node: Rc<RefCell<Node>>,
@@ -34,9 +34,10 @@ impl MixerInput {
     }
 }
 
-/// The DSP Node contains a buffer of f32 samples,
-/// a vector of children nodes from which audio
-/// can be requested, and the current settings.
+/// The DSP Node contains a vector of children
+/// nodes (within the `MixerInput`s from which
+/// audio can be requested as well as the current
+/// SoundStream settings.
 #[deriving(Show, Clone)]
 pub struct Node {
     inputs: Vec<MixerInput>,
@@ -45,7 +46,7 @@ pub struct Node {
 }
 
 /// DSP Node trait. Implement this for any audio
-/// instruments or effects types. Be sure to add
+/// instrument or effects types. Be sure to add
 /// the `Node` struct to a field as well, and
 /// override the `get_node` and `get_node_mut`
 /// methods by returning a ref (/mut) to it.
@@ -81,7 +82,7 @@ pub trait IsNode {
         }
     }
 
-    /// Remove all inputs from the inputs vector.
+    /// Remove all inputs from the `inputs` vector.
     fn remove_all_inputs(&mut self) {
         self.get_node_mut().inputs.clear();
     }
@@ -120,7 +121,7 @@ pub trait IsNode {
                 *vol_per_channel.get_mut(j) = if j == 0 { vol_l } else { vol_r } * master_vol;
             }
 
-            // Sum all input nodes to output (remembering
+            // Sum all input nodes to output (considering
             // pan, vol and interleaving).
             for j in range(0, frames) {
                 for k in range(0, channels) {
