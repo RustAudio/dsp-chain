@@ -1,33 +1,35 @@
 
+use sound_stream_settings::SoundStreamSettings;
 use signal::Signal;
 use node::{ Node, IsNode };
 use frequency::Frequency;
 use pitch::Pitch;
-use waveform::Waveform{
+use waveform::{
+    Waveform,
     Sine,
     Saw,
     Square,
     Noise,
     NoiseWalk
-}
+};
 
 /// Oscillator - the fundamental component
 /// of audio synthesis.
 #[deriving(Show, Clone)]
 pub struct Oscillator {
     node: Node,
-    waveform: int,
-    phase: f64,
+    waveform: Waveform,
+    phase: f32,
     freq: f64,
-    signal: Signal
+    signal: Signal<f32>
 }
 
 impl IsNode for Oscillator {
 
     /// Get reference to node for IsNode trait.
-    fn get_node<'a>(&'a self) -> &'a Node { self }
+    fn get_node<'a>(&'a self) -> &'a Node { &self.node }
     /// Get mutable reference to node for IsNode trait.
-    fn get_node_mut<'a>(&'a mut self) -> &'a mut Node { self }
+    fn get_node_mut<'a>(&'a mut self) -> &'a mut Node { &mut self.node }
 
     /// Here we override the audio_requested method
     /// in order to perform our synthesis.
@@ -45,9 +47,9 @@ impl Oscillator {
         Oscillator {
             node: Node::new(settings),
             waveform: waveform,
-            phase: 0f64,
+            phase: 0f32,
             freq: 0f64,
-            signal: signal
+            signal: Signal::new(0f32)
         }
     }
 
@@ -64,7 +66,7 @@ impl Oscillator {
 
     /// Calculate and return the amplitude at
     /// the given ratio.
-    pub fn get_amp_at_ratio(&mut self, ratio: f64) {
+    pub fn get_amp_at_ratio(&mut self, ratio: f64) -> f64 {
         // Pass phase into signal generator (to return
         // signal for waveform later).
         let phase = self.phase;
@@ -72,8 +74,13 @@ impl Oscillator {
         
         // Set frequency to determine phase advance.
         let freq_at_ratio = self.get_freq_at_ratio(ratio);
-        self.set_freq(freq_at_ratio * )
+        //self.set_freq(freq_at_ratio * )
+
+        // Advance phase according to frequency.
+        self.update_phase();
         
+        // Calculate amplitude for sample at ratio.
+        0f64
 
     }
 
