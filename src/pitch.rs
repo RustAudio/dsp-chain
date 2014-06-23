@@ -61,7 +61,8 @@ pub mod letter {
 
 }
 
-/// Represents musical pitch as a letter (as u8) and octave (as int).
+/// Represents musical pitch as a note
+/// letter (u8) and octave (int).
 #[deriving(Clone)]
 pub struct LetterOctave (Letter, int);
 
@@ -95,62 +96,75 @@ impl LetterOctave {
 /// Pitch object built to handle a variety of musical pitch representations.
 #[deriving(Show, Clone)]
 pub struct Pitch {
+    /// Frequency representation of musical pitch.
     frequency: Frequency,
-    step: f32//, // Represents a floating point version of the 0-128 MIDI step.
-    //pitch_index: &f32 // A 440 in hz.
+    /// Represents pitch as a floating point step (akin to MIDI's 0-128).
+    step: f32
 }
 
 
-// Pitch Calculator
-//-----------------
-
+/// Calculate pitch as LetterOctave from pitch as step.
 pub fn get_letter_octave_from_step(step: f32) -> LetterOctave {
     let rounded: int = step.round() as int;
     let letter_step: int = rounded % TOTAL_LETTERS as int;
     LetterOctave(letter_step as u8, (rounded - letter_step) / 12)
 }
 
+/// Calculate LetterOctave from hz.
 pub fn get_letter_octave_from_hz(hz: f32, pitch_index: f32) -> LetterOctave {
     get_letter_octave_from_step(get_step_from_hz(hz, pitch_index))
 }
 
+/// Calculate LetterOctave from a frequency percentage.
 pub fn get_letter_octave_from_perc(perc: f64, pitch_index: f32) -> LetterOctave {
     get_letter_octave_from_step(get_step_from_perc(perc, pitch_index))
 }
 
-pub fn get_letter_octave_from_scaled_perc(scaled: f64, weight: f32, pitch_index: f32) -> LetterOctave {
+/// Calculate LetterOctave from a scaled frequency percentage.
+pub fn get_letter_octave_from_scaled_perc(scaled: f64, weight: f32,
+                                          pitch_index: f32) -> LetterOctave {
     get_letter_octave_from_step(get_step_from_scaled_perc(scaled, weight, pitch_index))
 }
 
+/// Calculate the pitch `step` from LetterOctave.
 pub fn get_step_from_letter_octave(letter_octave: LetterOctave) -> f32 {
-    let (letter, octave) = match letter_octave { LetterOctave(letter, octave) => (letter, octave) };
+    let (letter, octave) = match letter_octave {
+        LetterOctave(letter, octave) => (letter, octave)
+    };
     octave as f32 * 12f32 + letter as f32
 }
 
+/// Calculate the pitch `step` from frequency in hz.
 pub fn get_step_from_hz(hz: f32, pitch_index: f32) -> f32 {
     (hz / pitch_index).log2() / TWELFTH_ROOT_OF_TWO.log2() + TUNING_PITCH_A4
 }
 
+/// Calculate the pitch `step` from frequency precentage.
 pub fn get_step_from_perc(perc: f64, pitch_index: f32) -> f32 {
     get_step_from_hz(get_hz_from_perc(perc), pitch_index)
 }
 
+/// Calculate the pitch `step` from a scaled frequency precentage.
 pub fn get_step_from_scaled_perc(scaled: f64, weight: f32, pitch_index: f32) -> f32 {
     get_step_from_hz(get_hz_from_scaled_perc(scaled, weight), pitch_index)
 }
 
+/// Calculate hz from LetterOctave.
 pub fn get_hz_from_letter_octave(letter_octave: LetterOctave, pitch_index: f32) -> f32 {
     get_hz_from_step(get_step_from_letter_octave(letter_octave), pitch_index)
 }
 
+/// Calculate hz from pitch as `step`.
 pub fn get_hz_from_step(step: f32, pitch_index: f32) -> f32 {
     pitch_index * TWELFTH_ROOT_OF_TWO.powf(step - TUNING_PITCH_A4)
 }
 
+/// Calculate frequency percentage from pitch as `step`.
 pub fn get_perc_from_step(step: f32, pitch_index: f32) -> f64 {
     get_perc_from_hz(get_hz_from_step(step, pitch_index))
 }
 
+/// Calculate scaled frequency percentage from pitch as `step`.
 pub fn get_scaled_perc_from_step(step: f32, weight: f32, pitch_index: f32) -> f64 {
     get_scaled_perc_from_hz(get_hz_from_step(step, pitch_index), weight)
 }
@@ -184,12 +198,18 @@ pub fn print_note_freq_table(oct_a: int, oct_b: int, pitch_index: f32) {
 /// of HasFrequency.
 pub trait HasPitch: HasFrequency {
 
-    /// Getters
+    /// Return an immutable reference to the Pitch struct.
     fn get_pitch<'a>(&'a self) -> &'a Pitch;
+    /// Return a mutable reference to the Pitch struct.
     fn get_pitch_mut<'a>(&'a mut self) -> &'a mut Pitch;
+    /// Return pitch in the form of a MIDI-esque step (0 - 128).
     fn get_step(&self) -> f32 { self.get_pitch().step }
-    fn get_pitch_index(&self) -> f32 { PITCH_INDEX /* *self.get_pitch().pitch_index */ }
-    fn get_letter_octave(&self) -> LetterOctave { get_letter_octave_from_step(self.get_step()) }
+    /// Return the pitch index (A 4 represented in hz)
+    fn get_pitch_index(&self) -> f32 { PITCH_INDEX }
+    /// Return pitch in the form of a note `Letter` and octave (int).
+    fn get_letter_octave(&self) -> LetterOctave {
+        get_letter_octave_from_step(self.get_step())
+    }
 
     /// Setters (set all values from given pitch representation).
     fn set_letter_octave(&mut self, letter_octave: LetterOctave) {
@@ -197,22 +217,27 @@ pub trait HasPitch: HasFrequency {
         let hz = get_hz_from_letter_octave(letter_octave, PITCH_INDEX);
         self.set_freq_hz(hz)
     }
+    /// Set pitch via `step` (0 - 128).
     fn set_step(&mut self, step: f32) {
         self.get_pitch_mut().step = step;
         let hz = get_hz_from_step(step, PITCH_INDEX);
         self.set_freq_hz(hz);
     }
+    /// Set pitch via frequency in hz.
     fn set_hz(&mut self, hz: f32) {
         self.get_pitch_mut().step = get_step_from_hz(hz, PITCH_INDEX);
         self.set_freq_hz(hz);
     }
+    /// Set pitch via frequency precentage.
     fn set_perc(&mut self, perc: f64) {
         self.get_pitch_mut().step = get_step_from_perc(perc, PITCH_INDEX);
         self.set_freq_perc(perc);
     }
+    /// Set pitch via scaled frequency precentage.
     fn set_scaled_perc(&mut self, scaled_perc: f64) {
         let weight = self.get_scale_weight();
-        self.get_pitch_mut().step = get_step_from_scaled_perc(scaled_perc, weight, PITCH_INDEX);
+        self.get_pitch_mut().step =
+            get_step_from_scaled_perc(scaled_perc, weight, PITCH_INDEX);
         self.set_freq_scaled_perc(scaled_perc);
     }
 
@@ -220,12 +245,16 @@ pub trait HasPitch: HasFrequency {
 
 
 impl HasPitch for Pitch {    
+    /// Return an immutable reference to the Pitch struct.
     fn get_pitch<'a>(&'a self) -> &'a Pitch { self }
+    /// Return a mutable reference to the Pitch struct.
     fn get_pitch_mut<'a>(&'a mut self) -> &'a mut Pitch { self }
 }
 
 impl HasFrequency for Pitch {
+    /// Get Frequency struct as an immutable reference.
     fn get_freq<'a>(&'a self) -> &'a Frequency { &self.frequency }
+    /// Get Frequency struct as a mutable reference.
     fn get_freq_mut<'a>(&'a mut self) -> &'a mut Frequency { &mut self.frequency }
 }
 
