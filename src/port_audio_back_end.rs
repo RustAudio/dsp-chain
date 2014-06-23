@@ -22,7 +22,7 @@ pub struct StreamPA {
 impl StreamParamsPA {
 
     /// Creates the port audio stream parameters.
-    pub fn new(channels: i32) -> StreamParamsPA {
+    pub fn new(channels: int) -> StreamParamsPA {
 
         //println!("Portaudio version : {}", pa::get_version());
         //println!("Portaudio version text : {}", pa::get_version_text());
@@ -50,14 +50,14 @@ impl StreamParamsPA {
         println!("Creating input");
         let stream_params_in = types::PaStreamParameters {
             device: def_input,
-            channel_count: channels,
+            channel_count: channels as i32,
             sample_format: types::PaFloat32,
             suggested_latency: pa::get_device_info(def_input).unwrap().default_low_input_latency
         };
         println!("Creating output");
         let stream_params_out = types::PaStreamParameters {
             device: def_output,
-            channel_count: channels,
+            channel_count: channels as i32,
             sample_format: types::PaFloat32,
             suggested_latency: pa::get_device_info(def_output).unwrap().default_low_output_latency
         };
@@ -67,6 +67,7 @@ impl StreamParamsPA {
         }
     }
 
+    /*
     /// Prints information about the port audio host and stream.
     pub fn print_info(&self) {
         println!("Portaudio version: {}", pa::get_version());
@@ -89,6 +90,7 @@ impl StreamParamsPA {
         println!("max output channels : {}", info_input.max_output_channels);
         println!("default sample rate : {}", info_input.default_sample_rate);
     }
+    */
 
 }
 
@@ -108,8 +110,8 @@ impl StreamPA {
         let params = StreamParamsPA::new(settings.channels);
         self.stream.open(Some(&params.input),
                          Some(&params.output),
-                         settings.samples_per_second,
-                         settings.frames,
+                         settings.samples_per_sec as f64,
+                         settings.frames as u32,
                          types::PaClipOff);
     }
 
@@ -119,7 +121,7 @@ impl StreamPA {
         while ready == 0 {
             ready = self.stream.get_stream_write_available();
         }
-        let empty_buffer = Vec::from_elem((settings.frames * settings.channels as u32) as uint, 0f32);
+        let empty_buffer = Vec::from_elem((settings.frames as uint * settings.channels as uint) as uint, 0f32);
         let mut read: Vec<f32> = empty_buffer.clone();
         self.read(&mut read, settings, stream);
         let mut write: Vec<f32> = empty_buffer.clone();
@@ -145,7 +147,7 @@ impl StreamPA {
                                  settings: &SoundStreamSettings, stream: &mut T) {
         stream.audio_out(buffer, settings);
         let write: Vec<f32> = buffer.clone();
-        self.stream.write(write, settings.frames);
+        self.stream.write(write, settings.frames as u32);
     }
 
     /// Start the audio stream.

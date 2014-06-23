@@ -12,10 +12,11 @@ use dsp::{
     SoundStreamSettings
 };
 
-static SAMPLE_RATE: f64 = 44100f64;
-static FRAMES: u32 = 128u32;
-static CHANNELS: i32 = 2i32;
+static SAMPLE_RATE: int = 44100;
+static FRAMES: int = 128;
+static CHANNELS: int = 2;
 
+/// Calculates the real-time sample-rate from dt.
 fn calc_sample_rate(settings: &SoundStreamSettings, dt: u64) -> f64 {
     let dtsec: f64 = dt as f64 / 1000000000f64;
     (1f64 / dtsec) * settings.frames as f64
