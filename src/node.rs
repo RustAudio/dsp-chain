@@ -35,7 +35,7 @@ impl MixerInput {
 }
 
 /// The DSP Node contains a vector of children
-/// nodes (within the `MixerInput`s from which
+/// nodes (within the `MixerInput`s), from which
 /// audio can be requested as well as the current
 /// SoundStream settings.
 #[deriving(Show, Clone)]
@@ -126,7 +126,7 @@ pub trait IsNode {
             for j in range(0, frames) {
                 for k in range(0, channels) {
                     *output.get_mut(j * channels + k) +=
-                        *working.get_mut(j * channels + k) * *vol_per_channel.get_mut(k);
+                        *working.get(j * channels + k) * *vol_per_channel.get(k);
                 }
             }
         }
