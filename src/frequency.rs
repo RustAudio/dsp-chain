@@ -17,7 +17,7 @@ pub mod constants {
 #[deriving(Show, Clone)]
 pub struct Frequency {
     hz: f32,
-    perc: f64,
+    perc: f64,        // Represents hz as a percentage.
     scaled_perc: f64, // For weighting lower frequencies.
     scale_weight: f32 // For adjusting the scale weighting (default 4).
 }
@@ -29,26 +29,32 @@ pub mod calculator {
 
     use super::constants::*;
 
+    /// Calculate frequency in hz from percentage.
     pub fn get_hz_from_perc(perc: f64) -> f32 {
         perc as f32 * (HIGHEST_HZ - LOWEST_HZ) + LOWEST_HZ
     }
 
+    /// Calculate hz from scaled percentage.
     pub fn get_hz_from_scaled_perc(scaled: f64, weight: f32) -> f32 {
         get_hz_from_perc(get_perc_from_scaled_perc(scaled, weight))
     }
 
+    /// Calculate percentage from hz.
     pub fn get_perc_from_hz(hz: f32) -> f64 {
         (hz - LOWEST_HZ) as f64 / (HIGHEST_HZ - LOWEST_HZ) as f64
     }
 
+    /// Calculate percentage from scaled percentage.
     pub fn get_perc_from_scaled_perc(scaled: f64, weight: f32) -> f64 {
         scaled.powf(weight as f64)
     }
 
+    /// Calculate scaled percentage from hz.
     pub fn get_scaled_perc_from_hz(hz: f32, weight: f32) -> f64 {
         get_scaled_perc_from_perc(get_perc_from_hz(hz), weight)
     }
 
+    /// Calculate scaled percentage from percentage.
     pub fn get_scaled_perc_from_perc(perc: f64, weight: f32) -> f64 {
         perc.powf(1f64 / weight as f64)
     }
@@ -61,15 +67,20 @@ pub mod calculator {
 /// musically orientated `HasPitch` trait.
 pub trait HasFrequency {
 
-    /// Getters
+    /// Get Frequency struct as an immutable reference.
     fn get_freq<'a>(&'a self) -> &'a Frequency;
+    /// Get Frequency struct as a mutable reference.
     fn get_freq_mut<'a>(&'a mut self) -> &'a mut Frequency;
+    /// Return the frequency in hz.
     fn get_hz(&self) -> f32 { self.get_freq().hz }
+    /// Return the frequency as a percentage between LOWEST_HZ & HIGHEST_HZ.
     fn get_perc(&self) -> f64 { self.get_freq().perc }
+    /// Return the frequency as a scaled percentage between LOWEST_HZ & HIGHEST_HZ.
     fn get_scaled_perc(&self) -> f64 { self.get_freq().scaled_perc }
+    /// Return the scale weighting (higher the weight, the more lower frequencies).
     fn get_scale_weight(&self) -> f32 { self.get_freq().scale_weight }
 
-    /// Setters
+    /// Set the frequency via hz.
     fn set_freq_hz(&mut self, hz: f32) {
         assert!(hz >= LOWEST_HZ && hz <= HIGHEST_HZ);
         let weight = self.get_freq().scale_weight;
@@ -77,6 +88,7 @@ pub trait HasFrequency {
         self.get_freq_mut().perc = get_perc_from_hz(hz);
         self.get_freq_mut().scaled_perc = get_scaled_perc_from_hz(hz, weight);
     }
+    /// Set the frequency via a percentage.
     fn set_freq_perc(&mut self, perc: f64) {
         assert!(perc >= 0f64 && perc <= 1f64);
         let weight = self.get_freq().scale_weight;
@@ -84,6 +96,7 @@ pub trait HasFrequency {
         self.get_freq_mut().perc = perc;
         self.get_freq_mut().scaled_perc = get_scaled_perc_from_perc(perc, weight);
     }
+    /// Set the frequency via a scaled percentage.
     fn set_freq_scaled_perc(&mut self, scaled_perc: f64) {
         assert!(scaled_perc >= 0f64 && scaled_perc <= 1f64);
         let weight = self.get_freq().scale_weight;
@@ -91,13 +104,16 @@ pub trait HasFrequency {
         self.get_freq_mut().perc = get_perc_from_scaled_perc(scaled_perc, weight);
         self.get_freq_mut().scaled_perc = scaled_perc;
     }
+    /// Set the scale weighting (higher the weight, the lower the frequencies).
     fn set_scale_weight(&mut self, scale_weight: f32) {
         self.get_freq_mut().scale_weight = scale_weight;
     }
 
-    /// Determine difference as another Frequency object.
+    /// Determine the difference between two frequencies
+    /// and return the result as another Frequency object.
     fn find_difference(&self, freq: &Frequency) -> Frequency {
-        Frequency::new_from_scaled_perc_and_weight(abs(self.get_scaled_perc() - freq.get_scaled_perc()), self.get_scale_weight())
+        Frequency::new_from_scaled_perc_and_weight(
+            abs(self.get_scaled_perc() - freq.get_scaled_perc()), self.get_scale_weight())
     }
     
 }
@@ -106,7 +122,10 @@ pub trait HasFrequency {
 /// Frequency both mutably and immutably
 /// are required to impl HasFrequency.
 impl HasFrequency for Frequency {
+
+    /// Get Frequency struct as an immutable reference.
     fn get_freq<'a>(&'a self) -> &'a Frequency { self }
+    /// Get Frequency struct as a mutable reference.
     fn get_freq_mut<'a>(&'a mut self) -> &'a mut Frequency { self }
 }
 
