@@ -5,15 +5,26 @@ use std::rand;
 use math;
 
 
-#[deriving(Clone, Show)]
 /// Signal generic struct for simplifying dsp signal generation.
+/// Signal should be able to handle any floating point primitive.
+#[deriving(Clone, Show)]
 pub struct Signal<F> {
+    /// The main value. If Signal were to be plotted on a cartesian
+    /// plane, this value would be 'x' for which we will solve 'y'.
     pub val: F,
+    /// Optional: The 'x' value of the second point
+    /// (from which we calc our range and gradient)
     x: F,
+    /// Optional: The 'y' value of the second point
+    /// (from which we calc our range and gradient)
     y: F,
+    /// The calculated gradient.
     grad: F,
+    /// Depth of the bezier curve.
     pub bez_depth: F,
+    /// Frequency of the signal.
     pub freq: F,
+    /// Amplitude of the signal.
     pub amp: F
 }
 
@@ -121,10 +132,11 @@ impl<F: FloatMath + rand::Rand + FromPrimitive + ToPrimitive + Signed> Signal<F>
         self.get_result(get_rand_signal())
     }
 
-    /// Ported implementation of _slang_library_noise1()
+    /// Ported implementation of `_slang_library_noise1()`
+    /// for our generic noise walk!
     pub fn get_noise_walk(&self) -> F {
         let uno: F = One::one();
-        let i0: int = jmath::fast_floor(self.val);
+        let i0: int = math::fast_floor(self.val);
         let i1: int = i0 + 1;
         let x0: F = self.val - FromPrimitive::from_int(i0).unwrap();
         let x1: F = x0 - uno;
@@ -133,10 +145,12 @@ impl<F: FloatMath + rand::Rand + FromPrimitive + ToPrimitive + Signed> Signal<F>
         let t1: F = uno - x12d;        
         let t0: F = uno - x02d;
         let t0a: F = t0 * t0;
-        let g1: f32 = jmath::grad1(jmath::get_perm_val((i0 & 0xff) as uint) as int, x0.to_f32().unwrap());
+        let g1: f32 = math::grad1(
+            math::get_perm_val((i0 & 0xff) as uint) as int, x0.to_f32().unwrap());
         let n0: F = t0a * t0a * FromPrimitive::from_f32(g1).unwrap(); 
         let t1a: F = t1 * t1;
-        let g2: f32 = jmath::grad1(jmath::get_perm_val((i1 & 0xff) as uint) as int, x1.to_f32().unwrap());
+        let g2: f32 = math::grad1(
+            math::get_perm_val((i1 & 0xff) as uint) as int, x1.to_f32().unwrap());
         let n1: F = t1a * t1a * FromPrimitive::from_f32(g2).unwrap();
         let n0pn1: F = n0 + n1;
         let quarter: F = FromPrimitive::from_f32(0.25f32).unwrap();
@@ -161,42 +175,42 @@ pub fn test() {
 
     println!("Testing sin");
     for i in range (0.0f32, 20.0f32) {
-        a.set_val(jmath::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
+        a.set_val(math::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
         print!("{}, ", a.get_sin());
     }    
     println!("");
     
     println!("Testing cos");
     for i in range (0.0f32, 20.0f32) {
-        a.set_val(jmath::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
+        a.set_val(math::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
         print!("{}, ", a.get_cos());
     }    
     println!("");
 
     println!("Testing get_rand");
     for i in range (0.0f32, 20.0f32) {
-        a.set_val(jmath::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
+        a.set_val(math::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
         print!("{}, ", a.get_noise());
     }    
     println!("");
 
     println!("Testing get_sqr");
     for i in range (0.0f32, 20.0f32) {
-        a.set_val(jmath::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
+        a.set_val(math::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
         print!("{}, ", a.get_sqr());
     }    
     println!("");
 
     println!("Testing get_saw");
     for i in range (0.0f32, 20.0f32) {
-        a.set_val(jmath::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
+        a.set_val(math::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
         print!("{}, ", a.get_saw());
     }    
     println!("");
 
     println!("Testing get_noise_walk");
     for i in range (0.0f32, 20.0f32) {
-        a.set_val(jmath::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
+        a.set_val(math::map(i, 0.0f32, 20.0f32, 0.0f32, 1.0f32));
         print!("{}, ", a.get_noise_walk());
     }
     //loop { println!("{}", a.get_noise_walk()); a.set_val(a.val + 0.001f32); }
