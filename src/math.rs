@@ -87,9 +87,8 @@ static PERM : [u8, ..512] = [151u8, 160u8, 137u8, 91u8, 90u8, 15u8,
 /// Implementation of perm lookup for the ported _slang_library_noise1 method
 pub fn get_perm_val(i: uint) -> u8 { PERM[i] }
 
-// Tests
-//------------------------------
-/* 
+
+#[test]
 pub fn test() {
     println!("Testing map - 0..10 -> -100.0..100.0");
     for i in range(0, 10) {
@@ -112,6 +111,4 @@ pub fn test() {
     println!("U8 PERM LIST! {} ", get_perm_val(30));
     
 }
-  */  
 
-//------------------------------

@@ -187,9 +187,7 @@ impl Frequency {
 
 }
 
-// Tests
-//------------------------------
-/*
+#[test]
 pub fn test() {
 
     println!("Frequency Tests!");
@@ -218,5 +216,3 @@ pub fn test() {
     println!("freq initialised to 0.5 scaled perc: {}", freq);
 
 }
-*/
-//------------------------------

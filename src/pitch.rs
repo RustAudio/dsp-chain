@@ -319,10 +319,8 @@ impl Pitch {
 
 }
 
-// Tests
-//------------------------------
 
-/*
+#[test]
 pub fn test() {
 
     println!("Pitch Tests!");
@@ -377,6 +375,4 @@ pub fn test() {
     print_note_freq_table(4, 5, PITCH_INDEX);
 
 }
-*/
 
-//------------------------------
