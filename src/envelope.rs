@@ -29,14 +29,14 @@ pub struct Envelope {
 impl Envelope {
 
     /// Default, empty constructor.
-    fn new() -> Envelope {
+    pub fn new() -> Envelope {
         Envelope {
             points: vec![]
         }
     }
 
     /// Default amplitude constructor.
-    fn new_amplitude_env() -> Envelope {
+    pub fn new_amplitude_env() -> Envelope {
         Envelope {
             points: vec![Point::new(0f32, 0f32, 0f32),
                          Point::new(1f32, 0f32, 0f32)]
@@ -44,7 +44,7 @@ impl Envelope {
     }
 
     /// Default frequency constructor.
-    fn new_frequency_env() -> Envelope {
+    pub fn new_frequency_env() -> Envelope {
         Envelope {
             points: vec![Point::new(0f32, 0f32, 0f32),
                          Point::new(1f32, 0f32, 0f32)]
@@ -52,7 +52,7 @@ impl Envelope {
     }
 
     /// Add a new point to the Envelope.
-    fn add_point(&mut self, point: Point) {
+    pub fn add_point(&mut self, point: Point) {
         self.points.push(point);
         self.points.sort_by(|a, b| if a.time < b.time { Less }
                                    else if a.time > b.time { Greater }
@@ -60,7 +60,7 @@ impl Envelope {
     }
 
     /// Return `value` for the given `time`.
-    fn get_value(&self, time: f32) -> f32 {
+    pub fn get_value(&self, time: f32) -> f32 {
         // If there is less than two points interpolation
         // is not meaningful, thus we should just return 0.
         if self.points.len() <= 1 { return 0f32 }

@@ -63,9 +63,7 @@ impl Gaussian {
 
 }
 
-// Tests
-//------------------------------
-/*
+#[test]
 pub fn test() {
 
     let g = Gaussian::new();
