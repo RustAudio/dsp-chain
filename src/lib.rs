@@ -9,18 +9,22 @@
 extern crate portaudio;
 extern crate time;
 
+pub use Envelope = envelope::Envelope;
+pub use EnvPoint = envelope::Point;
 pub use Frequency = frequency::Frequency;
 pub use HasFrequency = frequency::HasFrequency;
 pub use Node = node::Node;
 pub use IsNode = node::IsNode;
 pub use Oscillator = oscillator::Oscillator;
 pub use Pitch = pitch::Pitch;
+pub use Letter = pitch::letter::Letter;
 pub use HasPitch = pitch::HasPitch;
 pub use Signal = signal::Signal;
 pub use SoundStream = sound_stream::SoundStream;
 pub use SoundStreamSettings = sound_stream_settings::SoundStreamSettings;
 pub use Waveform = waveform::Waveform;
 
+mod envelope;
 mod frequency;
 mod math;
 mod node;
