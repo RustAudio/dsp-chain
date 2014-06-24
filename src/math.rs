@@ -111,6 +111,4 @@ pub fn test() {
     println!("U8 PERM LIST! {} ", get_perm_val(30));
     
 }
-  */  
 
-//------------------------------
