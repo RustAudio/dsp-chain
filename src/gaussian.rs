@@ -48,7 +48,7 @@ impl Gaussian {
     /// Generate gaussian value with mean of `mean` with `rand` randomness.
     pub fn gen(&self, mean: f32, rand: f32) -> f32 {
         let mut ans = self.gen_raw() * num::pow(rand, 2) + (mean * 2.0 - 1.0);
-        ans = jmath::map(ans, -1.0, 1.0, 0.0, 1.0);
+        ans = math::map(ans, -1.0, 1.0, 0.0, 1.0);
         if ans > 1.0 || ans < 0.0 {
             return self.gen(mean, rand);
         }
@@ -83,5 +83,4 @@ pub fn test() {
     println!("");
 
 }
-*/
-//------------------------------
+
