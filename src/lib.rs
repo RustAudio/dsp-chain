@@ -26,6 +26,7 @@ pub use Waveform = waveform::Waveform;
 
 mod envelope;
 mod frequency;
+mod gaussian;
 mod math;
 mod node;
 mod oscillator;

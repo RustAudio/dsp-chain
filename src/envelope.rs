@@ -35,6 +35,22 @@ impl Envelope {
         }
     }
 
+    /// Default amplitude constructor.
+    fn new_amplitude_env() -> Envelope {
+        Envelope {
+            points: vec![Point::new(0f32, 0f32, 0f32),
+                         Point::new(1f32, 0f32, 0f32)]
+        }
+    }
+
+    /// Default frequency constructor.
+    fn new_frequency_env() -> Envelope {
+        Envelope {
+            points: vec![Point::new(0f32, 0f32, 0f32),
+                         Point::new(1f32, 0f32, 0f32)]
+        }
+    }
+
     /// Add a new point to the Envelope.
     fn add_point(&mut self, point: Point) {
         self.points.push(point);
