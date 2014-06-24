@@ -41,8 +41,10 @@ impl MixerInput {
 #[deriving(Show, Clone)]
 pub struct Node {
     inputs: Vec<MixerInput>,
-    settings: SoundStreamSettings,
-    master_vol: f32
+    /// SoundStreamSettings for buffer calculations.
+    pub settings: SoundStreamSettings,
+    /// Master volume for DSP node.
+    pub master_vol: f32
 }
 
 /// DSP Node trait. Implement this for any audio
