@@ -7,12 +7,16 @@
 extern crate portaudio;
 extern crate time;
 
+//pub use Node = node_enum::Node;
+
 pub use Node = node::Node;
-pub use IsNode = node::IsNode;
+pub use NodeData = node::NodeData;
+pub use MixerInput = node::MixerInput;
 pub use SoundStream = sound_stream::SoundStream;
 pub use SoundStreamSettings = sound_stream_settings::SoundStreamSettings;
 
 mod node;
+//mod node_enum;
 mod port_audio_back_end;
 mod sound_stream;
 mod sound_stream_settings;

@@ -13,17 +13,17 @@ pub trait SoundStream {
     fn load(&mut self) {}
 
     /// Update the physical state of the SoundStream.
-    fn update(&mut self, settings: &SoundStreamSettings, dt: u64) {}
+    fn update(&mut self, _settings: &SoundStreamSettings, _dt: u64) {}
 
     /// Offers input via buffer of interleaved f32 samples (amplitude between -1 to 1).
     /// The input buffer's size is num_frames * num_channels.
     /// Get's called at a rate of (sample_rate / num_frames)hz.
-    fn audio_in(&mut self, _input: &Vec<f32>, settings: &SoundStreamSettings) {}
+    fn audio_in(&mut self, _input: &Vec<f32>, _settings: &SoundStreamSettings) {}
 
     /// Requests output via buffer as interleaved f32 samples (amplitude between -1 to 1).
     /// The output buffer's size is num_frames * num_channels.
     /// Get's called at a rate of (sample_rate / num_frames)hz.
-    fn audio_out(&mut self, _output: &mut Vec<f32>, settings: &SoundStreamSettings) {}
+    fn audio_out(&mut self, _output: &mut Vec<f32>, _settings: &SoundStreamSettings) {}
 
     /// Override this with your exit condition for the soundstream task.
     fn exit(&self) -> bool { false }

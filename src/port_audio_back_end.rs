@@ -159,6 +159,7 @@ impl StreamPA {
     /// Stop the audio stream.
     pub fn stop(&mut self) {
         let mut err = types::PaNotInitialized;
+        println!("Portaudio [PaNotInitialized msg] : {}", err);
         err = self.stream.close();
         println!("Portaudio Closing Stream : {}", pa::get_error_text(err));
         println!("Portaudio Termination Message : {}", pa::get_error_text(pa::terminate()));
