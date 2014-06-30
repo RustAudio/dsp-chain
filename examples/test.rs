@@ -12,19 +12,57 @@ use dsp::{
     SoundStream,
     SoundStreamSettings,
     Node,
-    IsNode,
+    NodeData,
 };
-use std::cell::RefCell;
-use std::rc::Rc;
 
 static SAMPLE_RATE: int = 44100;
 static FRAMES: int = 128;
 static CHANNELS: int = 2;
 
 /// Calculates the real-time sample-rate from dt.
-fn calc_sample_rate(settings: &SoundStreamSettings, dt: u64) -> f64 {
+fn calc_sample_rate(settings: SoundStreamSettings, dt: u64) -> f64 {
     let dtsec: f64 = dt as f64 / 1000000000f64;
     (1f64 / dtsec) * settings.frames as f64
+}
+
+#[deriving(Show, Clone)]
+struct AltOsc { node_data: NodeData }
+impl Node for AltOsc {
+    fn get_node_data<'a>(&'a mut self) -> &'a mut NodeData { &mut self.node_data }
+    fn audio_requested(&mut self, _output: &mut Vec<f32>) {
+        print!("woot, ");
+    }
+}
+impl AltOsc {
+    pub fn new(settings: SoundStreamSettings) -> AltOsc {
+        AltOsc { node_data: NodeData::new(settings) }
+    }
+}
+
+#[deriving(Show, Clone)]
+struct Oscillator {
+    node_data: NodeData,
+    inputs: Vec<AltOsc>,
+}
+
+impl Node for Oscillator {
+    fn get_node_data<'a>(&'a mut self) -> &'a mut NodeData { &mut self.node_data }
+    fn get_inputs_mut<'a>(&'a mut self) -> Vec<&'a mut Node> {
+        let mut vec: Vec<&'a mut Node> = Vec::new();
+        for input in self.inputs.mut_iter() {
+            vec.push(input);
+        }
+        vec
+    }
+}
+
+impl Oscillator {
+    pub fn new(settings: SoundStreamSettings) -> Oscillator {
+        Oscillator {
+            node_data: NodeData::new(settings),
+            inputs: Vec::new()
+        }
+    }
 }
 
 /// This is our main sound application struct.
@@ -35,7 +73,7 @@ pub struct SoundApp {
     buffer: Vec<f32>,
     kill_chan: Receiver<bool>,
     should_exit: bool,
-    node: Node,
+    oscillator: Oscillator,
 }
 
 /// Here we will implement the constructor for
@@ -46,7 +84,7 @@ impl SoundApp {
     pub fn new(kill_chan: Receiver<bool>, settings: SoundStreamSettings) -> SoundApp {
         SoundApp {
             buffer: Vec::with_capacity(FRAMES as uint * CHANNELS as uint),
-            node: Node::new(settings),
+            oscillator: Oscillator::new(settings),
             kill_chan: kill_chan,
             should_exit: false
         }
@@ -58,23 +96,27 @@ impl SoundApp {
 /// our tasty audio callback in the form of
 /// `audio_in` and `audio_out` methods.
 impl SoundStream for SoundApp {
-    fn update(&mut self, settings: &SoundStreamSettings, dt: u64) {
-        println!("Real-time sample rate: {}", calc_sample_rate(settings, dt));
+    fn load(&mut self, settings: SoundStreamSettings) {
+        for _ in range(0, 1000) {
+            self.oscillator.inputs.push(AltOsc::new(settings))
+        }
+    }
+    fn update(&mut self, settings: SoundStreamSettings, dt: u64) {
+        //println!("Real-time sample rate: {}", calc_sample_rate(settings, dt));
         match self.kill_chan.try_recv() {
             Ok(msg) => self.should_exit = msg,
             Err(_) => ()
         }
     }
-    fn audio_in(&mut self, input: &Vec<f32>, settings: &SoundStreamSettings) {
+    fn audio_in(&mut self, input: &Vec<f32>, settings: SoundStreamSettings) {
         assert!(input.len() == settings.frames as uint * settings.channels as uint);
         self.buffer = input.clone();
     }
-    fn audio_out(&mut self, output: &mut Vec<f32>, settings: &SoundStreamSettings) {
+    fn audio_out(&mut self, output: &mut Vec<f32>, settings: SoundStreamSettings) {
         assert!(output.len() == settings.frames as uint * settings.channels as uint);
-        let pre_node: Box<IsNode> = box Node::new(settings.clone());
-        let node = Rc::new(RefCell::new(pre_node));
-        self.node.add_input(node);
-        self.node.audio_requested(output);
+        //let mut oscillator = Oscillator::new(settings.clone());
+        //println!("requested");
+        self.oscillator.audio_requested(output);
         *output = self.buffer.clone();
     }
     fn exit(&self) -> bool { self.should_exit }
