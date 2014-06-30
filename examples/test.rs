@@ -1,10 +1,11 @@
 
 //! Test app for rust-dsp.
 //!
-//! The app will spawn a SoundStream which will
-//! feed audio input straight to the output. It
-//! will then terminate after a few seconds of
-//! playback.
+//! This file will normally be in a strange state;
+//! it's really just a testing ground for the new
+//! features as I add them. I'll get around to making
+//! some proper examples soon!
+//! 
 
 extern crate dsp;
 
@@ -15,20 +16,24 @@ use dsp::{
     NodeData,
 };
 
+/// We'll use these values for setting
+/// up our SoundStream.
+/// Note: there is also a default constructor
+/// method that will be safe to use, if you're
+/// unsure what you need. It is called like this:
+/// SoundStreamSettings::cd_quality()
 static SAMPLE_RATE: int = 44100;
 static FRAMES: int = 128;
 static CHANNELS: int = 2;
 
-/// Calculates the real-time sample-rate from dt.
-fn calc_sample_rate(settings: SoundStreamSettings, dt: u64) -> f64 {
-    let dtsec: f64 = dt as f64 / 1000000000f64;
-    (1f64 / dtsec) * settings.frames as f64
-}
-
+/// This struct is just used for demonstration as
+/// an input for the Oscillator struct.
 #[deriving(Show, Clone)]
 struct AltOsc { node_data: NodeData }
 impl Node for AltOsc {
     fn get_node_data<'a>(&'a mut self) -> &'a mut NodeData { &mut self.node_data }
+    /// This will get called for every input to the
+    /// Oscillator struct.
     fn audio_requested(&mut self, _output: &mut Vec<f32>) {
         print!("woot, ");
     }
@@ -39,6 +44,8 @@ impl AltOsc {
     }
 }
 
+/// This struct is used to demonstrate implementation
+/// of the Node trait.
 #[deriving(Show, Clone)]
 struct Oscillator {
     node_data: NodeData,
@@ -47,6 +54,11 @@ struct Oscillator {
 
 impl Node for Oscillator {
     fn get_node_data<'a>(&'a mut self) -> &'a mut NodeData { &mut self.node_data }
+    /// Here, we return a vector of mutable references
+    /// to each of our inputs. This is used primarily
+    /// for the audio_requested method, which will
+    /// recurse through all inputs requesting for the
+    /// output audio buffer to be filled.
     fn get_inputs_mut<'a>(&'a mut self) -> Vec<&'a mut Node> {
         let mut vec: Vec<&'a mut Node> = Vec::new();
         for input in self.inputs.mut_iter() {
@@ -97,12 +109,13 @@ impl SoundApp {
 /// `audio_in` and `audio_out` methods.
 impl SoundStream for SoundApp {
     fn load(&mut self, settings: SoundStreamSettings) {
+        // Add a bunch of inputs to our oscillator as a test.
         for _ in range(0, 1000) {
             self.oscillator.inputs.push(AltOsc::new(settings))
         }
     }
-    fn update(&mut self, settings: SoundStreamSettings, dt: u64) {
-        //println!("Real-time sample rate: {}", calc_sample_rate(settings, dt));
+    fn update(&mut self, _settings: SoundStreamSettings, _dt: u64) {
+        // Listen out for the kill message from the main thread.
         match self.kill_chan.try_recv() {
             Ok(msg) => self.should_exit = msg,
             Err(_) => ()
@@ -110,13 +123,17 @@ impl SoundStream for SoundApp {
     }
     fn audio_in(&mut self, input: &Vec<f32>, settings: SoundStreamSettings) {
         assert!(input.len() == settings.frames as uint * settings.channels as uint);
+        // We'll copy the input here, and pass it to output later.
+        // ... just for fun.
         self.buffer = input.clone();
     }
     fn audio_out(&mut self, output: &mut Vec<f32>, settings: SoundStreamSettings) {
         assert!(output.len() == settings.frames as uint * settings.channels as uint);
-        //let mut oscillator = Oscillator::new(settings.clone());
-        //println!("requested");
+        // Here 'audio_requested' will call be called recursively
+        // for all inputs.
         self.oscillator.audio_requested(output);
+        // We'll pass the audio from the input straight to the
+        // output here.
         *output = self.buffer.clone();
     }
     fn exit(&self) -> bool { self.should_exit }

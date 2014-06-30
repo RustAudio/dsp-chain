@@ -11,7 +11,6 @@ extern crate time;
 
 pub use Node = node::Node;
 pub use NodeData = node::NodeData;
-pub use MixerInput = node::MixerInput;
 pub use SoundStream = sound_stream::SoundStream;
 pub use SoundStreamSettings = sound_stream_settings::SoundStreamSettings;
 

@@ -106,7 +106,7 @@ impl StreamPA {
     }
 
     /// Setup the portaudio stream.
-    pub fn setup(&mut self, settings: &SoundStreamSettings) {
+    pub fn setup(&mut self, settings: SoundStreamSettings) {
         let params = StreamParamsPA::new(settings.channels);
         self.stream.open(Some(&params.input),
                          Some(&params.output),
@@ -116,7 +116,7 @@ impl StreamPA {
     }
 
     /// Performs the audio read/write.
-    pub fn callback<T: SoundStream>(&mut self, settings: &SoundStreamSettings, stream: &mut T) {
+    pub fn callback<T: SoundStream>(&mut self, settings: SoundStreamSettings, stream: &mut T) {
         let mut ready = 0;
         while ready == 0 {
             ready = self.stream.get_stream_write_available();
@@ -130,7 +130,7 @@ impl StreamPA {
 
     /// Read audio in from stream.
     pub fn read<T: SoundStream>(&self, buffer: &mut Vec<f32>,
-                                settings: &SoundStreamSettings, stream: &mut T) {
+                                settings: SoundStreamSettings, stream: &mut T) {
         *buffer = match self.stream.read(settings.frames as u32) {
             Ok(in_buffer) => {
                 stream.audio_in(&in_buffer, settings);
@@ -144,7 +144,7 @@ impl StreamPA {
 
     /// Write audio to stream
     pub fn write<T: SoundStream>(&mut self, buffer: &mut Vec<f32>,
-                                 settings: &SoundStreamSettings, stream: &mut T) {
+                                 settings: SoundStreamSettings, stream: &mut T) {
         stream.audio_out(buffer, settings);
         let write: Vec<f32> = buffer.clone();
         self.stream.write(write, settings.frames as u32);

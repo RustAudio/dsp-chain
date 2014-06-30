@@ -1,9 +1,5 @@
 
 use sound_stream_settings::SoundStreamSettings;
-use std::rc::Rc;
-use std::cell::RefCell;
-use std::fmt::Formatter;
-use std::fmt::Result;
 use std::fmt::Show;
 
 /// The DSP Node contains a vector of children
@@ -36,7 +32,7 @@ impl NodeData {
 /// the `Node` struct to a field as well, and
 /// override the `get_node` and `get_node_mut`
 /// methods by returning a ref (/mut) to it.
-pub trait Node: Clone {
+pub trait Node: Clone + Show {
 
     /// Return a reference a NodeData struct owned by the Node.
     fn get_node_data<'a>(&'a mut self) -> &'a mut NodeData;
@@ -47,8 +43,8 @@ pub trait Node: Clone {
 
     /// Apply settings to self and all inputs.
     fn apply_settings(&mut self, settings: SoundStreamSettings) {
-        for input in self.get_inputs_mut().iter() {
-            input.node.borrow_mut().apply_settings(settings);
+        for input in self.get_inputs_mut().mut_iter() {
+            input.apply_settings(settings);
         }
         self.get_node_data().settings = settings;
     }
@@ -66,29 +62,33 @@ pub trait Node: Clone {
     /// pass back to the output! Override this
     /// method for any synthesis or generative
     /// types.
-    fn audio_requested(&mut self, output: &mut Vec<f32>) {
-        let master_vol = self.get_node_data().master_vol;
+    fn audio_requested<'a>(&'a mut self, output: &mut Vec<f32>) {
         let frames = self.get_node_data().settings.frames as uint;
         let channels = self.get_node_data().settings.channels as uint;
-        let mut vol_per_channel: Vec<f32> = Vec::from_elem(channels, 1f32);
-        for i in range(0, self.get_inputs().len()) {
-            let input = self.get_inputs().get(i);
-            let mut working: Vec<f32> = Vec::from_elem((frames * channels) as uint, 0f32);
-            // Call audio_requested for each input.
-            input.node.borrow_mut().audio_requested(&mut working);
-            // Construct precalculated volume and
-            // pan array (for efficiency).
-            let vol_l: f32 = input.vol * (1f32 - input.pan);
-            let vol_r: f32 = input.vol * input.pan;
-            for j in range(0, vol_per_channel.len()) {
-                *vol_per_channel.get_mut(j) = if j == 0 { vol_l } else { vol_r } * master_vol;
-            }
-            // Sum all input nodes to output (considering
-            // pan, vol and interleaving).
-            for j in range(0, frames) {
-                for k in range(0, channels) {
-                    *output.get_mut(j * channels + k) +=
-                        *working.get(j * channels + k) * *vol_per_channel.get(k);
+        {
+            let mut inputs = self.get_inputs_mut();
+            let mut vol_per_channel: Vec<f32> = Vec::from_elem(channels, 1f32);
+            for i in range(0, inputs.len()) {
+                let input = inputs.get_mut(i);
+                let input_vol = input.get_node_data().vol;
+                let input_pan = input.get_node_data().pan;
+                let mut working: Vec<f32> = Vec::from_elem((frames * channels) as uint, 0f32);
+                // Call audio_requested for each input.
+                input.audio_requested(&mut working);
+                // Construct precalculated volume and
+                // pan array (for efficiency).
+                let vol_l: f32 = input_vol * (1f32 - input_pan);
+                let vol_r: f32 = input_vol * input_pan;
+                for j in range(0, vol_per_channel.len()) {
+                    *vol_per_channel.get_mut(j) = if j == 0 { vol_l } else { vol_r };
+                }
+                // Sum all input nodes to output (considering
+                // pan, vol and interleaving).
+                for j in range(0, frames) {
+                    for k in range(0, channels) {
+                        *output.get_mut(j * channels + k) +=
+                            *working.get(j * channels + k) * *vol_per_channel.get(k);
+                    }
                 }
             }
         }
