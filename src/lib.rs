@@ -6,6 +6,7 @@
 
 extern crate portaudio;
 extern crate time;
+extern crate serialize;
 
 //pub use Node = node_enum::Node;
 

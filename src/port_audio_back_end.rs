@@ -22,7 +22,7 @@ pub struct StreamPA {
 impl StreamParamsPA {
 
     /// Creates the port audio stream parameters.
-    pub fn new(channels: int) -> StreamParamsPA {
+    pub fn new(channels: u16) -> StreamParamsPA {
 
         //println!("Portaudio version : {}", pa::get_version());
         //println!("Portaudio version text : {}", pa::get_version_text());

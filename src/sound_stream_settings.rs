@@ -1,17 +1,17 @@
 
 /// Settings required for SoundStream.
-#[deriving(Show, Clone, PartialEq)]
+#[deriving(Show, Clone, PartialEq, Encodable, Decodable)]
 pub struct SoundStreamSettings {
     /// The number of samples per second.
-    pub samples_per_sec: int,
+    pub samples_per_sec: u32,
 
     /// How many samples per channel requested at a time in the buffer.
     /// The more frames, the less likely to make glitches,
     /// but this gives slower response.
-    pub frames: int,
+    pub frames: u16,
     
     /// Number of channels, for example 2 for stereo sound (left + right speaker).
-    pub channels: int
+    pub channels: u16
 }
 
 impl SoundStreamSettings {
@@ -21,7 +21,7 @@ impl SoundStreamSettings {
     /// the feasibility of the requested settings (i.e. that
     /// channels isn't 500, and that samples_per_sec and frames
     /// are of a sound card standard).
-    pub fn new(samples_per_sec: int, frames: int, channels: int)
+    pub fn new(samples_per_sec: u32, frames: u16, channels: u16)
         -> SoundStreamSettings {
         SoundStreamSettings {
             samples_per_sec: samples_per_sec,
