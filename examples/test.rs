@@ -22,9 +22,9 @@ use dsp::{
 /// method that will be safe to use, if you're
 /// unsure what you need. It is called like this:
 /// SoundStreamSettings::cd_quality()
-static SAMPLE_RATE: int = 44100;
-static FRAMES: int = 128;
-static CHANNELS: int = 2;
+static SAMPLE_RATE: u32 = 44100;
+static FRAMES: u16 = 128;
+static CHANNELS: u16 = 2;
 
 /// This struct is just used for demonstration as
 /// an input for the Oscillator struct.

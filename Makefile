@@ -26,7 +26,7 @@ SHELL := /bin/bash
 
 # The default make command.
 # Change this to 'lib' if you are building a library.
-DEFAULT = lib
+DEFAULT = help
 # The entry file of library source.
 # Change this to support multi-crate source structure.
 # For advanced usage, you can rename the file 'rust-empty.mk'
@@ -48,20 +48,20 @@ COMPILER = rustc
 RUSTDOC = rustdoc
 
 # Extracts target from rustc.
-TARGET = $(shell rustc --version 2> /dev/null | awk "/host:/ { print \$$2 }")
+TARGET = $(shell rustc --version verbose 2> /dev/null | awk "/host:/ { print \$$2 }")
 # TARGET = x86_64-unknown-linux-gnu
 # TARGET = x86_64-apple-darwin
 
-TARGET_LIB_DIR = target/$(TARGET)/lib/
+TARGET_LIB_DIR = target/deps/
 
 # Ask 'rustc' the file name of the library and use a dummy name if the source has not been created yet.
 # The dummy file name is used to trigger the creation of the source first time.
 # Next time 'rustc' will return the right file name.
 RLIB_FILE = $(shell (rustc --crate-type=rlib --crate-file-name "$(LIB_ENTRY_FILE)" 2> /dev/null) || (echo "dummy.rlib"))
 # You can't have quotes around paths because 'make' doesn't see it exists.
-RLIB = target/$(TARGET)/lib/$(RLIB_FILE)
+RLIB = target/$(RLIB_FILE)
 DYLIB_FILE = $(shell (rustc --crate-type=dylib --crate-file-name "$(LIB_ENTRY_FILE)" 2> /dev/null) || (echo "dummy.dylib"))
-DYLIB = target/$(TARGET)/lib/$(DYLIB_FILE)
+DYLIB = target/$(DYLIB_FILE)
 
 # Use 'VERBOSE=1' to echo all commands, for example 'make help VERBOSE=1'.
 ifdef VERBOSE
@@ -73,7 +73,7 @@ endif
 all: $(DEFAULT)
 
 help:
-	$(Q)echo "--- rust-empty (0.5 002)"
+	$(Q)echo "--- rust-empty (0.6 003)"
 	$(Q)echo "make run               - Runs executable"
 	$(Q)echo "make exe               - Builds main executable"
 	$(Q)echo "make lib               - Both static and dynamic library"
@@ -90,8 +90,8 @@ help:
 	$(Q)echo "make examples          - Builds examples"
 	$(Q)echo "make cargo-lite-exe    - Setup executable package"
 	$(Q)echo "make cargo-lite-lib    - Setup library package"
-	$(Q)echo "make cargo-exe         - EXPERIMENTAL: Setup executable package"
-	$(Q)echo "make cargo-lib         - EXPERIMENTAL: Setup library package"
+	$(Q)echo "make cargo-exe         - Setup executable package"
+	$(Q)echo "make cargo-lib         - Setup library package"
 	$(Q)echo "make rust-ci-lib       - Setup Travis CI Rust library"
 	$(Q)echo "make rust-ci-exe       - Setup Travis CI Rust executable"
 	$(Q)echo "make rusti             - Setup 'rusti.sh' for interactive Rust"
@@ -102,6 +102,7 @@ help:
 	$(Q)echo "make clean             - Deletes binaries and documentation."
 	$(Q)echo "make clear-project     - WARNING: Deletes project files except 'Makefile'"
 	$(Q)echo "make clear-git         - WARNING: Deletes Git setup"
+	$(Q)echo "make symlink-build     - Creates a script for building dependencies"
 	$(Q)echo "make symlink-info      - Symlinked libraries dependency info"
 	$(Q)echo "make target-dir        - Creates directory for current target"
 
@@ -123,6 +124,7 @@ help:
 		rusti \
 		rust-ci-lib \
 		rust-ci-exe \
+		symlink-build \
 		symlink-info \
 		target-dir \
 		test \
@@ -189,12 +191,12 @@ cargo-exe: $(EXE_ENTRY_FILE)
 	( \
 		name=$${PWD##/*/} ; \
 		readme=$$((test -e README.md && echo -e "readme = \"README.md\"") || ("")) ; \
-		echo -e "[project]\n\nname = \"$$name\"\nversion = \"0.0\"\n$$readme\nauthors = [\"Your Name <your@email.com>\"]\ntags = []\n\n[[bin]]\n\nname = \"$$name\"\npath = \"$(EXE_ENTRY_FILE)\"\n" > Cargo.toml \
+		echo -e "[package]\n\nname = \"$$name\"\nversion = \"0.0.0\"\n$$readme\nauthors = [\"Your Name <your@email.com>\"]\ntags = []\n\n[[bin]]\n\nname = \"$$name\"\npath = \"$(EXE_ENTRY_FILE)\"\n" > Cargo.toml \
 		&& echo "--- Created 'Cargo.toml' for executable" \
 		&& cat Cargo.toml \
 	)
 
-cargo-lib: $(EXE_ENTRY_FILE)
+cargo-lib: $(LIB_ENTRY_FILE)
 	$(Q)( \
 		test -e Cargo.toml \
 		&& echo "--- The file 'Cargo.toml' already exists" \
@@ -203,7 +205,7 @@ cargo-lib: $(EXE_ENTRY_FILE)
 	( \
 		name=$${PWD##/*/} ; \
 		readme=$$((test -e README.md && echo -e "readme = \"README.md\"") || ("")) ; \
-		echo -e "[project]\n\nname = \"$$name\"\nversion = \"0.0\"\n$$readme\nauthors = [\"Your Name <your@email.com>\"]\ntags = []\n\n[[lib]]\n\nname = \"$$name\"\npath = \"$(LIB_ENTRY_FILE)\"\n" > Cargo.toml \
+		echo -e "[package]\n\nname = \"$$name\"\nversion = \"0.0.0\"\n$$readme\nauthors = [\"Your Name <your@email.com>\"]\ntags = []\n\n[[lib]]\n\nname = \"$$name\"\npath = \"$(LIB_ENTRY_FILE)\"\n" > Cargo.toml \
 		&& echo "--- Created 'Cargo.toml' for executable" \
 		&& cat Cargo.toml \
 	)
@@ -233,7 +235,7 @@ rust-ci-exe: $(EXE_ENTRY_FILE)
 	)
 
 doc: $(SOURCE_FILES) | src/
-	$(Q)$(RUSTDOC) $(LIB_ENTRY_FILE) -L "target/$(TARGET)/lib" \
+	$(Q)$(RUSTDOC) $(LIB_ENTRY_FILE) -L "$(TARGET_LIB_DIR)" \
 	&& echo "--- Built documentation"
 
 run: exe
@@ -245,7 +247,7 @@ target-dir: $(TARGET_LIB_DIR)
 exe: bin/main | $(TARGET_LIB_DIR)
 
 bin/main: $(SOURCE_FILES) | bin/ $(EXE_ENTRY_FILE)
-	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) $(EXE_ENTRY_FILE) -o bin/main -L "target/$(TARGET)/lib" \
+	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) $(EXE_ENTRY_FILE) -o bin/main -L "$(TARGET_LIB_DIR)" -L "target" \
 	&& echo "--- Built executable" \
 	&& echo "--- Type 'make run' to run executable"
 
@@ -258,7 +260,7 @@ test-external: bin/test-external
 	&& ./test-external
 
 bin/test-external: $(SOURCE_FILES) | rlib bin/ src/test.rs
-	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) --test src/test.rs -o bin/test-external -L "target/$(TARGET)/lib" \
+	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) --test src/test.rs -o bin/test-external -L "$(TARGET_LIB_DIR)" -L "target" \
 	&& echo "--- Built external test runner"
 
 test-internal: bin/test-internal
@@ -266,7 +268,7 @@ test-internal: bin/test-internal
 	&& ./test-internal
 
 bin/test-internal: $(SOURCE_FILES) | rlib src/ bin/
-	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) --test $(LIB_ENTRY_FILE) -o bin/test-internal -L "target/$(TARGET)/lib" \
+	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) --test $(LIB_ENTRY_FILE) -o bin/test-internal -L "$(TARGET_LIB_DIR)" -L "target" \
 	&& echo "--- Built internal test runner"
 
 bench: bench-internal bench-external
@@ -283,13 +285,13 @@ lib: rlib dylib
 rlib: $(RLIB)
 
 $(RLIB): $(SOURCE_FILES) | $(LIB_ENTRY_FILE) $(TARGET_LIB_DIR)
-	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) --crate-type=rlib $(LIB_ENTRY_FILE) -L "target/$(TARGET)/lib" --out-dir "target/$(TARGET)/lib/" \
+	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) --crate-type=rlib $(LIB_ENTRY_FILE) -L "$(TARGET_LIB_DIR)" --out-dir "target" \
 	&& echo "--- Built rlib"
 
 dylib: $(DYLIB)
 
 $(DYLIB): $(SOURCE_FILES) | $(LIB_ENTRY_FILE) $(TARGET_LIB_DIR)
-	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) --crate-type=dylib $(LIB_ENTRY_FILE) -L "target/$(TARGET)/lib" --out-dir "target/$(TARGET)/lib/" \
+	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) --crate-type=dylib $(LIB_ENTRY_FILE) -L "$(TARGET_LIB_DIR)" --out-dir "target/" \
 	&& echo "--- Built dylib"
 
 bin/:
@@ -328,8 +330,8 @@ git-ignore:
 examples: $(EXAMPLE_FILES)
 
 $(EXAMPLE_FILES): lib examples-dir
-	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) $@ -L "target/$(TARGET)/lib" --out-dir examples/ \
-	&& echo "--- Built examples"
+	$(Q)$(COMPILER) --target "$(TARGET)" $(COMPILER_FLAGS) $@ -L "$(TARGET_LIB_DIR)" -L "target" --out-dir examples/ \
+	&& echo "--- Built '$@' (make $@)"
 
 $(EXE_ENTRY_FILE): | src/
 	$(Q)test -e $(EXE_ENTRY_FILE) \
@@ -394,7 +396,7 @@ while true; do
   echo -n "> "
   read line
   TMP="`mktemp r.XXXXXX`"
-  $(COMPILER) - -o $$TMP -L "target/$(TARGET)/lib/" <<EOF
+  $(COMPILER) - -o $$TMP -L "$(TARGET_LIB_DIR)" <<EOF
   #![feature(globs, macro_rules, phase, struct_variant)]
   extern crate arena;
   extern crate collections;
@@ -528,6 +530,126 @@ watch: $(TARGET_LIB_DIR)
 		&& echo "--- Type './watch.sh -h' for more options" \
 	)
 
+# borrowed from http://stackoverflow.com/q/649246/1256624
+define SYMLINK_BUILD_SCRIPT
+#!/bin/bash
+# written by bvssvni
+# Modify the setting to do conditional compilation.
+# For example "--cfg my_feature"
+SETTINGS=""
+# ================================================
+
+MAKE=make
+if [ "$$OS" == "Windows_NT" ]; then
+    MAKE=mingw32-make
+fi
+
+# Checks if an item exists in an array.
+# Copied from http://stackoverflow.com/questions/3685970/check-if-an-array-contains-a-value
+function contains() {
+    local n=$$#
+    local value=$${!n}
+    for ((i=1;i < $$#;i++)) {
+        if [ "$${!i}" == "$${value}" ]; then
+            echo "y"
+            return 0
+        fi
+    }
+    echo "n"
+    return 1
+}
+
+# This is a counter used to insert dependencies.
+# It is global because we need an array of all the
+# visited dependencies.
+i=0
+function build_deps {
+    local current=$$(pwd)
+    for symlib in $$(find $(TARGET_LIB_DIR) -type l) ; do
+        cd $$current
+        echo $$symlib
+        local original_file=$$(readlink $$symlib)
+        local original_dir=$$(dirname $$original_file)
+        cd $$original_dir
+
+        # Go to the git root directory.
+        local current_git_dir=$$(git rev-parse --show-toplevel)
+        echo "--- Parent $$current"
+        echo "--- Child $$current_git_dir"
+        cd $$current_git_dir
+
+        # Skip building if it is already built.
+        if [ $$(contains "$${git_dir[@]}" $$current_git_dir) == "y" ]; then
+            echo "--- Visited $$current_git_dir"
+            continue
+        fi
+
+        # Remember git directory to not build it twice
+        git_dir[i]=$$current_git_dir
+        let i+=1
+
+        # Visit the symlinks and build the dependencies
+        build_deps
+
+        # First check for a 'build.sh' script with default settings.
+        # Check for additional 'rust-empty.mk' file. \
+        # Compile with the settings flags. \
+        # If no other options, build with make.
+        ( \
+            test -e build.sh \
+            && ./build.sh \
+        ) \
+        || \
+        ( \
+            test -e rust-empty.mk \
+            && $$MAKE -f rust-empty.mk clean \
+            && $$MAKE -f rust-empty.mk \
+        ) \
+        || \
+        ( \
+            echo "--- Building $$current_git_dir" \
+            && $$MAKE clean \
+            && $$MAKE \
+        )
+    done
+    cd $$current
+}
+
+# Mark main project as visited to avoid infinite loop.
+git_dir[i]=$$(pwd)
+let i+=1
+if [ "$$1" == "deps" ]; then
+    build_deps
+fi
+
+echo "--- Building $$(pwd)"
+( \
+    test -e rust-empty.mk \
+    && $$MAKE -f rust-empty.mk clean \
+    && $$MAKE -f rust-empty.mk COMPILER_FLAGS+="$$SETTINGS" \
+) \
+|| \
+( \
+    $$MAKE clean
+    $$MAKE COMPILER_FLAGS+="$$SETTINGS"
+)
+
+endef
+export SYMLINK_BUILD_SCRIPT
+
+symlink-build:
+	$(Q)( \
+		test -e build.sh \
+		&& echo "--- The file 'build.sh' already exists" \
+	) \
+	|| \
+	( \
+		echo -e "$$SYMLINK_BUILD_SCRIPT" > build.sh \
+		&& chmod +x build.sh \
+		&& echo "--- Created 'build.sh'" \
+		&& echo "--- Type './build.sh deps' to build everything" \
+	)
+
 loc:
 	$(Q)echo "--- Counting lines of .rs files in 'src' (LOC):" \
 	&& find src/ -type f -name "*.rs" -exec cat {} \; | wc -l
@@ -536,7 +658,7 @@ loc:
 # prints the commit hash with remote branches containing that commit.
 symlink-info:
 	$(Q)	current=$$(pwd) ; \
-	for symlib in $$(find target/*/lib -type l) ; do \
+	for symlib in $$(find $(TARGET_LIB_DIR) -type l) ; do \
 		cd $$current ; \
 		echo $$symlib ; \
 		original_file=$$(readlink $$symlib) ; \

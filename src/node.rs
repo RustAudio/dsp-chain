@@ -6,7 +6,7 @@ use std::fmt::Show;
 /// nodes (within the `MixerInput`s), from which
 /// audio can be requested as well as the current
 /// SoundStream settings.
-#[deriving(Show, Clone)]
+#[deriving(Show, Clone, Encodable, Decodable)]
 pub struct NodeData {
     /// SoundStreamSettings for buffer calculations.
     pub settings: SoundStreamSettings,
@@ -100,6 +100,24 @@ pub trait Node: Clone + Show {
     /// buffer. This is mainly for audio effects. Get's
     /// called at the end of audio_requested.
     fn process_buffer(&mut self, _output: &mut Vec<f32>) {}
+
+    /*
+    /// Generic method for getting the vector of input
+    /// references from a given vector of T: Node.
+    fn get_inputs_from<'a, T: Node>(inputs: &'a Vec<T>) -> Vec<&'a Node> {
+        let mut vec: Vec<&'a Node> = Vec::with_capacity(inputs.len());
+        for input in inputs.iter() { vec.push(input) }
+        vec
+    }
+
+    /// Generic method for getting the vector of mutable
+    /// input references from a given vector of T: Node.
+    fn get_inputs_mut_from<'a, T: Node>(inputs: &'a mut Vec<T>) -> Vec<&'a mut Node> {
+        let mut vec: Vec<&'a mut Node> = Vec::with_capacity(inputs.len());
+        for input in inputs.mut_iter() { vec.push(input) }
+        vec
+    }
+    */
 
 }
 
