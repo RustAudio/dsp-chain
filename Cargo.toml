@@ -4,7 +4,7 @@ name = "rust-dsp"
 version = "0.0.0"
 authors = [
     "bvssvni <bvssvni@gmail.com>",
-    "indiv0 <indiv0@gmail.com>",
+    "indiv0 <contact@nikitapek.in>",
     "mitchmindtree <me@michellnordine.com>"]
 
 [[lib]]
