@@ -1,0 +1,18 @@
+[package]
+
+name = "rust-dsp"
+version = "0.0.0"
+authors = [
+    "bvssvni <bvssvni@gmail.com>",
+    "indiv0 <indiv0@gmail.com>",
+    "mitchmindtree <me@michellnordine.com>"]
+
+[[lib]]
+
+name = "rust-dsp"
+path = "./src/lib.rs"
+
+[dependencies.rust-portaudio]
+
+git = "https://github.com/jeremyletang/rust-portaudio"
+
