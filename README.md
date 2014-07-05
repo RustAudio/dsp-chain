@@ -1,6 +1,8 @@
 rust-dsp
 ========
 
+[![Build Status](https://travis-ci.org/mitchmindtree/rust-dsp.svg)](https://travis-ci.org/mitchmindtree/rust-dsp)
+
 A library for sound Digital Signal Processing, written in Rust.
 See examples for usage.
 
