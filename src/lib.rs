@@ -1,4 +1,4 @@
-#![crate_id = "dsp"]
+#![crate_name = "dsp"]
 #![deny(missing_doc)]
 #![feature(macro_rules, phase, globs, struct_variant)]
 
