@@ -9,7 +9,7 @@ authors = [
 
 [[lib]]
 
-name = "rust-dsp"
+name = "dsp"
 path = "./src/lib.rs"
 
 [dependencies.rust-portaudio]
