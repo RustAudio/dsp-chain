@@ -16,3 +16,11 @@ path = "./src/lib.rs"
 
 git = "https://github.com/jeremyletang/rust-portaudio"
 
+[[bin]]
+
+name = "test"
+path = "./src/test.rs"
+
+[dependencies.rust-dsp]
+
+git = "https://github.com/mitchmindtree/rust-dsp"
