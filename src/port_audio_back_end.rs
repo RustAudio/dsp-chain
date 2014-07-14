@@ -24,24 +24,7 @@ impl StreamParamsPA {
     /// Creates the port audio stream parameters.
     pub fn new(channels: u16) -> StreamParamsPA {
 
-        //println!("Portaudio version : {}", pa::get_version());
-        //println!("Portaudio version text : {}", pa::get_version_text());
-        //println!("Portaudio error text : {}", pa::get_error_text(types::PaNotInitialized));
-
         println!("Portaudio init error : {}", pa::get_error_text(pa::initialize()));
-
-        /*let host_count = pa::get_host_api_count();
-        println!("Portaudio host count : {}", host_count as int);
-
-        let default_host = pa::get_default_host_api();
-        println!("Portaudio default host : {}", default_host as int);
-
-        let host_info = pa::get_host_api_info(default_host);
-        println!("Portaudio host name : {}", host_info.unwrap().name);
-
-        println!("Portaudio type id : {}",
-                 pa::host_api_type_id_to_host_api_index(types::PaCoreAudio) as int);
-        */
 
         println!("Creating StreamParamsPA");
         let def_input = pa::get_default_input_device();          
@@ -66,31 +49,6 @@ impl StreamParamsPA {
             output: stream_params_out
         }
     }
-
-    /*
-    /// Prints information about the port audio host and stream.
-    pub fn print_info(&self) {
-        println!("Portaudio version: {}", pa::get_version());
-        println!("Portaudio version text: {}", pa::get_version_text());
-        println!("Portaudio error text: {}", pa::get_error_text(types::PaNotInitialized));
-        println!("Portaudio init error : {}", pa::get_error_text(pa::initialize()));
-        let host_count = pa::get_host_api_count();
-        println!("Portaudio host count : {}", host_count as int);
-        let default_host = pa::get_default_host_api();
-        println!("Portaudio default host : {}", default_host as int);
-        let host_info = pa::get_host_api_info(default_host);
-        println!("Portaudio host name : {}", host_info.unwrap().name);
-        println!("Portaudio type id : {}",
-                 pa::host_api_type_id_to_host_api_index(types::PaCoreAudio) as int);
-        let info_input = pa::get_device_info(self.input.device).unwrap();
-        println!("Default input device info :");                             
-        println!("version : {}", info_input.struct_version);                 
-        println!("Input name : {}", info_input.name);                              
-        println!("max input channels : {}", info_input.max_input_channels);  
-        println!("max output channels : {}", info_input.max_output_channels);
-        println!("default sample rate : {}", info_input.default_sample_rate);
-    }
-    */
 
 }
 
