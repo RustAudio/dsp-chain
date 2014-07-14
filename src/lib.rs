@@ -8,8 +8,6 @@ extern crate portaudio;
 extern crate time;
 extern crate serialize;
 
-//pub use Node = node_enum::Node;
-
 pub use Node = node::Node;
 pub use NodeData = node::NodeData;
 pub use SoundStream = sound_stream::SoundStream;
