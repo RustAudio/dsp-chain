@@ -1,4 +1,5 @@
 
+
 use sound_stream_settings::SoundStreamSettings;
 use std::fmt::Show;
 
@@ -7,7 +8,7 @@ use std::fmt::Show;
 /// audio can be requested as well as the current
 /// SoundStream settings.
 #[deriving(Show, Clone, Encodable, Decodable)]
-pub struct NodeData {
+pub struct Data {
     /// SoundStreamSettings for buffer calculations.
     pub settings: SoundStreamSettings,
     /// Master volume for DSP node.
@@ -16,10 +17,10 @@ pub struct NodeData {
     pub pan: f32
 }
 
-impl NodeData {
-    /// Default constructor for a NodeData struct.
-    pub fn new(settings: SoundStreamSettings) -> NodeData {
-        NodeData {
+impl Data {
+    /// Default constructor for a Data struct.
+    pub fn new(settings: SoundStreamSettings) -> Data {
+        Data {
             settings: settings,
             vol: 1f32,
             pan: 0f32,
@@ -34,8 +35,8 @@ impl NodeData {
 /// methods by returning a ref (/mut) to it.
 pub trait Node: Clone + Show {
 
-    /// Return a reference a NodeData struct owned by the Node.
-    fn get_node_data<'a>(&'a mut self) -> &'a mut NodeData;
+    /// Return a reference a Data struct owned by the Node.
+    fn get_node_data<'a>(&'a mut self) -> &'a mut Data;
     /// Return a reference to the inputs for the Node.
     fn get_inputs<'a>(&'a self) -> Vec<&'a Node> { Vec::new() }
     /// Return a mutable reference to the inputs for the Node.

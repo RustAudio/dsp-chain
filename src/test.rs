@@ -7,7 +7,8 @@
 //! some proper examples soon!
 //! 
 
-extern crate dsp;
+#![feature(phase)]
+#[phase(plugin, link)] extern crate dsp;
 
 use dsp::{
     SoundStream,
@@ -31,7 +32,7 @@ static CHANNELS: u16 = 2;
 #[deriving(Show, Clone)]
 struct AltOsc { node_data: NodeData }
 impl Node for AltOsc {
-    fn get_node_data<'a>(&'a mut self) -> &'a mut NodeData { &mut self.node_data }
+    impl_dsp_node_get_data!(node_data)
     /// This will get called for every input to the
     /// Oscillator struct.
     fn audio_requested(&mut self, _output: &mut Vec<f32>) {
@@ -53,19 +54,8 @@ struct Oscillator {
 }
 
 impl Node for Oscillator {
-    fn get_node_data<'a>(&'a mut self) -> &'a mut NodeData { &mut self.node_data }
-    /// Here, we return a vector of mutable references
-    /// to each of our inputs. This is used primarily
-    /// for the audio_requested method, which will
-    /// recurse through all inputs requesting for the
-    /// output audio buffer to be filled.
-    fn get_inputs_mut<'a>(&'a mut self) -> Vec<&'a mut Node> {
-        let mut vec: Vec<&'a mut Node> = Vec::new();
-        for input in self.inputs.mut_iter() {
-            vec.push(input);
-        }
-        vec
-    }
+    impl_dsp_node_get_data!(node_data)
+    impl_dsp_node_get_inputs!(inputs)
 }
 
 impl Oscillator {
@@ -110,7 +100,7 @@ impl SoundApp {
 impl SoundStream for SoundApp {
     fn load(&mut self, settings: SoundStreamSettings) {
         // Add a bunch of inputs to our oscillator as a test.
-        for _ in range(0, 1000) {
+        for _ in range(0u, 1000) {
             self.oscillator.inputs.push(AltOsc::new(settings))
         }
     }
