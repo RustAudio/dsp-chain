@@ -1,4 +1,5 @@
 
+
 use sound_stream_settings::SoundStreamSettings;
 use std::fmt::Show;
 
@@ -102,40 +103,4 @@ pub trait Node: Clone + Show {
     fn process_buffer(&mut self, _output: &mut Vec<f32>) {}
 
 }
-
-/// Simplify implementation of Node trait methods.
-/// 
-/// Example:
-///
-/// struct Synth {
-///     data: NodeData,
-///     oscillators: Vec<Oscillator>,
-/// }
-///
-/// impl Node for Synth {
-///     impl_dsp_node_get_data!(data)
-///     impl_dsp_node_get_inputs!(oscillators)
-///     ...
-/// }
-///
-#[macro_export]
-macro_rules! impl_dsp_node_get_data(
-    ($obj:ty, $($data:ident).*) => (
-        /// Return a reference a Data struct owned by the Node.
-        fn get_node_data<'a>(&'a mut self) -> &'a mut ::dsp::NodeData { &mut self$(.$data)* }
-    )
-)
-#[macro_export]
-macro_rules! impl_dsp_node_get_inputs(
-    ($obj:ty, $($inputs:ident).*) => (
-        /// Return a reference to the inputs for the Node.
-        fn get_inputs<'a>(&'a self) -> Vec<&'a ::dsp::Node> {
-            Vec::from_fn(self$(.$inputs)*.len(), |i| self$(.$inputs)*.get(i) as &::dsp::Node)
-        }
-        /// Return a mutable reference to the inputs for the Node.
-        fn get_inputs_mut<'a>(&'a mut self) -> Vec<&'a mut dsp::Node> {
-            Vec::from_fn(self$(.$inputs)*.len(), |i| self$(.$inputs)*.get_mut(i) as &mut ::dsp::Node)
-        }
-    )
-)
 
