@@ -88,7 +88,7 @@ pub trait Node: Clone + Show {
                 for j in range(0, frames) {
                     for k in range(0, channels) {
                         *output.get_mut(j * channels + k) +=
-                            *working.get(j * channels + k) * *vol_per_channel.get(k);
+                            working[j * channels + k] * vol_per_channel[k];
                     }
                 }
             }
