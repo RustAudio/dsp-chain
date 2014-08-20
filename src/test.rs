@@ -1,14 +1,15 @@
-
 //! Test app for rust-dsp.
 //!
 //! This file will normally be in a strange state;
 //! it's really just a testing ground for the new
 //! features as I add them. I'll get around to making
 //! some proper examples soon!
-//! 
+//!
 
 #![feature(phase)]
 #[phase(plugin, link)] extern crate dsp;
+
+use std::time::duration::Duration;
 
 use dsp::{
     SoundStream,
@@ -142,7 +143,7 @@ fn main() {
         let mut soundstream = SoundApp::new(receiver, settings);
         soundstream.run(settings);
     });
-    std::io::timer::sleep(3000);
+    std::io::timer::sleep(Duration::seconds(3));
     sender.send(true);
 }
 
