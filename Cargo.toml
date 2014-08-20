@@ -5,9 +5,10 @@ version = "0.0.0"
 authors = [
     "bvssvni <bvssvni@gmail.com>",
     "indiv0 <contact@nikitapek.in>",
-    "mitchmindtree <me@michellnordine.com>"]
+    "mitchmindtree <me@michellnordine.com>"
+]
 
-[[lib]]
+[lib]
 
 name = "dsp"
 path = "./src/lib.rs"
@@ -20,8 +21,3 @@ git = "https://github.com/jeremyletang/rust-portaudio"
 
 name = "test"
 path = "./src/test.rs"
-
-[dependencies.rust-dsp]
-
-git = "https://github.com/mitchmindtree/rust-dsp"
-

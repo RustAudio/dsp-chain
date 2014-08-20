@@ -8,10 +8,10 @@ extern crate portaudio;
 extern crate time;
 extern crate serialize;
 
-pub use Node = node::Node;
-pub use NodeData = node::Data;
-pub use SoundStream = sound_stream::SoundStream;
-pub use SoundStreamSettings = sound_stream_settings::SoundStreamSettings;
+pub use node::Node as Node;
+pub use node::Data as NodeData;
+pub use sound_stream::SoundStream as SoundStream;
+pub use sound_stream_settings::SoundStreamSettings as SoundStreamSettings;
 
 pub mod macros;
 
@@ -19,4 +19,3 @@ mod node;
 mod port_audio_back_end;
 mod sound_stream;
 mod sound_stream_settings;
-
