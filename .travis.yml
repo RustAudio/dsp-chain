@@ -4,7 +4,7 @@ os:
     - osx
 env:
     global:
-        - LD_LIBRARY_PATH: /usr/local/lib
+        - secure: F0lkJZqxOsdZpMv+Awwvl79JbLOuqMkeWENmiy5y8s9bjn+aSnch4GlmJJX7kWf/cr1IYqnb0RgVILDbJqj7rijsJ3DIDokgwDPZaz7iNr3RoGRArUN9RyKADVxUfvokNiaMpv6+59qCFqzSBmdGfvbgnkxJCyO6OpQVqk2pLns=
 install:
     - curl -O http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz
     - tar xfz pa_stable_v19_20140130.tgz
@@ -15,3 +15,8 @@ before_script:
 script:
     - cargo build -v
     - cargo test -v
+    - cargo doc -v
+after_success:
+    - cp -R target/doc doc
+    - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
+    - rm -r doc
