@@ -1,4 +1,4 @@
-# rust-dsp [![Build Status](https://travis-ci.org/mitchmindtree/rust-dsp.svg)](https://travis-ci.org/mitchmindtree/rust-dsp)
+# rust-dsp [![Build Status](https://travis-ci.org/PistonDevelopers/rust-dsp.svg?branch=master)](https://travis-ci.org/PistonDevelopers/rust-dsp)
 
 A library for sound Digital Signal Processing, written in Rust.
 See examples for usage.
