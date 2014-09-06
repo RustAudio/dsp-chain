@@ -5,6 +5,7 @@ os:
 env:
     global:
         - secure: F0lkJZqxOsdZpMv+Awwvl79JbLOuqMkeWENmiy5y8s9bjn+aSnch4GlmJJX7kWf/cr1IYqnb0RgVILDbJqj7rijsJ3DIDokgwDPZaz7iNr3RoGRArUN9RyKADVxUfvokNiaMpv6+59qCFqzSBmdGfvbgnkxJCyO6OpQVqk2pLns=
+        - LD_LIBRARY_PATH: /usr/local/lib
 install:
     - curl -O http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz
     - tar xfz pa_stable_v19_20140130.tgz
