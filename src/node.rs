@@ -33,7 +33,7 @@ impl Data {
 /// the `Node` struct to a field as well, and
 /// override the `get_node` and `get_node_mut`
 /// methods by returning a ref (/mut) to it.
-pub trait Node: Clone + Show {
+pub trait Node {
 
     /// Return a reference a Data struct owned by the Node.
     fn get_node_data<'a>(&'a mut self) -> &'a mut Data;
