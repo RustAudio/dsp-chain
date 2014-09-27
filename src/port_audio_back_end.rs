@@ -44,6 +44,7 @@ impl StreamParamsPA {
             sample_format: types::PaFloat32,
             suggested_latency: pa::get_device_info(def_output).unwrap().default_low_output_latency
         };
+
         StreamParamsPA {
             input: stream_params_in,
             output: stream_params_out

@@ -1,7 +1,6 @@
 
 
 use sound_stream_settings::SoundStreamSettings;
-use std::fmt::Show;
 
 /// The DSP Node contains a vector of children
 /// nodes (within the `MixerInput`s), from which
@@ -14,6 +13,9 @@ pub struct Data {
     /// Master volume for DSP node.
     pub vol: f32,
     /// Panning for DSP node.
+    /// -1.0 = Left.
+    ///  0.0 = Center.
+    ///  1.0 = Right.
     pub pan: f32
 }
 
@@ -23,7 +25,7 @@ impl Data {
         Data {
             settings: settings,
             vol: 1f32,
-            pan: 0f32,
+            pan: 0.0f32,
         }
     }
 }
@@ -44,15 +46,10 @@ pub trait Node {
 
     /// Apply settings to self and all inputs.
     fn apply_settings(&mut self, settings: SoundStreamSettings) {
-        for input in self.get_inputs_mut().mut_iter() {
+        for input in self.get_inputs_mut().into_iter() {
             input.apply_settings(settings);
         }
         self.get_node_data().settings = settings;
-    }
-
-    /// Remove all inputs from the `inputs` vector.
-    fn remove_all_inputs(&mut self) {
-        self.get_inputs_mut().clear();
     }
 
     /// Receive incoming audio (override this
@@ -67,28 +64,31 @@ pub trait Node {
         let frames = self.get_node_data().settings.frames as uint;
         let channels = self.get_node_data().settings.channels as uint;
         {
-            let mut inputs = self.get_inputs_mut();
             let mut vol_per_channel: Vec<f32> = Vec::from_elem(channels, 1f32);
-            for i in range(0, inputs.len()) {
-                let input = inputs.get_mut(i);
+            for input in self.get_inputs_mut().into_iter() {
                 let input_vol = input.get_node_data().vol;
                 let input_pan = input.get_node_data().pan;
-                let mut working: Vec<f32> = Vec::from_elem((frames * channels) as uint, 0f32);
+                let mut working: Vec<f32> = Vec::from_elem(frames * channels, 0f32);
                 // Call audio_requested for each input.
                 input.audio_requested(&mut working);
                 // Construct precalculated volume and
                 // pan array (for efficiency).
-                let vol_l: f32 = input_vol * (1f32 - input_pan);
-                let vol_r: f32 = input_vol * input_pan;
-                for j in range(0, vol_per_channel.len()) {
-                    *vol_per_channel.get_mut(j) = if j == 0 { vol_l } else { vol_r };
+                let (mut vol_l, mut vol_r) = (input_vol, input_vol);
+                if input_pan >= 0.0 {
+                    vol_l *= (input_pan - 1.0) + 1.0;
+                }
+                else {
+                    vol_r *= input_pan + 1.0;
+                }
+                for i in range(0, channels) {
+                    *vol_per_channel.get_mut(i) = if i == 0 { vol_l } else { vol_r };
                 }
                 // Sum all input nodes to output (considering
                 // pan, vol and interleaving).
-                for j in range(0, frames) {
-                    for k in range(0, channels) {
-                        *output.get_mut(j * channels + k) +=
-                            working[j * channels + k] * vol_per_channel[k];
+                for i in range(0, frames) {
+                    for j in range(0, channels) {
+                        *output.get_mut(i * channels + j) +=
+                            working[i * channels + j] * vol_per_channel[j];
                     }
                 }
             }
