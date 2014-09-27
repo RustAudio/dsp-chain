@@ -19,7 +19,7 @@ impl SoundStreamSettings {
     ///
     /// ToDo: It would be good to include a method that checked
     /// the feasibility of the requested settings (i.e. that
-    /// channels isn't 500, and that samples_per_sec and frames
+    /// channels isn't too large, and that samples_per_sec and frames
     /// are of a sound card standard).
     pub fn new(samples_per_sec: u32, frames: u16, channels: u16)
         -> SoundStreamSettings {

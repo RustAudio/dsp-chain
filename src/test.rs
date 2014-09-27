@@ -101,7 +101,7 @@ impl SoundApp {
 impl SoundStream for SoundApp {
     fn load(&mut self, settings: SoundStreamSettings) {
         // Add a bunch of inputs to our oscillator as a test.
-        for _ in range(0u, 1000) {
+        for _ in range(0u, 2) {
             self.oscillator.inputs.push(AltOsc::new(settings))
         }
     }
