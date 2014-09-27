@@ -74,12 +74,8 @@ pub trait Node {
                 // Construct precalculated volume and
                 // pan array (for efficiency).
                 let (mut vol_l, mut vol_r) = (input_vol, input_vol);
-                if input_pan >= 0.0 {
-                    vol_l *= (input_pan - 1.0) + 1.0;
-                }
-                else {
-                    vol_r *= input_pan + 1.0;
-                }
+                if input_pan >= 0.0 { vol_l *= ::std::num::abs(input_pan - 1.0); }
+                else                { vol_r *= input_pan + 1.0; }
                 for i in range(0, channels) {
                     *vol_per_channel.get_mut(i) = if i == 0 { vol_l } else { vol_r };
                 }
