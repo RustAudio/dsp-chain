@@ -45,3 +45,7 @@ impl SoundStreamSettings {
     }
 }
 
+impl ::std::default::Default for SoundStreamSettings {
+    fn default() -> SoundStreamSettings { SoundStreamSettings::cd_quality() }
+}
+

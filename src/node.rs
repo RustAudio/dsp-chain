@@ -1,5 +1,4 @@
 
-
 use sound_stream_settings::SoundStreamSettings;
 
 /// The DSP Node contains a vector of children
@@ -25,7 +24,7 @@ impl Data {
         Data {
             settings: settings,
             vol: 1f32,
-            pan: 0.0f32,
+            pan: 0f32,
         }
     }
 }
