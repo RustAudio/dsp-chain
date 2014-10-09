@@ -12,9 +12,11 @@ pub use node::Node as Node;
 pub use node::Data as NodeData;
 pub use sound_stream::SoundStream as SoundStream;
 pub use sound_stream_settings::SoundStreamSettings as SoundStreamSettings;
+pub use buffer::DspBuffer;
 
 pub mod macros;
 
+mod buffer;
 mod node;
 mod port_audio_back_end;
 mod sound_stream;

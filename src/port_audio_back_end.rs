@@ -1,10 +1,9 @@
 //! PortAudio backend!
 
-
+use buffer::DspBuffer;
 use portaudio::{ types, pa };
 use sound_stream::SoundStream;
 use sound_stream_settings::SoundStreamSettings;
-
 
 /// PortAudio Stream Parameters (required to setup stream).
 pub struct StreamParamsPA {
@@ -75,38 +74,48 @@ impl StreamPA {
     }
 
     /// Performs the audio read/write.
-    pub fn callback<T: SoundStream>(&mut self, settings: SoundStreamSettings, stream: &mut T) {
+    pub fn callback<B: DspBuffer, T: SoundStream<B>>
+    (&mut self, settings: SoundStreamSettings, stream: &mut T) {
         let mut ready = 0;
         while ready == 0 {
             ready = self.stream.get_stream_write_available();
         }
-        let empty_buffer = Vec::from_elem((settings.frames as uint * settings.channels as uint) as uint, 0f32);
-        let mut read: Vec<f32> = empty_buffer.clone();
-        self.read(&mut read, settings, stream);
-        let mut write: Vec<f32> = empty_buffer.clone();
+        //let empty_buffer = Vec::from_elem(settings.buffer_size(), 0f32);
+        //let mut read: Vec<f32> = empty_buffer.clone();
+        self.read(settings, stream);
+        let mut write: B = DspBuffer::zeroed();
         self.write(&mut write, settings, stream);
     }
 
     /// Read audio in from stream.
-    pub fn read<T: SoundStream>(&self, buffer: &mut Vec<f32>,
-                                settings: SoundStreamSettings, stream: &mut T) {
-        *buffer = match self.stream.read(settings.frames as u32) {
+    pub fn read<B: DspBuffer, T: SoundStream<B>>
+    (&self, settings: SoundStreamSettings, stream: &mut T) {
+        match self.stream.read(settings.frames as u32) {
             Ok(in_buffer) => {
                 stream.audio_in(&in_buffer, settings);
-                in_buffer
             },
             Err(err) => {
                 fail!(format!("Portaudio error read : {}", pa::get_error_text(err)));
             }
-        };
+        }
     }
 
     /// Write audio to stream
-    pub fn write<T: SoundStream>(&mut self, buffer: &mut Vec<f32>,
-                                 settings: SoundStreamSettings, stream: &mut T) {
+    pub fn write<B: DspBuffer, T: SoundStream<B>>
+    (&mut self, buffer: &mut B, settings: SoundStreamSettings, stream: &mut T) {
         stream.audio_out(buffer, settings);
-        let write: Vec<f32> = buffer.clone();
-        self.stream.write(write, settings.frames as u32);
+        /*
+        println!("OUT OF AUDIO_OUT, {}", buffer.len());
+        let mut write = Vec::with_capacity(buffer.len());
+        println!("OUT OF AUDIO_OUTx, {}", write.capacity());
+        for i in range(0u, buffer.len()) {
+            println!("z");
+            write.push(buffer.val(i));
+        }
+        */
+
+        //let write: Vec<f32> = buffer.iter().map(|f| { println!("z"); *f }).collect();
+        self.stream.write(buffer.to_vec(), settings.frames as u32);
     }
 
     /// Start the audio stream.
