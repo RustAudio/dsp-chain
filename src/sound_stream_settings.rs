@@ -22,7 +22,7 @@ impl SoundStreamSettings {
     /// channels isn't too large, and that samples_per_sec and frames
     /// are of a sound card standard).
     pub fn new(samples_per_sec: u32, frames: u16, channels: u16)
-        -> SoundStreamSettings {
+    -> SoundStreamSettings {
         SoundStreamSettings {
             samples_per_sec: samples_per_sec,
             frames: frames,
@@ -31,7 +31,7 @@ impl SoundStreamSettings {
     }
     /// Default, standard constructor for SoundStreamSettings.
     pub fn cd_quality()
-        -> SoundStreamSettings {
+    -> SoundStreamSettings {
         SoundStreamSettings {
             samples_per_sec: 44100,
             frames: 512,

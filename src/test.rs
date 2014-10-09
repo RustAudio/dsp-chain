@@ -12,34 +12,38 @@
 use std::time::duration::Duration;
 
 use dsp::{
+    DspBuffer,
     SoundStream,
     SoundStreamSettings,
     Node,
     NodeData,
 };
 
+/// Choose a fixed-size buffer of f32 with a length
+/// matching a power of two (16384 max).
+pub type AudioBuffer = [f32, ..512];
+
 /// We'll use these values for setting
 /// up our SoundStream.
-/// Note: there is also a default constructor
-/// method that will be safe to use, if you're
-/// unsure what you need. It is called like this:
-/// SoundStreamSettings::cd_quality()
+///
+/// NOTE: FRAMES must be equal to (fixed-size buffer length / CHANNELS)
 static SAMPLE_RATE: u32 = 44100;
-static FRAMES: u16 = 128;
+static FRAMES: u16 = 256;
 static CHANNELS: u16 = 2;
 
 /// This struct is just used for demonstration as
 /// an input for the Oscillator struct.
 #[deriving(Show, Clone)]
 struct AltOsc { node_data: NodeData }
-impl Node for AltOsc {
+impl Node<AudioBuffer> for AltOsc {
     impl_dsp_node_get_data!(node_data)
     /// This will get called for every input to the
     /// Oscillator struct.
-    fn audio_requested(&mut self, _output: &mut Vec<f32>) {
+    fn audio_requested(&mut self, _output: &mut AudioBuffer) {
         print!("woot, ");
     }
 }
+
 impl AltOsc {
     pub fn new(settings: SoundStreamSettings) -> AltOsc {
         AltOsc { node_data: NodeData::new(settings) }
@@ -54,9 +58,9 @@ struct Oscillator {
     inputs: Vec<AltOsc>,
 }
 
-impl Node for Oscillator {
+impl Node<AudioBuffer> for Oscillator {
     impl_dsp_node_get_data!(node_data)
-    impl_dsp_node_get_inputs!(inputs)
+    impl_dsp_node_get_inputs!(inputs, AudioBuffer)
 }
 
 impl Oscillator {
@@ -73,7 +77,7 @@ impl Oscillator {
 /// it on it's own thread when the time comes
 /// for non-blocking audio IO!
 pub struct SoundApp {
-    buffer: Vec<f32>,
+    buffer: AudioBuffer,
     kill_chan: Receiver<bool>,
     should_exit: bool,
     oscillator: Oscillator,
@@ -86,7 +90,7 @@ pub struct SoundApp {
 impl SoundApp {
     pub fn new(kill_chan: Receiver<bool>, settings: SoundStreamSettings) -> SoundApp {
         SoundApp {
-            buffer: Vec::with_capacity(FRAMES as uint * CHANNELS as uint),
+            buffer: DspBuffer::zeroed(),
             oscillator: Oscillator::new(settings),
             kill_chan: kill_chan,
             should_exit: false
@@ -98,7 +102,7 @@ impl SoundApp {
 /// sound application. SoundStream gives us
 /// our tasty audio callback in the form of
 /// `audio_in` and `audio_out` methods.
-impl SoundStream for SoundApp {
+impl SoundStream<AudioBuffer> for SoundApp {
     fn load(&mut self, settings: SoundStreamSettings) {
         // Add a bunch of inputs to our oscillator as a test.
         for _ in range(0u, 2) {
@@ -116,16 +120,16 @@ impl SoundStream for SoundApp {
         assert!(input.len() == settings.frames as uint * settings.channels as uint);
         // We'll copy the input here, and pass it to output later.
         // ... just for fun.
-        self.buffer = input.clone();
+        self.buffer = DspBuffer::from_vec(input);
     }
-    fn audio_out(&mut self, output: &mut Vec<f32>, settings: SoundStreamSettings) {
+    fn audio_out(&mut self, output: &mut AudioBuffer, settings: SoundStreamSettings) {
         assert!(output.len() == settings.frames as uint * settings.channels as uint);
         // Here 'audio_requested' will call be called recursively
         // for all inputs.
         self.oscillator.audio_requested(output);
         // We'll pass the audio from the input straight to the
         // output here.
-        *output = self.buffer.clone();
+        *output = self.buffer;
     }
     fn exit(&self) -> bool { self.should_exit }
 }
