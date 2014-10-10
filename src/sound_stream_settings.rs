@@ -4,12 +4,10 @@
 pub struct SoundStreamSettings {
     /// The number of samples per second.
     pub samples_per_sec: u32,
-
     /// How many samples per channel requested at a time in the buffer.
     /// The more frames, the less likely to make glitches,
     /// but this gives slower response.
     pub frames: u16,
-    
     /// Number of channels, for example 2 for stereo sound (left + right speaker).
     pub channels: u16
 }
@@ -29,6 +27,7 @@ impl SoundStreamSettings {
             channels: channels
         }
     }
+
     /// Default, standard constructor for SoundStreamSettings.
     pub fn cd_quality()
     -> SoundStreamSettings {

@@ -19,17 +19,17 @@ use dsp::{
     NodeData,
 };
 
-/// Choose a fixed-size buffer of f32 with a length
-/// matching a power of two (16384 max).
-pub type AudioBuffer = [f32, ..512];
-
 /// We'll use these values for setting
 /// up our SoundStream.
 ///
-/// NOTE: FRAMES must be equal to (fixed-size buffer length / CHANNELS)
+/// Note: FRAMES == (fixed-size buffer length / CHANNELS)
 static SAMPLE_RATE: u32 = 44100;
 static FRAMES: u16 = 256;
 static CHANNELS: u16 = 2;
+
+/// Choose a fixed-size buffer of f32 with a length
+/// matching FRAMES * CHANNELS.
+pub type AudioBuffer = [f32, .. FRAMES as uint * CHANNELS as uint];
 
 /// This struct is just used for demonstration as
 /// an input for the Oscillator struct.
