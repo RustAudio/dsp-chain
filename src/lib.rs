@@ -8,11 +8,11 @@ extern crate portaudio;
 extern crate time;
 extern crate serialize;
 
+pub use buffer::DspBuffer;
 pub use node::Node as Node;
 pub use node::Data as NodeData;
 pub use sound_stream::SoundStream as SoundStream;
 pub use sound_stream_settings::SoundStreamSettings as SoundStreamSettings;
-pub use buffer::DspBuffer;
 
 pub mod macros;
 

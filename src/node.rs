@@ -81,12 +81,10 @@ pub trait Node<B: DspBuffer> {
         let channels = self.get_node_data().settings.channels as uint;
         let vol_per_channel = self.vol_per_channel();
         for input in self.get_inputs_mut().into_iter() {
-            //let mut working: Vec<f32> = Vec::from_elem(frames * channels, 0f32);
-            let mut working: B = DspBuffer::from_elem(0.0);
+            let mut working: B = DspBuffer::zeroed();
             // Call audio_requested for each input.
             input.audio_requested(&mut working);
-            // Sum all input nodes to output (considering
-            // pan, vol and interleaving).
+            // Sum all input nodes to output (considering pan, vol and interleaving).
             for i in range(0, frames) {
                 for j in range(0, channels) {
                     *output.get_mut(i * channels + j) +=

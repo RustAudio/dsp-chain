@@ -50,7 +50,7 @@ macro_rules! impl_dsp_node_get_inputs(
 
 /// Simplify implementation of DspBuffer trait.
 macro_rules! impl_dsp_buffer(
-    ($buffer:ty, $len:expr, $half:expr) => (
+    ($buffer:ty, $len:expr) => (
 
         impl DspBuffer for $buffer {
             #[inline]
@@ -79,7 +79,7 @@ macro_rules! impl_dsp_buffer(
             }
             #[inline]
             fn stereo_settings(samples_per_sec: u32) -> SoundStreamSettings {
-                SoundStreamSettings::new(samples_per_sec, $half, 2)
+                SoundStreamSettings::new(samples_per_sec, $len / 2, 2)
             }
         }
 
