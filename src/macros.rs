@@ -43,7 +43,7 @@ macro_rules! impl_dsp_node_get_inputs(
         }
         /// Return all inputs as a vector of mutable references to `Node` types.
         fn get_inputs_mut<'a>(&'a mut self) -> Vec<&'a mut ::dsp::Node<$buffer>> {
-            self$(.$inputs)+.mut_iter().map(|input| input as &mut ::dsp::Node<$buffer>).collect()
+            self$(.$inputs)+.iter_mut().map(|input| input as &mut ::dsp::Node<$buffer>).collect()
         }
     );
 )

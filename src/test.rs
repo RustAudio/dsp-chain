@@ -23,9 +23,9 @@ use dsp::{
 /// up our SoundStream.
 ///
 /// Note: FRAMES == (fixed-size buffer length / CHANNELS)
-static SAMPLE_RATE: u32 = 44100;
-static FRAMES: u16 = 256;
-static CHANNELS: u16 = 2;
+const SAMPLE_RATE: u32 = 44100;
+const FRAMES: u16 = 256;
+const CHANNELS: u16 = 2;
 
 /// Choose a fixed-size buffer of f32 with a length
 /// matching FRAMES * CHANNELS.
