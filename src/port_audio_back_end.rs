@@ -95,7 +95,7 @@ impl StreamPA {
                 stream.audio_in(&in_buffer, settings);
             },
             Err(err) => {
-                fail!(format!("Portaudio error read : {}", pa::get_error_text(err)));
+                panic!(format!("Portaudio error read : {}", pa::get_error_text(err)));
             }
         }
     }
