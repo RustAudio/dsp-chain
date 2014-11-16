@@ -5,6 +5,8 @@ See examples for usage.
 
 Maintainer: @mitchmindtree
 
+[How to contribute](https://github.com/PistonDevelopers/piston/blob/master/CONTRIBUTING.md)
+
 ## Dependency
 
 - [PortAudio] (http://www.portaudio.com/download.html) and the [PortAudio bindings for Rust] (https://github.com/JeremyLetang/rust-portaudio).
