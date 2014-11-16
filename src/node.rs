@@ -1,7 +1,7 @@
 
 use buffer::DspBuffer;
 use sound_stream_settings::SoundStreamSettings;
-use std::num::abs;
+use std::num::Float;
 
 /// The DSP Node contains a vector of children
 /// nodes (within the `MixerInput`s), from which
@@ -60,7 +60,7 @@ pub trait Node<B: DspBuffer> {
     /// replaced with an `n` channels method.
     fn vol_per_channel(&self) -> [f32, ..2] {
         if self.get_node_data().pan >= 0.0 {
-            [self.get_node_data().vol * abs(self.get_node_data().pan - 1.0),
+            [self.get_node_data().vol * (self.get_node_data().pan - 1.0).abs(),
              self.get_node_data().vol]
         } else {
             [self.get_node_data().vol,

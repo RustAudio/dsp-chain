@@ -26,22 +26,22 @@ impl StreamParamsPA {
         println!("Portaudio init error : {}", pa::get_error_text(pa::initialize()));
 
         println!("Creating StreamParamsPA");
-        let def_input = pa::get_default_input_device();          
-        let def_output = pa::get_default_output_device();
+        let def_input = pa::device::get_default_input();
+        let def_output = pa::device::get_default_output();
 
         println!("Creating input");
         let stream_params_in = types::PaStreamParameters {
             device: def_input,
             channel_count: channels as i32,
             sample_format: types::PaFloat32,
-            suggested_latency: pa::get_device_info(def_input).unwrap().default_low_input_latency
+            suggested_latency: pa::device::get_info(def_input).unwrap().default_low_input_latency
         };
         println!("Creating output");
         let stream_params_out = types::PaStreamParameters {
             device: def_output,
             channel_count: channels as i32,
             sample_format: types::PaFloat32,
-            suggested_latency: pa::get_device_info(def_output).unwrap().default_low_output_latency
+            suggested_latency: pa::device::get_info(def_output).unwrap().default_low_output_latency
         };
 
         StreamParamsPA {
