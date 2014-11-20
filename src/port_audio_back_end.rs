@@ -2,6 +2,7 @@
 
 use buffer::DspBuffer;
 use portaudio::{ types, pa };
+use portaudio::error::Error;
 use sound_stream::SoundStream;
 use sound_stream_settings::SoundStreamSettings;
 
@@ -17,13 +18,21 @@ pub struct StreamPA {
     pub is_streaming: bool
 }
 
+fn get_result_text(res: Result<(), Error>) -> String {
+    let err = match res {
+        Ok(()) => Error::NoError,
+        Err(e) => e,
+    };
+    pa::get_error_text(err)
+}
+
 /// The parameters required to set up the PortAudio stream.
 impl StreamParamsPA {
 
     /// Creates the port audio stream parameters.
     pub fn new(channels: u16) -> StreamParamsPA {
-
-        println!("Portaudio init error : {}", pa::get_error_text(pa::initialize()));
+        let res = pa::initialize();
+        println!("Portaudio init error : {}", get_result_text(res));
 
         println!("Creating StreamParamsPA");
         let def_input = pa::device::get_default_input();
@@ -120,17 +129,18 @@ impl StreamPA {
 
     /// Start the audio stream.
     pub fn start(&mut self) {
-        let err = self.stream.start();
-        println!("Portaudio Start Stream : {}", pa::get_error_text(err));
+        let res = self.stream.start();
+        println!("Portaudio Start Stream : {}", get_result_text(res));
     }
 
     /// Stop the audio stream.
     pub fn stop(&mut self) {
-        let mut err = types::PaNotInitialized;
-        println!("Portaudio [PaNotInitialized msg] : {}", err);
-        err = self.stream.close();
-        println!("Portaudio Closing Stream : {}", pa::get_error_text(err));
-        println!("Portaudio Termination Message : {}", pa::get_error_text(pa::terminate()));
+        let mut err = Error::NotInitialized;
+        println!("Portaudio [NotInitialized msg] : {}", pa::get_error_text(err));
+        let res = self.stream.close();
+        println!("Portaudio Closing Stream : {}", get_result_text(res));
+        let res = pa::terminate();
+        println!("Portaudio Termination Message : {}", get_result_text(res));
     }
 
 }
