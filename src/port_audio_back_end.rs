@@ -1,20 +1,20 @@
 //! PortAudio backend!
 
 use buffer::DspBuffer;
-use portaudio::{ types, pa };
-use portaudio::error::Error;
+use portaudio::pa::;
+use portaudio::pa::error::Error;
 use sound_stream::SoundStream;
 use sound_stream_settings::SoundStreamSettings;
 
 /// PortAudio Stream Parameters (required to setup stream).
 pub struct StreamParamsPA {
-    input: types::PaStreamParameters,
-    output: types::PaStreamParameters,
+    input: pa::StreamParameters,
+    output: pa::StreamParameters,
 }
 
 /// PortAudio Stream (for reading from and writing to real-time audio stream).
 pub struct StreamPA {
-    stream: pa::PaStream<f32>,
+    stream: pa::Stream<f32, f32>,
     pub is_streaming: bool
 }
 
@@ -39,17 +39,17 @@ impl StreamParamsPA {
         let def_output = pa::device::get_default_output();
 
         println!("Creating input");
-        let stream_params_in = types::PaStreamParameters {
+        let stream_params_in = pa::StreamParameters {
             device: def_input,
             channel_count: channels as i32,
-            sample_format: types::PaFloat32,
+            sample_format: pa::SampleFormat::Float32,
             suggested_latency: pa::device::get_info(def_input).unwrap().default_low_input_latency
         };
         println!("Creating output");
-        let stream_params_out = types::PaStreamParameters {
+        let stream_params_out = pa::StreamParameters {
             device: def_output,
             channel_count: channels as i32,
-            sample_format: types::PaFloat32,
+            sample_format: pa::SampleFormat::Float32,
             suggested_latency: pa::device::get_info(def_output).unwrap().default_low_output_latency
         };
 
@@ -67,7 +67,7 @@ impl StreamPA {
     /// Constructor for the portaudio stream.
     pub fn new() -> StreamPA {
         StreamPA {
-            stream: pa::PaStream::new(types::PaFloat32),
+            stream: pa::Stream::new(),
             is_streaming: true
         }
     }
@@ -75,11 +75,14 @@ impl StreamPA {
     /// Setup the portaudio stream.
     pub fn setup(&mut self, settings: SoundStreamSettings) {
         let params = StreamParamsPA::new(settings.channels);
-        self.stream.open(Some(&params.input),
+        match self.stream.open(Some(&params.input),
                          Some(&params.output),
                          settings.samples_per_sec as f64,
                          settings.frames as u32,
-                         types::PaClipOff);
+                         pa::StreamFlags::ClipOff) {
+            Ok(_) => {},
+            Err(e) => panic!(format!("Portaudio etup error: {}", get_result_text(Err(e))))
+        };
     }
 
     /// Performs the audio read/write.
@@ -124,7 +127,12 @@ impl StreamPA {
         */
 
         //let write: Vec<f32> = buffer.iter().map(|f| { println!("z"); *f }).collect();
-        self.stream.write(buffer.to_vec(), settings.frames as u32);
+        match self.stream.write(buffer.to_vec(), settings.frames as u32) {
+            Ok(_) => {},
+            Err(e) => {
+                panic!(format!("Portaudio write error : {}", pa::get_error_text(e)));
+            }
+        }
     }
 
     /// Start the audio stream.
@@ -135,7 +143,7 @@ impl StreamPA {
 
     /// Stop the audio stream.
     pub fn stop(&mut self) {
-        let mut err = Error::NotInitialized;
+        let err = Error::NotInitialized;
         println!("Portaudio [NotInitialized msg] : {}", pa::get_error_text(err));
         let res = self.stream.close();
         println!("Portaudio Closing Stream : {}", get_result_text(res));
