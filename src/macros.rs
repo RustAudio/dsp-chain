@@ -50,9 +50,9 @@ macro_rules! impl_dsp_node_get_inputs(
 
 /// Simplify implementation of DspBuffer trait.
 macro_rules! impl_dsp_buffer(
-    ($buffer:ty, $len:expr) => (
+    ($sample:ty, $len:expr) => (
 
-        impl DspBuffer for $buffer {
+        impl DspBuffer for [$sample, ..$len] {
             #[inline]
             fn val(&self, idx: uint) -> f32 { self[idx] }
             #[inline]
@@ -68,9 +68,9 @@ macro_rules! impl_dsp_buffer(
             #[inline]
             fn iter_mut<'a>(&'a mut self) -> MutItems<'a, f32> { self.as_mut_slice().iter_mut() }
             #[inline]
-            fn from_elem(val: f32) -> $buffer { [val, ..$len] }
+            fn from_elem(val: f32) -> [$sample, ..$len] { [val, ..$len] }
             #[inline]
-            fn zeroed() -> $buffer { [0f32, ..$len] }
+            fn zeroed() -> [$sample, ..$len] { [0f32, ..$len] }
             #[inline]
             fn len(&self) -> uint { $len }
             #[inline]
