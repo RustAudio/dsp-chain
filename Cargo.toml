@@ -5,7 +5,7 @@ version = "0.0.0"
 authors = [
     "bvssvni <bvssvni@gmail.com>",
     "indiv0 <contact@nikitapek.in>",
-    "mitchmindtree <me@michellnordine.com>"
+    "mitchmindtree <mitchell.nordine@gmail.com>"
 ]
 
 [lib]
@@ -14,11 +14,11 @@ name = "dsp"
 path = "./src/lib.rs"
 
 [dependencies.rust-portaudio]
-
 git = "https://github.com/jeremyletang/rust-portaudio"
 
 [dependencies.time]
-git = "https://github.com/rust-lang/time"
+git = "https://github.com/PistonDevelopers/time.git"
+# git = "https://github.com/rust-lang/time"
 
 [[bin]]
 
