@@ -17,7 +17,8 @@ path = "./src/lib.rs"
 git = "https://github.com/jeremyletang/rust-portaudio"
 
 [dependencies.time]
-git = "https://github.com/rust-lang/time"
+git = "https://github.com/PistonDevelopers/time.git"
+# git = "https://github.com/rust-lang/time"
 
 [[bin]]
 
