@@ -13,14 +13,6 @@ authors = [
 name = "dsp"
 path = "./src/lib.rs"
 
-[dependencies.rust-portaudio]
-git = "https://github.com/jeremyletang/rust-portaudio"
+[dependencies.sound_stream]
+git = "https://github.com/mitchmindtree/sound_stream"
 
-[dependencies.time]
-git = "https://github.com/PistonDevelopers/time.git"
-# git = "https://github.com/rust-lang/time"
-
-[[bin]]
-
-name = "test"
-path = "./src/test.rs"
