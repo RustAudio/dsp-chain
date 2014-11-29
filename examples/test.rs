@@ -22,9 +22,9 @@ const SETTINGS: Settings = Settings { sample_hz: SAMPLE_HZ, frames: FRAMES, chan
 
 const BUFFER_SIZE: uint = (FRAMES * CHANNELS) as uint;
 
-pub type Input = f32;
-pub type Output = f32;
-pub type OutputBuffer = [f32, ..BUFFER_SIZE];
+type Input = f32;
+type Output = f32;
+type OutputBuffer = [f32, ..BUFFER_SIZE];
 
 fn main() {
 
