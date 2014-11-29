@@ -1,5 +1,5 @@
 //! 
-//! An example of using rust-dsp to create a simple Synthesiser with 3 sine wave oscillators.
+//! An example of using dsp-chain to create a simple Synthesiser with 3 sine wave oscillators.
 //!
 
 extern crate dsp;
