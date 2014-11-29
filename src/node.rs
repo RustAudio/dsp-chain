@@ -24,12 +24,9 @@ pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
     ///  1.0 = Right.
     #[inline]
     fn pan(&self) -> Panning { 0.0 }
-    /// Return a reference to the inputs for the Node.
-    #[inline]
-    fn inputs(&self) -> Vec<&Node<B, S>> { Vec::new() }
     /// Return a mutable reference to the inputs for the Node.
     #[inline]
-    fn inputs_mut(&mut self) -> Vec<&mut Node<B, S>> { Vec::new() }
+    fn inputs(&mut self) -> Vec<&mut Node<B, S>> { Vec::new() }
 
     /// Determine the volume for each channel by considering
     /// both `vol` and `pan. In the future this will be
@@ -57,7 +54,7 @@ pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
         let frames = settings.frames as uint;
         let channels = settings.channels as uint;
         let vol_per_channel = self.vol_per_channel();
-        for input in self.inputs_mut().into_iter() {
+        for input in self.inputs().into_iter() {
             let mut working: B = AudioBuffer::zeroed(frames * channels);
             // Call audio_requested for each input.
             input.audio_requested(&mut working, settings);

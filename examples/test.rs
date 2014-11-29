@@ -73,7 +73,7 @@ impl Node<OutputBuffer, Output> for Synth {
     /// Here we return a reference to each of our Oscillators as our `inputs`.
     /// This allows the default `audio_requested` method to draw input from
     /// each of our oscillators automatically.
-    fn inputs_mut(&mut self) -> Vec<&mut Node<OutputBuffer, Output>> {
+    fn inputs(&mut self) -> Vec<&mut Node<OutputBuffer, Output>> {
         let Synth(ref mut oscillators) = *self;
         oscillators.iter_mut().map(|osc| osc as &mut Node<OutputBuffer, Output>).collect()
     }
