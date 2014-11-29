@@ -1,9 +1,5 @@
-//! Test app for rust-dsp.
-//!
-//! This file will normally be in a strange state;
-//! it's really just a testing ground for the new
-//! features as I add them. I'll get around to making
-//! some proper examples soon!
+//! 
+//! An example of using rust-dsp to create a simple Synthesiser with 3 sine wave oscillators.
 //!
 
 extern crate dsp;
@@ -15,12 +11,12 @@ use dsp::{
     Settings,
 };
 
-/// We'll use these values for setting up our SoundStream.
-///
-/// Note: FRAMES is equal to (fixed-size buffer length / CHANNELS).
+/// The number of frames processed per second.
 const SAMPLE_HZ: u32 = 44100;
-const FRAMES: u16 = 256;
+/// The number of channels to use for output. We'll use two for stereo.
 const CHANNELS: u16 = 2;
+/// This value is equal to (fixed-size buffer length / CHANNELS).
+const FRAMES: u16 = 256;
 
 const SETTINGS: Settings = Settings { sample_hz: SAMPLE_HZ, frames: FRAMES, channels: CHANNELS };
 
