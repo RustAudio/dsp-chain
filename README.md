@@ -1,23 +1,25 @@
 # rust-dsp [![Build Status](https://travis-ci.org/PistonDevelopers/rust-dsp.svg?branch=master)](https://travis-ci.org/PistonDevelopers/rust-dsp)
 
-A library for sound Digital Signal Processing, written in Rust.
-See examples for usage.
+A library for chaining together multiple audio dsp processors/generators, written in Rust.
 
-Maintainer: @mitchmindtree
+Usage
+-----
 
-[How to contribute](https://github.com/PistonDevelopers/piston/blob/master/CONTRIBUTING.md)
+Here's [an example](https://github.com/PistonDevelopers/rust-dsp/blob/master/examples/test.rs) of using rust-dsp to create a very basic synth.
 
-## Dependency
+Other use cases for rust-dsp include:
+- Designing effects.
+- Creating an audio mixer.
+- Making a sampler.
+- Any kind of modular audio synthesis/processing.
 
-- [PortAudio] (http://www.portaudio.com/download.html) and the [PortAudio bindings for Rust] (https://github.com/JeremyLetang/rust-portaudio).
+PortAudio
+---------
 
-![dependencies](./Cargo.png)
+- You'll need to have [PortAudio](http://www.portaudio.com/download.html) installed on your system.
 
-## Goals
 
-- A generic synthesis engine offering both additive and FM synthesis tools.
-- A powerful sampler with granular synthesis capabilities.
-- To create a large collection of effects (including reverberation, delay-lines, spatial processing).
-- To bring all of the above together with an easy-to-use signal chain.
-- A simple event system for high-level playback.
+Maintainers: @mitchmindtree
+
+Want to contribute? [Here's how](https://github.com/PistonDevelopers/piston/blob/master/CONTRIBUTING.md).
 
