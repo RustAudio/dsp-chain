@@ -1,5 +1,0 @@
-digraph example3 {
-    N0[label="rust-dsp"];
-    N1[label="rust-portaudio"];
-    N0 -> N1[label=""];
-}
