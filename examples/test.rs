@@ -26,6 +26,13 @@ type Input = f32;
 type Output = f32;
 type OutputBuffer = [f32, ..BUFFER_SIZE];
 
+type Phase = f64;
+type Frequency = f64;
+
+const A5_HZ: Frequency = 440.0;
+const D5_HZ: Frequency = 587.33;
+const F5_HZ: Frequency = 698.46;
+
 fn main() {
 
     // Construct the stream and handle any errors that may have occurred.
@@ -35,7 +42,7 @@ fn main() {
     };
 
     // Construct our fancy Synth!
-    let mut synth = Synth([Oscillator(0.0), ..3]);
+    let mut synth = Synth([Oscillator(0.0, A5_HZ), Oscillator(0.0, D5_HZ), Oscillator(0.0, F5_HZ)]);
 
     // We'll use this to count down from three seconds and then break from the loop.
     let mut timer: f64 = 3.0;
@@ -78,19 +85,16 @@ impl Node<OutputBuffer, Output> for Synth {
 
 /// Oscillator will be our generator type of node, meaning that we will override
 /// the way it provides audio via its `audio_requested` method.
-type Phase = f64;
-struct Oscillator(Phase);
+struct Oscillator(Phase, Frequency);
 
 impl Node<OutputBuffer, Output> for Oscillator {
     /// Here we'll override the audio_requested method and generate a sine wave.
     fn audio_requested(&mut self, buffer: &mut OutputBuffer, settings: Settings) {
-        // Middle A on a keyboard in hz.
-        const MIDDLE_A_HZ: f64 = 440.0;
         let (frames, channels) = (settings.frames as uint, settings.channels as uint);
-        let Oscillator(ref mut phase) = *self;
+        let Oscillator(ref mut phase, frequency) = *self;
         // For every frame in the buffer.
         for i in range(0u, frames) {
-            *phase += MIDDLE_A_HZ / settings.sample_hz as f64;
+            *phase += frequency / settings.sample_hz as f64;
             let val = sine_wave(*phase);
             // For each channel in the frame.
             for j in range(0u, channels) {
