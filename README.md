@@ -1,13 +1,13 @@
-# rust-dsp [![Build Status](https://travis-ci.org/PistonDevelopers/rust-dsp.svg?branch=master)](https://travis-ci.org/PistonDevelopers/rust-dsp)
+# dsp-chain [![Build Status](https://travis-ci.org/PistonDevelopers/dsp-chain.svg?branch=master)](https://travis-ci.org/PistonDevelopers/dsp-chain)
 
-A library for chaining together multiple audio dsp processors/generators, written in Rust.
+A simple library for chaining together multiple audio dsp processors/generators, written in Rust!
 
 Usage
 -----
 
-Here's [an example](https://github.com/PistonDevelopers/rust-dsp/blob/master/examples/test.rs) of using rust-dsp to create a very basic synth.
+Here's [an example](https://github.com/PistonDevelopers/dsp-chain/blob/master/examples/test.rs) of using dsp-chain to create a very basic synth.
 
-Other use cases for rust-dsp include:
+Other use cases for dsp-chain include:
 - Designing effects.
 - Creating an audio mixer.
 - Making a sampler.

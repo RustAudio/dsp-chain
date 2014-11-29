@@ -1,6 +1,6 @@
 #![crate_name = "dsp"]
 #![deny(missing_docs)]
-#![feature(macro_rules, phase, globs, linkage)]
+#![feature(macro_rules)]
 
 //! A pure Rust audio digital signal processing library for Piston.
 
@@ -14,6 +14,5 @@ pub use node::Panning;
 pub use sound_stream::{AudioBuffer, Event, Sample, Settings, SoundStream};
 pub use sound_stream::Error as SoundStreamError;
 
-pub mod macros;
 mod buffer;
 mod node;

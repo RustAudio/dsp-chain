@@ -1,6 +1,6 @@
 [package]
 
-name = "rust-dsp"
+name = "dsp-chain"
 version = "0.0.0"
 authors = [
     "bvssvni <bvssvni@gmail.com>",
