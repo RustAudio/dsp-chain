@@ -26,10 +26,10 @@ pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
     fn pan(&self) -> Panning { 0.0 }
     /// Return a reference to the inputs for the Node.
     #[inline]
-    fn inputs<'a>(&'a self) -> Vec<&'a Node<B, S>> { Vec::new() }
+    fn inputs(&self) -> Vec<&Node<B, S>> { Vec::new() }
     /// Return a mutable reference to the inputs for the Node.
     #[inline]
-    fn inputs_mut<'a>(&'a mut self) -> Vec<&'a mut Node<B, S>> { Vec::new() }
+    fn inputs_mut(&mut self) -> Vec<&mut Node<B, S>> { Vec::new() }
 
     /// Determine the volume for each channel by considering
     /// both `vol` and `pan. In the future this will be
