@@ -12,7 +12,7 @@ pub type Panning = f32;
 
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
 /// within your DSP chain. Override all methods that you wish. If the Node is a parent of other
-/// DSP nodes, be sure to implement the `inputs` and `inputs_mut` methods.
+/// DSP nodes, be sure to implement the `inputs` method.
 pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
 
     /// Return the volume for this Node.
@@ -24,7 +24,11 @@ pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
     ///  1.0 = Right.
     #[inline]
     fn pan(&self) -> Panning { 0.0 }
-    /// Return a mutable reference to the inputs for the Node.
+    /// Return mutable references to the inputs for the Node.
+    /// TODO: Once "Abstract Return Types" land in Rust, we'll
+    /// change this to return `impl Iterator<&mut Node<B, S>>`
+    /// so that we don't have to allocate *anything* in the
+    /// whole graph.
     #[inline]
     fn inputs(&mut self) -> Vec<&mut Node<B, S>> { Vec::new() }
 
