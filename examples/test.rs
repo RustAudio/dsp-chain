@@ -28,6 +28,7 @@ type OutputBuffer = [f32, ..BUFFER_SIZE];
 
 type Phase = f64;
 type Frequency = f64;
+type Volume = f64;
 
 const A5_HZ: Frequency = 440.0;
 const D5_HZ: Frequency = 587.33;
@@ -42,7 +43,11 @@ fn main() {
     };
 
     // Construct our fancy Synth!
-    let mut synth = Synth([Oscillator(0.0, A5_HZ), Oscillator(0.0, D5_HZ), Oscillator(0.0, F5_HZ)]);
+    let mut synth = Synth([
+            Oscillator(0.0, A5_HZ, 0.2), 
+            Oscillator(0.0, D5_HZ, 0.1), 
+            Oscillator(0.0, F5_HZ, 0.15)
+        ]);
 
     // We'll use this to count down from three seconds and then break from the loop.
     let mut timer: f64 = 3.0;
@@ -52,7 +57,7 @@ fn main() {
         match event {
             Event::Out(buffer) => synth.audio_requested(buffer, SETTINGS),
             Event::Update(dt) => {
-                timer -= dt as f64 / 1_000_000_000.0;
+                timer -= dt as f64;
                 if timer <= 0.0 { break }
             }
             _ => (),
@@ -85,17 +90,17 @@ impl Node<OutputBuffer, Output> for Synth {
 
 /// Oscillator will be our generator type of node, meaning that we will override
 /// the way it provides audio via its `audio_requested` method.
-struct Oscillator(Phase, Frequency);
+struct Oscillator(Phase, Frequency, Volume);
 
 impl Node<OutputBuffer, Output> for Oscillator {
     /// Here we'll override the audio_requested method and generate a sine wave.
     fn audio_requested(&mut self, buffer: &mut OutputBuffer, settings: Settings) {
         let (frames, channels) = (settings.frames as uint, settings.channels as uint);
-        let Oscillator(ref mut phase, frequency) = *self;
+        let Oscillator(ref mut phase, frequency, volume) = *self;
         // For every frame in the buffer.
         for i in range(0u, frames) {
             *phase += frequency / settings.sample_hz as f64;
-            let val = sine_wave(*phase);
+            let val = sine_wave(*phase, volume);
             // For each channel in the frame.
             for j in range(0u, channels) {
                 let idx = i * channels + j;
@@ -106,9 +111,9 @@ impl Node<OutputBuffer, Output> for Oscillator {
 }
 
 /// Return a sine wave for the given phase.
-fn sine_wave(phase: Phase) -> Output {
+fn sine_wave(phase: Phase, volume: Volume) -> Output {
     use std::f64::consts::PI_2;
     use std::num::FloatMath;
-    ((phase * PI_2).sin() * 0.2) as Output
+    ((phase * PI_2).sin() * volume) as Output
 }
 
