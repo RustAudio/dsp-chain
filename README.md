@@ -16,10 +16,7 @@ Other use cases for dsp-chain include:
 PortAudio
 ---------
 
-- You'll need to have [PortAudio](http://www.portaudio.com/download.html) installed on your system.
-
+- You'll need to have [PortAudio](http://www.portaudio.com/download.html) installed on your system. Note: We're planning on integrating PA as a static lib to make life easier for those who don't already have it installed!
 
 Maintainers: @mitchmindtree
-
-Want to contribute? [Here's how](https://github.com/PistonDevelopers/piston/blob/master/CONTRIBUTING.md).
 

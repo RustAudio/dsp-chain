@@ -18,12 +18,14 @@ pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
     /// Return the volume for this Node.
     #[inline]
     fn vol(&self) -> Volume { 1.0 }
+
     /// Return the panning for this Node.
     /// -1.0 = Left.
     ///  0.0 = Center.
     ///  1.0 = Right.
     #[inline]
     fn pan(&self) -> Panning { 0.0 }
+
     /// Return mutable references to the inputs for the Node.
     /// TODO: Once "Abstract Return Types" land in Rust, we'll
     /// change this to return `impl Iterator<&mut Node<B, S>>`
@@ -57,9 +59,10 @@ pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
     fn audio_requested(&mut self, output: &mut B, settings: Settings) {
         let frames = settings.frames as uint;
         let channels = settings.channels as uint;
+        let buffer_size = frames * channels;
         let vol_per_channel = self.vol_per_channel();
         for input in self.inputs().into_iter() {
-            let mut working: B = AudioBuffer::zeroed(frames * channels);
+            let mut working: B = AudioBuffer::zeroed(buffer_size);
             // Call audio_requested for each input.
             input.audio_requested(&mut working, settings);
             // Sum all input nodes to output (considering pan, vol and interleaving).
