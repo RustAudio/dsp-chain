@@ -1,4 +1,4 @@
-# dsp-chain [![Build Status](https://travis-ci.org/PistonDevelopers/dsp-chain.svg?branch=master)](https://travis-ci.org/PistonDevelopers/dsp-chain)
+# dsp-chain [![Build Status](https://travis-ci.org/RustAudio/dsp-chain.svg?branch=master)](https://travis-ci.org/RustAudio/dsp-chain)
 
 A simple library for chaining together multiple audio dsp processors/generators, written in Rust!
 
