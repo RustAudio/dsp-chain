@@ -57,7 +57,7 @@ fn main() {
         match event {
             Event::Out(buffer) => synth.audio_requested(buffer, SETTINGS),
             Event::Update(dt) => {
-                timer -= dt as f64 / 1_000_000_000.0;
+                timer -= dt as f64;
                 if timer <= 0.0 { break }
             }
             _ => (),
