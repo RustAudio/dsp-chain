@@ -56,10 +56,7 @@ fn main() {
     for event in stream {
         match event {
             Event::Out(buffer) => synth.audio_requested(buffer, SETTINGS),
-            Event::Update(dt) => {
-                timer -= dt as f64;
-                if timer <= 0.0 { break }
-            }
+            Event::Update(dt) => if timer > 0.0 { timer -= dt } else { break },
             _ => (),
         }
     }
