@@ -13,7 +13,7 @@ pub type Panning = f32;
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
 /// within your DSP chain. Override all methods that you wish. If the Node is a parent of other
 /// DSP nodes, be sure to implement the `inputs` method.
-pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
+pub trait Node<B, I, O> where B: DspBuffer<O>, I: Sample, O: Sample {
 
     /// Return the volume for this Node.
     #[inline]
@@ -32,7 +32,7 @@ pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
     /// so that we don't have to allocate *anything* in the
     /// whole graph.
     #[inline]
-    fn inputs(&mut self) -> Vec<&mut Node<B, S>> { Vec::new() }
+    fn inputs(&mut self) -> Vec<&mut Node<B, I, O>> { Vec::new() }
 
     /// Determine the volume for each channel by considering
     /// both `vol` and `pan. In the future this will be
@@ -49,7 +49,7 @@ pub trait Node<B, S> where B: DspBuffer<S>, S: Sample {
     /// Receive incoming audio (override this
     /// to do something with the input).
     #[inline]
-    fn audio_received(&mut self, _input: &B, _settings: Settings) {}
+    fn audio_received(&mut self, _input: &Vec<I>, _settings: Settings) {}
 
     /// Request audio from inputs, process and
     /// pass back to the output! Override this
