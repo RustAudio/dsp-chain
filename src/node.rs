@@ -7,7 +7,9 @@ use sound_stream::{
 };
 use std::num::Float;
 
+/// The type used for volume.
 pub type Volume = f32;
+/// The type used for panning.
 pub type Panning = f32;
 
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
