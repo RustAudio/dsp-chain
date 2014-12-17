@@ -7,7 +7,12 @@ use sound_stream::{
 };
 use std::num::Float;
 
+/// The amplitude multiplier.
 pub type Volume = f32;
+/// The spacial positioning of the node. Currently only supports Stereo or Mono.
+/// -1.0 = Left.
+///  0.0 = Center.
+///  1.0 = Right.
 pub type Panning = f32;
 
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
