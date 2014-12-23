@@ -85,6 +85,13 @@ pub trait Node<B, I, O> where B: DspBuffer<O>, I: Sample, O: Sample {
         self.process_buffer(output, settings);
     }
 
+    // fn sample_generator<SG>(&mut self, settings: Settings) -> SG where SG: SampleGenerator<O> {
+    //     let inputs = self.inputs().into_iter().map(|input| {
+    //         &mut input.sample_generator(settings) as &mut SampleGenerator<O>
+    //     }).collect();
+    //     InputSummer { inputs: inputs, settings: settings }
+    // }
+
     /// Override for custom processing of audio per
     /// buffer. This is mainly for audio effects. Get's
     /// called at the end of audio_requested.
