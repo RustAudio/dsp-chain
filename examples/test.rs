@@ -74,13 +74,13 @@ fn main() {
 /// that it owns are it's children.
 struct Synth([Oscillator, ..3]);
 
-impl Node<OutputBuffer, Input, Output> for Synth {
+impl Node<OutputBuffer, Output> for Synth {
     /// Here we return a reference to each of our Oscillators as our `inputs`.
     /// This allows the default `audio_requested` method to draw input from
     /// each of our oscillators automatically.
-    fn inputs(&mut self) -> Vec<&mut Node<OutputBuffer, Input, Output>> {
+    fn inputs(&mut self) -> Vec<&mut Node<OutputBuffer, Output>> {
         let Synth(ref mut oscillators) = *self;
-        oscillators.iter_mut().map(|osc| osc as &mut Node<OutputBuffer, Input, Output>).collect()
+        oscillators.iter_mut().map(|osc| osc as &mut Node<OutputBuffer, Output>).collect()
     }
 }
 
@@ -89,7 +89,7 @@ impl Node<OutputBuffer, Input, Output> for Synth {
 /// the way it provides audio via its `audio_requested` method.
 struct Oscillator(Phase, Frequency, Volume);
 
-impl Node<OutputBuffer, Input, Output> for Oscillator {
+impl Node<OutputBuffer, Output> for Oscillator {
     /// Here we'll override the audio_requested method and generate a sine wave.
     fn audio_requested(&mut self, buffer: &mut OutputBuffer, settings: Settings) {
         let (frames, channels) = (settings.frames as uint, settings.channels as uint);
