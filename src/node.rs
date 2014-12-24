@@ -92,6 +92,6 @@ pub trait Node<B, O> where B: DspBuffer<O>, O: Sample {
 pub trait InputNode<I> where I: Sample {
     /// Receive incoming audio (implement this to do something with the input).
     #[inline]
-    fn audio_received<I>(&mut self, _input: &Vec<I>, _settings: Settings) where I: Sample;
+    fn audio_received(&mut self, _input: &Vec<I>, _settings: Settings) where I: Sample;
 }
 
