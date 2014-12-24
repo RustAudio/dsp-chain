@@ -18,7 +18,7 @@ pub type Panning = f32;
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
 /// within your DSP chain. Override all methods that you wish. If the Node is a parent of other
 /// DSP nodes, be sure to implement the `inputs` method.
-pub trait Node<B, I, O> where B: DspBuffer<O>, I: Sample, O: Sample {
+pub trait Node<B, O> where B: DspBuffer<O>, O: Sample {
 
     /// Return the volume for this Node.
     #[inline]
@@ -33,11 +33,11 @@ pub trait Node<B, I, O> where B: DspBuffer<O>, I: Sample, O: Sample {
 
     /// Return mutable references to the inputs for the Node.
     /// TODO: Once "Abstract Return Types" land in Rust, we'll
-    /// change this to return `impl Iterator<&mut Node<B, S>>`
+    /// change this to return `impl Iterator<&mut Node<B, O>>`
     /// so that we don't have to allocate *anything* in the
     /// whole graph.
     #[inline]
-    fn inputs(&mut self) -> Vec<&mut Node<B, I, O>> { Vec::new() }
+    fn inputs(&mut self) -> Vec<&mut Node<B, O>> { Vec::new() }
 
     /// Determine the volume for each channel by considering
     /// both `vol` and `pan. In the future this will be
@@ -50,11 +50,6 @@ pub trait Node<B, I, O> where B: DspBuffer<O>, I: Sample, O: Sample {
             [self.vol(), self.vol() * (self.pan() + 1.0)]
         }
     }
-
-    /// Receive incoming audio (override this
-    /// to do something with the input).
-    #[inline]
-    fn audio_received(&mut self, _input: &Vec<I>, _settings: Settings) {}
 
     /// Request audio from inputs, process and
     /// pass back to the output! Override this
@@ -85,18 +80,18 @@ pub trait Node<B, I, O> where B: DspBuffer<O>, I: Sample, O: Sample {
         self.process_buffer(output, settings);
     }
 
-    // fn sample_generator<SG>(&mut self, settings: Settings) -> SG where SG: SampleGenerator<O> {
-    //     let inputs = self.inputs().into_iter().map(|input| {
-    //         &mut input.sample_generator(settings) as &mut SampleGenerator<O>
-    //     }).collect();
-    //     InputSummer { inputs: inputs, settings: settings }
-    // }
-
     /// Override for custom processing of audio per
     /// buffer. This is mainly for audio effects. Get's
     /// called at the end of audio_requested.
     #[inline]
     fn process_buffer(&mut self, _output: &mut B, _settings: Settings) {}
 
+}
+
+/// A trait for types who are designed to receive audio from an incoming stream.
+pub trait InputNode<I> where I: Sample {
+    /// Receive incoming audio (implement this to do something with the input).
+    #[inline]
+    fn audio_received<I>(&mut self, _input: &Vec<I>, _settings: Settings) where I: Sample;
 }
 
