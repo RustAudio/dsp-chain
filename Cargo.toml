@@ -14,5 +14,6 @@ name = "dsp"
 path = "./src/lib.rs"
 
 [dependencies.sound_stream]
-git = "https://github.com/RustAudio/sound_stream"
+# git = "https://github.com/RustAudio/sound_stream"
+path = "../sound_stream"
 
