@@ -8,23 +8,23 @@
 use sound_stream::{AudioBuffer, Sample};
 
 /// A trait used to extend the AudioBuffer for generic use in Node::audio_requested.
-pub trait DspBuffer<S>: AudioBuffer<S> where S: Sample {
+pub trait DspBuffer: AudioBuffer {
     /// Return a mutable reference to the sample at the given index.
-    fn get_mut(&mut self, idx: uint) -> &mut S;
+    fn get_mut(&mut self, idx: usize) -> &mut <Self as AudioBuffer>::Sample;
     /// Return the sample at the given index by value.
-    fn val(&self, idx: uint) -> S;
+    fn val(&self, idx: usize) -> <Self as AudioBuffer>::Sample;
 }
 
-impl<S> DspBuffer<S> for Vec<S> where S: Sample {
-    fn get_mut(&mut self, idx: uint) -> &mut S { &mut self[idx] }
-    fn val(&self, idx: uint) -> S { self[idx] }
+impl<S> DspBuffer for Vec<S> where S: Sample {
+    fn get_mut(&mut self, idx: usize) -> &mut S { &mut self[idx] }
+    fn val(&self, idx: usize) -> S { self[idx] }
 }
 
 macro_rules! impl_dsp_buffer(
     ($len:expr) => (
-        impl<S> DspBuffer<S> for [S, ..$len] where S: Sample {
-            fn get_mut(&mut self, idx: uint) -> &mut S { &mut self[idx] }
-            fn val(&self, idx: uint) -> S { self[idx] }
+        impl<S> DspBuffer for [S; $len] where S: Sample {
+            fn get_mut(&mut self, idx: usize) -> &mut S { &mut self[idx] }
+            fn val(&self, idx: usize) -> S { self[idx] }
         }
     )
 );

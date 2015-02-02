@@ -1,6 +1,7 @@
 language: rust
 notifications:
-    irc: "irc.mozilla.org#piston-internals"
+    email:
+        - mitchell.nordine@gmail.com
 os:
     - linux
     - osx
@@ -13,8 +14,8 @@ install:
     - tar xfz pa_stable_v19_20140130.tgz
     - (cd portaudio/ && ./configure && make && sudo make install)
 before_script:
-    - rustc -v
-    - cargo -V
+    - rustc --version
+    - cargo --version
 script:
     - cargo build -v
     - cargo test -v
