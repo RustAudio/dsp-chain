@@ -1,5 +1,6 @@
 #![crate_name = "dsp"]
 #![deny(missing_docs)]
+#![feature(core, rustc_private)]
 
 //! A pure Rust audio digital signal processing library for Piston.
 

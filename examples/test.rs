@@ -2,6 +2,8 @@
 //! An example of using dsp-chain to create a simple Synthesiser with 3 sine wave oscillators.
 //!
 
+#![feature(core)]
+
 extern crate dsp;
 
 use dsp::{
@@ -20,11 +22,11 @@ const FRAMES: u16 = 256;
 
 const SETTINGS: Settings = Settings { sample_hz: SAMPLE_HZ, frames: FRAMES, channels: CHANNELS };
 
-const BUFFER_SIZE: uint = (FRAMES * CHANNELS) as uint;
+const BUFFER_SIZE: usize = (FRAMES * CHANNELS) as usize;
 
 type Input = f32;
 type Output = f32;
-type OutputBuffer = [f32, ..BUFFER_SIZE];
+type OutputBuffer = [f32; BUFFER_SIZE];
 
 type Phase = f64;
 type Frequency = f64;
@@ -37,7 +39,7 @@ const F5_HZ: Frequency = 698.46;
 fn main() {
 
     // Construct the stream and handle any errors that may have occurred.
-    let mut stream = match SoundStream::<OutputBuffer, Input, Output>::new(SETTINGS) {
+    let mut stream = match SoundStream::<OutputBuffer, Input>::new(SETTINGS) {
         Ok(stream) => { println!("It begins!"); stream },
         Err(err) => panic!("An error occurred while constructing SoundStream: {}", err),
     };
@@ -53,7 +55,7 @@ fn main() {
     let mut timer: f64 = 3.0;
 
     // The SoundStream iterator will automatically return these events in this order.
-    for event in stream {
+    for event in stream.by_ref() {
         match event {
             Event::Out(buffer) => synth.audio_requested(buffer, SETTINGS),
             Event::Update(dt) => if timer > 0.0 { timer -= dt } else { break },
@@ -72,15 +74,15 @@ fn main() {
 
 /// Synth will be our demonstration of a parent DspNode where the Oscillators
 /// that it owns are it's children.
-struct Synth([Oscillator, ..3]);
+struct Synth([Oscillator; 3]);
 
-impl Node<OutputBuffer, Output> for Synth {
+impl Node<OutputBuffer> for Synth {
     /// Here we return a reference to each of our Oscillators as our `inputs`.
     /// This allows the default `audio_requested` method to draw input from
     /// each of our oscillators automatically.
-    fn inputs(&mut self) -> Vec<&mut Node<OutputBuffer, Output>> {
+    fn inputs(&mut self) -> Vec<&mut Node<OutputBuffer>> {
         let Synth(ref mut oscillators) = *self;
-        oscillators.iter_mut().map(|osc| osc as &mut Node<OutputBuffer, Output>).collect()
+        oscillators.iter_mut().map(|osc| osc as &mut Node<OutputBuffer>).collect()
     }
 }
 
@@ -89,17 +91,17 @@ impl Node<OutputBuffer, Output> for Synth {
 /// the way it provides audio via its `audio_requested` method.
 struct Oscillator(Phase, Frequency, Volume);
 
-impl Node<OutputBuffer, Output> for Oscillator {
+impl Node<OutputBuffer> for Oscillator {
     /// Here we'll override the audio_requested method and generate a sine wave.
     fn audio_requested(&mut self, buffer: &mut OutputBuffer, settings: Settings) {
-        let (frames, channels) = (settings.frames as uint, settings.channels as uint);
+        let (frames, channels) = (settings.frames as usize, settings.channels as usize);
         let Oscillator(ref mut phase, frequency, volume) = *self;
         // For every frame in the buffer.
-        for i in range(0u, frames) {
+        for i in range(0us, frames) {
             *phase += frequency / settings.sample_hz as f64;
             let val = sine_wave(*phase, volume);
             // For each channel in the frame.
-            for j in range(0u, channels) {
+            for j in range(0us, channels) {
                 let idx = i * channels + j;
                 buffer[idx] = val;
             }
@@ -110,7 +112,7 @@ impl Node<OutputBuffer, Output> for Oscillator {
 /// Return a sine wave for the given phase.
 fn sine_wave(phase: Phase, volume: Volume) -> Output {
     use std::f64::consts::PI_2;
-    use std::num::FloatMath;
+    use std::num::Float;
     ((phase * PI_2).sin() * volume) as Output
 }
 

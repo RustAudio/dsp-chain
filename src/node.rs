@@ -18,9 +18,7 @@ pub type Panning = f32;
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
 /// within your DSP chain. Override all methods that you wish. If the Node is a parent of other
 /// DSP nodes, be sure to implement the `inputs` method.
-pub trait Node {
-    type Sample: Sample = f32;
-    type Buffer: DspBuffer = Vec<f32>;
+pub trait Node<B> where B: DspBuffer {
 
     /// Return the volume for this Node.
     #[inline]
@@ -39,7 +37,7 @@ pub trait Node {
     /// so that we don't have to allocate *anything* in the
     /// whole graph.
     #[inline]
-    fn inputs(&mut self) -> Vec<&mut Node> { Vec::new() }
+    fn inputs(&mut self) -> Vec<&mut Node<B>> { Vec::new() }
 
     /// Determine the volume for each channel by considering
     /// both `vol` and `pan. In the future this will be
@@ -58,13 +56,13 @@ pub trait Node {
     /// method for any synthesis or generative
     /// types.
     #[inline]
-    fn audio_requested(&mut self, output: &mut <Self as Node>::Buffer, settings: Settings) {
+    fn audio_requested(&mut self, output: &mut B, settings: Settings) {
         let frames = settings.frames as usize;
         let channels = settings.channels as usize;
         let buffer_size = frames * channels;
         let vol_per_channel = self.vol_per_channel();
-        for input in self.inputs().into_iter() {
-            let mut working: <Self as Node>::Buffer = AudioBuffer::zeroed(buffer_size);
+        for input in self.inputs() {
+            let mut working: B = AudioBuffer::zeroed(buffer_size);
             // Call audio_requested for each input.
             input.audio_requested(&mut working, settings);
             // Sum all input nodes to output (considering pan, vol and interleaving).
@@ -73,8 +71,9 @@ pub trait Node {
                     use std::num::{ToPrimitive, from_f32};
                     let idx = i * channels + j;
                     let working_f32 = working.val(idx).to_f32().unwrap();
-                    let working_sample = from_f32(working_f32 * vol_per_channel[j]).unwrap();
-                    *output.get_mut(idx) = (output.val(idx) + working_sample) as AudioBuffer::Sample;
+                    let current_f32 = output.val(idx).to_f32().unwrap();
+                    let result_f32 = working_f32 * vol_per_channel[j] + current_f32;
+                    *output.get_mut(idx) = from_f32(result_f32).unwrap();
                 }
             }
         }
@@ -86,14 +85,7 @@ pub trait Node {
     /// buffer. This is mainly for audio effects. Get's
     /// called at the end of audio_requested.
     #[inline]
-    fn process_buffer(&mut self, _output: &mut <Self as Node>::Buffer, _settings: Settings) {}
+    fn process_buffer(&mut self, _output: &mut B, _settings: Settings) {}
 
-}
-
-/// A trait for types who are designed to receive audio from an incoming stream.
-pub trait InputNode<I> where I: Sample {
-    /// Receive incoming audio (implement this to do something with the input).
-    #[inline]
-    fn audio_received(&mut self, _input: &Vec<I>, _settings: Settings) where I: Sample;
 }
 
