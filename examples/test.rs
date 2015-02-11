@@ -9,6 +9,7 @@ extern crate dsp;
 use dsp::{
     Event,
     Node,
+    Sample,
     SoundStream,
     Settings,
 };
@@ -24,13 +25,16 @@ const SETTINGS: Settings = Settings { sample_hz: SAMPLE_HZ, frames: FRAMES, chan
 
 const BUFFER_SIZE: usize = (FRAMES * CHANNELS) as usize;
 
-type Input = f32;
-type Output = f32;
-type OutputBuffer = [f32; BUFFER_SIZE];
+/// SoundStream is generic over u8, i8, i32 and f32. Feel free to change it!
+type AudioSample = f32;
+
+type Input = AudioSample;
+type Output = AudioSample;
+type OutputBuffer = [Output; BUFFER_SIZE];
 
 type Phase = f64;
 type Frequency = f64;
-type Volume = f64;
+type Volume = f32;
 
 const A5_HZ: Frequency = 440.0;
 const D5_HZ: Frequency = 587.33;
@@ -97,11 +101,11 @@ impl Node<OutputBuffer> for Oscillator {
         let (frames, channels) = (settings.frames as usize, settings.channels as usize);
         let Oscillator(ref mut phase, frequency, volume) = *self;
         // For every frame in the buffer.
-        for i in range(0us, frames) {
+        for i in 0..frames {
             *phase += frequency / settings.sample_hz as f64;
             let val = sine_wave(*phase, volume);
             // For each channel in the frame.
-            for j in range(0us, channels) {
+            for j in 0..channels {
                 let idx = i * channels + j;
                 buffer[idx] = val;
             }
@@ -110,9 +114,9 @@ impl Node<OutputBuffer> for Oscillator {
 }
 
 /// Return a sine wave for the given phase.
-fn sine_wave(phase: Phase, volume: Volume) -> Output {
+fn sine_wave<S: Sample>(phase: Phase, volume: Volume) -> S {
     use std::f64::consts::PI_2;
     use std::num::Float;
-    ((phase * PI_2).sin() * volume) as Output
+    Sample::from_wave((phase * PI_2).sin() as f32 * volume)
 }
 
