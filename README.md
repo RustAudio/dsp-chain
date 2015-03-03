@@ -13,10 +13,25 @@ Other use cases for dsp-chain include:
 - Making a sampler.
 - Any kind of modular audio synthesis/processing.
 
+
+Usage
+-----
+
+Add dsp-chain to your Cargo.toml dependencies like so:
+```
+[dependencies]
+dsp-chain = "*"
+```
+
+
 PortAudio
 ---------
 
-- You'll need to have [PortAudio](http://www.portaudio.com/download.html) installed on your system. Note: We're planning on integrating PA as a static lib to make life easier for those who don't already have it installed!
+dsp-chain uses [PortAudio](http://www.portaudio.com) as a cross-platform audio backend. The [rust-portaudio](https://github.com/jeremyletang/rust-portaudio) dependency will first try to find an already installed version on your system before trying to download it and build PortAudio itself.
 
-Maintainers: @mitchmindtree
+
+License
+-------
+
+MIT - Same license as [PortAudio](http://www.portaudio.com/license.html).
 

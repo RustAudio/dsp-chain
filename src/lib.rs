@@ -1,4 +1,3 @@
-#![crate_name = "dsp"]
 #![deny(missing_docs)]
 #![feature(rustc_private)]
 
