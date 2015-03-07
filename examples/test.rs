@@ -6,31 +6,13 @@
 
 extern crate dsp;
 
-use dsp::{
-    Event,
-    Node,
-    Sample,
-    SoundStream,
-    Settings,
-};
-
-/// The number of frames processed per second.
-const SAMPLE_HZ: u32 = 44100;
-/// The number of channels to use for output. We'll use two for stereo.
-const CHANNELS: u16 = 2;
-/// This value is equal to (fixed-size buffer length / CHANNELS).
-const FRAMES: u16 = 256;
-
-const SETTINGS: Settings = Settings { sample_hz: SAMPLE_HZ, frames: FRAMES, channels: CHANNELS };
-
-const BUFFER_SIZE: usize = (FRAMES * CHANNELS) as usize;
+use dsp::{Event, Node, Sample, Settings, SoundStream, Wave};
 
 /// SoundStream is generic over u8, i8, i32 and f32. Feel free to change it!
 type AudioSample = f32;
 
 type Input = AudioSample;
 type Output = AudioSample;
-type OutputBuffer = [Output; BUFFER_SIZE];
 
 type Phase = f64;
 type Frequency = f64;
@@ -43,7 +25,7 @@ const F5_HZ: Frequency = 698.46;
 fn main() {
 
     // Construct the stream and handle any errors that may have occurred.
-    let mut stream = match SoundStream::<OutputBuffer, Input>::new(SETTINGS) {
+    let mut stream = match SoundStream::<Input, Output>::new().run() {
         Ok(stream) => { println!("It begins!"); stream },
         Err(err) => panic!("An error occurred while constructing SoundStream: {}", err),
     };
@@ -61,7 +43,7 @@ fn main() {
     // The SoundStream iterator will automatically return these events in this order.
     for event in stream.by_ref() {
         match event {
-            Event::Out(buffer) => synth.audio_requested(buffer, SETTINGS),
+            Event::Out(buffer, settings) => synth.audio_requested(buffer, settings),
             Event::Update(dt) => if timer > 0.0 { timer -= dt } else { break },
             _ => (),
         }
@@ -80,13 +62,13 @@ fn main() {
 /// that it owns are it's children.
 struct Synth([Oscillator; 3]);
 
-impl Node<OutputBuffer> for Synth {
+impl Node<Output> for Synth {
     /// Here we return a reference to each of our Oscillators as our `inputs`.
     /// This allows the default `audio_requested` method to draw input from
     /// each of our oscillators automatically.
-    fn inputs(&mut self) -> Vec<&mut Node<OutputBuffer>> {
+    fn inputs(&mut self) -> Vec<&mut Node<Output>> {
         let Synth(ref mut oscillators) = *self;
-        oscillators.iter_mut().map(|osc| osc as &mut Node<OutputBuffer>).collect()
+        oscillators.iter_mut().map(|osc| osc as &mut Node<Output>).collect()
     }
 }
 
@@ -95,19 +77,15 @@ impl Node<OutputBuffer> for Synth {
 /// the way it provides audio via its `audio_requested` method.
 struct Oscillator(Phase, Frequency, Volume);
 
-impl Node<OutputBuffer> for Oscillator {
+impl Node<Output> for Oscillator {
     /// Here we'll override the audio_requested method and generate a sine wave.
-    fn audio_requested(&mut self, buffer: &mut OutputBuffer, settings: Settings) {
-        let (frames, channels) = (settings.frames as usize, settings.channels as usize);
+    fn audio_requested(&mut self, buffer: &mut [Output], settings: Settings) {
         let Oscillator(ref mut phase, frequency, volume) = *self;
-        // For every frame in the buffer.
-        for i in 0..frames {
+        for frame in buffer.chunks_mut(settings.channels as usize) {
             *phase += frequency / settings.sample_hz as f64;
             let val = sine_wave(*phase, volume);
-            // For each channel in the frame.
-            for j in 0..channels {
-                let idx = i * channels + j;
-                buffer[idx] = val;
+            for channel in frame.iter_mut() {
+                *channel = val;
             }
         }
     }
@@ -117,6 +95,6 @@ impl Node<OutputBuffer> for Oscillator {
 fn sine_wave<S: Sample>(phase: Phase, volume: Volume) -> S {
     use std::f64::consts::PI_2;
     use std::num::Float;
-    Sample::from_wave((phase * PI_2).sin() as f32 * volume)
+    Sample::from_wave((phase * PI_2).sin() as Wave * volume)
 }
 

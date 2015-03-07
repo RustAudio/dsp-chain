@@ -1,10 +1,5 @@
 
-use buffer::DspBuffer;
-use sound_stream::{
-    Amplitude,
-    AudioBuffer,
-    Settings,
-};
+use sound_stream::{Amplitude, Sample, Settings};
 use std::num::Float;
 
 /// The amplitude multiplier.
@@ -18,7 +13,7 @@ pub type Panning = f32;
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
 /// within your DSP chain. Override all methods that you wish. If the Node is a parent of other
 /// DSP nodes, be sure to implement the `inputs` method.
-pub trait Node<B> where B: DspBuffer {
+pub trait Node<S> where S: Sample {
 
     /// Return the volume for this Node.
     #[inline]
@@ -37,7 +32,7 @@ pub trait Node<B> where B: DspBuffer {
     /// so that we don't have to allocate *anything* in the
     /// whole graph.
     #[inline]
-    fn inputs(&mut self) -> Vec<&mut Node<B>> { Vec::new() }
+    fn inputs(&mut self) -> Vec<&mut Node<S>> { Vec::new() }
 
     /// Determine the volume for each channel by considering
     /// both `vol` and `pan. In the future this will be
@@ -56,24 +51,16 @@ pub trait Node<B> where B: DspBuffer {
     /// method for any synthesis or generative
     /// types.
     #[inline]
-    fn audio_requested(&mut self, output: &mut B, settings: Settings) {
+    fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
         let frames = settings.frames as usize;
         let channels = settings.channels as usize;
         let buffer_size = frames * channels;
         let vol_per_channel = self.vol_per_channel();
         for input in self.inputs() {
-            let mut working: B = AudioBuffer::zeroed(buffer_size);
+            let mut working = vec![Sample::zero(); buffer_size];
             // Call audio_requested for each input.
-            input.audio_requested(&mut working, settings);
-            // Sum all input nodes to output (considering pan, vol and interleaving).
-            for i in 0..frames {
-                for j in 0..channels {
-                    use sound_stream::Sample;
-                    let idx = i * channels + j;
-                    let working_sample = working.val(idx).mul_amp(vol_per_channel[j]);
-                    *output.get_mut(idx) = output.val(idx) + working_sample;
-                }
-            }
+            input.audio_requested(&mut working[..], settings);
+            Sample::add_buffers(output, &working[..], &vol_per_channel[..]);
         }
         // Custom buffer processing.
         self.process_buffer(output, settings);
@@ -83,7 +70,7 @@ pub trait Node<B> where B: DspBuffer {
     /// buffer. This is mainly for audio effects. Get's
     /// called at the end of audio_requested.
     #[inline]
-    fn process_buffer(&mut self, _output: &mut B, _settings: Settings) {}
+    fn process_buffer(&mut self, _output: &mut [S], _settings: Settings) {}
 
 }
 
