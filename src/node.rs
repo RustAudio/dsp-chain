@@ -60,15 +60,7 @@ pub trait Node<S> where S: Sample {
             let mut working = vec![Sample::zero(); buffer_size];
             // Call audio_requested for each input.
             input.audio_requested(&mut working[..], settings);
-            // Sum all input nodes to output (considering pan, vol and interleaving).
-            for i in 0..frames {
-                for j in 0..channels {
-                    use sound_stream::Sample;
-                    let idx = i * channels + j;
-                    let working_sample = working[idx].mul_amp(vol_per_channel[j]);
-                    output[idx] = output[idx] + working_sample;
-                }
-            }
+            Sample::add_buffers(output, &working[..], &vol_per_channel[..]);
         }
         // Custom buffer processing.
         self.process_buffer(output, settings);
