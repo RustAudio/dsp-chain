@@ -1,14 +1,8 @@
 
+use {Panning, Volume};
+use dsp::Dsp;
 use sound_stream::{Amplitude, Sample, Settings};
 use std::num::Float;
-
-/// The amplitude multiplier.
-pub type Volume = Amplitude;
-/// The spacial positioning of the node. Currently only supports Stereo or Mono.
-/// -1.0 = Left.
-///  0.0 = Center.
-///  1.0 = Right.
-pub type Panning = f32;
 
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
 /// within your DSP chain. Override all methods that you wish. If the Node is a parent of other

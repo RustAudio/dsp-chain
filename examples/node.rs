@@ -1,5 +1,6 @@
 //! 
-//! An example of using dsp-chain to create a simple Synthesiser with 3 sine wave oscillators.
+//! An example of using dsp-chain's `Node` trait to create a simple
+//! Synthesiser with 3 sine wave oscillators.
 //!
 
 #![feature(core)]
@@ -8,7 +9,7 @@ extern crate dsp;
 
 use dsp::{Event, Node, Sample, Settings, SoundStream, Wave};
 
-/// SoundStream is generic over u8, i8, i32 and f32. Feel free to change it!
+/// SoundStream is currently generic over i8, i32 and f32. Feel free to change it!
 type AudioSample = f32;
 
 type Input = AudioSample;
