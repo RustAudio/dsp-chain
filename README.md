@@ -27,6 +27,7 @@ More Details
 
 There are two primary modules of interest within this library, both of which
 are unrelated and are designed to be used separately.
+
 1. [node.rs](https://github.com/RustAudio/dsp-chain/blob/master/src/node.rs) and the `Node` trait.
 2. [graph.rs](https://github.com/RustAudio/dsp-chain/blob/master/src/graph.rs) and the `Graph` type.
 
