@@ -45,6 +45,11 @@ fn main() {
     dsp_graph.add_input(oscillator_b, synth).unwrap();
     dsp_graph.add_input(oscillator_c, synth).unwrap();
 
+    // If adding a connection between two nodes would create a cycle, Graph will return an Err.
+    if let Err(err) = dsp_graph.add_input(synth, oscillator_a) {
+        println!("{:?}", ::std::error::Error::description(&err));
+    }
+
     // Set the synth as the master node for the graph.
     dsp_graph.set_master(Some(synth));
 
