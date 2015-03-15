@@ -38,12 +38,12 @@ fn main() {
     let synth = dsp_graph.add_node(DspNode::Synth);
 
     // Construct a few oscillators, add them to the graph and connect them to the synth.
-    let osc_a = dsp_graph.add_node(DspNode::Oscillator(0.0, A5_HZ, 0.2));
-    let osc_b = dsp_graph.add_node(DspNode::Oscillator(0.0, D5_HZ, 0.1));
-    let osc_c = dsp_graph.add_node(DspNode::Oscillator(0.0, F5_HZ, 0.15));
-    dsp_graph.add_input(osc_a, synth).unwrap();
-    dsp_graph.add_input(osc_b, synth).unwrap();
-    dsp_graph.add_input(osc_c, synth).unwrap();
+    let oscillator_a = dsp_graph.add_node(DspNode::Oscillator(0.0, A5_HZ, 0.2));
+    let oscillator_b = dsp_graph.add_node(DspNode::Oscillator(0.0, D5_HZ, 0.1));
+    let oscillator_c = dsp_graph.add_node(DspNode::Oscillator(0.0, F5_HZ, 0.15));
+    dsp_graph.add_input(oscillator_a, synth).unwrap();
+    dsp_graph.add_input(oscillator_b, synth).unwrap();
+    dsp_graph.add_input(oscillator_c, synth).unwrap();
 
     // Set the synth as the master node for the graph.
     dsp_graph.set_master(Some(synth));
