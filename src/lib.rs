@@ -1,5 +1,5 @@
 #![deny(missing_docs)]
-#![feature(core)]
+#![feature(collections, core)]
 
 //! 
 //! A pure Rust audio digital signal processing library for Piston.
@@ -28,7 +28,7 @@ extern crate sound_stream;
 pub use dsp::Dsp;
 pub use graph::{
     Graph,
-    Index,
+    NodeIndex,
     Inputs,
     InputsMut,
     Outputs,

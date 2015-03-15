@@ -40,8 +40,8 @@ The `Graph` type constructs a directed, acyclic graph of DSP nodes. It is
 the recommended approach for more advanced DSP chains that involve things like
 "bussing", "side-chaining" or more DAW-esque behaviour. The `Graph` type requires
 its nodes to have implemented the `Dsp` trait (a slightly simplified version of the
-`Node` trait, though entirely unrelated). Internally, `Graph` uses bluss's petgraph
-crate. See more [here](https://crates.io/crates/petgraph).
+`Node` trait, though entirely unrelated). Internally, `Graph` uses bluss's [petgraph
+crate](https://crates.io/crates/petgraph).
 
 
 PortAudio
