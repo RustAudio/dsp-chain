@@ -99,7 +99,7 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
     /// Returns an error instead if the input would create a cycle in the graph.
     pub fn add_input(&mut self, a: NodeIndex, b: NodeIndex) -> Result<(), WouldCycle> {
         let edge = self.graph.add_edge(a, b, ());
-        if pg::algo::is_cyclic(&self.graph) {
+        if pg::algo::is_cyclic_directed(&self.graph) {
             self.graph.remove_edge(edge);
             Err(WouldCycle)
         } else {
