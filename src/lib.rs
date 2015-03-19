@@ -30,9 +30,13 @@ pub use graph::{
     Graph,
     NodeIndex,
     Inputs,
+    InputsWithIndices,
     InputsMut,
+    InputsMutWithIndices,
     Outputs,
+    OutputsWithIndices,
     OutputsMut,
+    OutputsMutWithIndices,
     WouldCycle,
 };
 pub use node::Node;
