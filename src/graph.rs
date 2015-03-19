@@ -25,12 +25,20 @@ pub struct WouldCycle;
 
 /// An iterator over references to the inputs of a Graph node.
 pub type Inputs<'a, S, D> = Neighbors<'a, S, D>;
+/// An iterator over references to the inputs of a Graph node along with their indices.
+pub type InputsWithIndices<'a, S, D> = NeighborsWithIndices<'a, S, D>;
 /// An iterator over mutable references to the inputs of a Graph node.
 pub type InputsMut<'a, S, D> = NeighborsMut<'a, S, D>;
+/// An iterator over mutable references to the inputs of a Graph node along with their indices.
+pub type InputsMutWithIndices<'a, S, D> = NeighborsMutWithIndices<'a, S, D>;
 /// An iterator over references to the outputs of a Graph node.
 pub type Outputs<'a, S, D> = Neighbors<'a, S, D>;
+/// An iterator over references to the outputs of a Graph node along with their indices.
+pub type OutputsWithIndices<'a, S, D> = NeighborsWithIndices<'a, S, D>;
 /// An iterator over mutable references to the outputs of a Graph node.
 pub type OutputsMut<'a, S, D> = NeighborsMut<'a, S, D>;
+/// An iterator over mutable references to the outputs of a Graph node alonw with their indices.
+pub type OutputsMutWithIndices<'a, S, D> = NeighborsMutWithIndices<'a, S, D>;
 
 /// An iterator over references to the neighbors of a Graph node.
 pub struct Neighbors<'a, S: 'a, D: 'a> {
@@ -38,8 +46,20 @@ pub struct Neighbors<'a, S: 'a, D: 'a> {
     neighbors: pg::graph::Neighbors<'a, (), u32>,
 }
 
+/// An iterator over references to the neighbors of a Graph node.
+pub struct NeighborsWithIndices<'a, S: 'a, D: 'a> {
+    graph: &'a pg::Graph<Node<S, D>, ()>,
+    neighbors: pg::graph::Neighbors<'a, (), u32>,
+}
+
 /// An iterator over mutable references to the neighbors of a Graph node.
 pub struct NeighborsMut<'a, S: 'a, D: 'a> {
+    graph: &'a mut pg::Graph<Node<S, D>, ()>,
+    neighbors: pg::graph::Neighbors<'a, (), u32>,
+}
+
+/// An iterator over mutable references to the neighbors of a Graph node.
+pub struct NeighborsMutWithIndices<'a, S: 'a, D: 'a> {
     graph: &'a mut pg::Graph<Node<S, D>, ()>,
     neighbors: pg::graph::Neighbors<'a, (), u32>,
 }
@@ -169,6 +189,28 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
         reset_graph_buffers(&mut self.graph, idx);
     }
 
+    /// Remove all incoming connections to the node at the given index.
+    /// Return the number of connections removed.
+    pub fn remove_all_inputs(&mut self, idx: NodeIndex) -> usize {
+        let input_indices: Vec<_> = self.graph.neighbors_directed(idx, pg::Incoming).collect();
+        let num = input_indices.len();
+        for input_idx in input_indices {
+            self.remove_input(input_idx, idx);
+        }
+        num
+    }
+
+    /// Remove all outgoing connections from the node at the given index.
+    /// Return the number of connections removed.
+    pub fn remove_all_outputs(&mut self, idx: NodeIndex) -> usize {
+        let output_indices: Vec<_> = self.graph.neighbors_directed(idx, pg::Outgoing).collect();
+        let num = output_indices.len();
+        for output_idx in output_indices {
+            self.remove_input(output_idx, idx);
+        }
+        num
+    }
+
     /// Clear all dsp nodes that have no inputs and that are not inputs to any other nodes.
     pub fn clear_disconnected(&mut self) {
         let no_incoming: Vec<_> = self.graph.without_edges(pg::Incoming).collect();
@@ -194,43 +236,9 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
 }
 
 
-impl<'a, S, D> Iterator for Neighbors<'a, S, D> {
-    type Item = &'a D;
-    fn next(&mut self) -> Option<&'a D> {
-        match self.neighbors.next() {
-            Some(idx) => {
-                let &Node(ref dsp, _) = &self.graph[idx];
-                Some(dsp)
-            },
-            None => None,
-        }
-    }
-}
-
-impl<'a, S, D> Iterator for NeighborsMut<'a, S, D> {
-    type Item = &'a mut D;
-    fn next(&mut self) -> Option<&'a mut D> {
-        let NeighborsMut { ref mut graph, ref mut neighbors } = *self;
-        match neighbors.next() {
-            Some(idx) => {
-                let &mut Node(ref mut dsp, _) = &mut graph[idx];
-                let dsp: &mut D = dsp;
-                // Without the following unsafe block, rustc complains about
-                // input_ref_mut not having a suitable life time. This is because
-                // it is concerned about creating aliasing mutable references,
-                // however we know that only one mutable reference will be returned
-                // at a time and that they will never alias. Thus, we transmute to
-                // silence the lifetime warning!
-                Some(unsafe { ::std::mem::transmute(dsp) })
-            },
-            None => None,
-        }
-    }
-}
-
-
 impl<S, D> ::std::ops::Index<NodeIndex> for Graph<S, D> {
     type Output = D;
+    #[inline]
     fn index<'a>(&'a self, index: &NodeIndex) -> &'a D {
         let &Node(ref dsp, _) = &self.graph[*index];
         dsp
@@ -238,6 +246,7 @@ impl<S, D> ::std::ops::Index<NodeIndex> for Graph<S, D> {
 }
 
 impl<S, D> ::std::ops::IndexMut<NodeIndex> for Graph<S, D> {
+    #[inline]
     fn index_mut(&mut self, index: &NodeIndex) -> &mut D {
         let &mut Node(ref mut dsp, _) = &mut self.graph[*index];
         dsp
@@ -361,4 +370,104 @@ impl ::std::error::Error for WouldCycle {
         "Adding this input would have caused the graph to cycle!"
     }
 }
+
+
+impl<'a, S, D> Neighbors<'a, S, D> {
+    /// Return an adaptor that will also return the neighor's NodeIndex.
+    #[inline]
+    pub fn with_indices(self) -> NeighborsWithIndices<'a, S, D> {
+        let Neighbors { graph, neighbors } = self;
+        NeighborsWithIndices {
+            graph: graph,
+            neighbors: neighbors,
+        }
+    }
+}
+
+impl<'a, S, D> NeighborsMut <'a, S, D> {
+    /// Return an adaptor that will also return the neighor's NodeIndex.
+    #[inline]
+    pub fn with_indices(self) -> NeighborsMutWithIndices<'a, S, D> {
+        let NeighborsMut { graph, neighbors } = self;
+        NeighborsMutWithIndices {
+            graph: graph,
+            neighbors: neighbors,
+        }
+    }
+}
+
+
+impl<'a, S, D> Iterator for Neighbors<'a, S, D> {
+    type Item = &'a D;
+    #[inline]
+    fn next(&mut self) -> Option<&'a D> {
+        match self.neighbors.next() {
+            Some(idx) => {
+                let &Node(ref dsp, _) = &self.graph[idx];
+                Some(dsp)
+            },
+            None => None,
+        }
+    }
+}
+
+impl<'a, S, D> Iterator for NeighborsWithIndices<'a, S, D> {
+    type Item = (&'a D, NodeIndex);
+    #[inline]
+    fn next(&mut self) -> Option<(&'a D, NodeIndex)> {
+        match self.neighbors.next() {
+            Some(idx) => {
+                let &Node(ref dsp, _) = &self.graph[idx];
+                Some((dsp, idx))
+            },
+            None => None,
+        }
+    }
+}
+
+
+impl<'a, S, D> Iterator for NeighborsMut<'a, S, D> {
+    type Item = &'a mut D;
+    #[inline]
+    fn next(&mut self) -> Option<&'a mut D> {
+        let NeighborsMut { ref mut graph, ref mut neighbors } = *self;
+        match neighbors.next() {
+            Some(idx) => {
+                let &mut Node(ref mut dsp, _) = &mut graph[idx];
+                let dsp: &mut D = dsp;
+                // Without the following unsafe block, rustc complains about
+                // input_ref_mut not having a suitable life time. This is because
+                // it is concerned about creating aliasing mutable references,
+                // however we know that only one mutable reference will be returned
+                // at a time and that they will never alias. Thus, we transmute to
+                // silence the lifetime warning!
+                Some(unsafe { ::std::mem::transmute(dsp) })
+            },
+            None => None,
+        }
+    }
+}
+
+impl<'a, S, D> Iterator for NeighborsMutWithIndices<'a, S, D> {
+    type Item = (&'a mut D, NodeIndex);
+    #[inline]
+    fn next(&mut self) -> Option<(&'a mut D, NodeIndex)> {
+        let NeighborsMutWithIndices { ref mut graph, ref mut neighbors } = *self;
+        match neighbors.next() {
+            Some(idx) => {
+                let &mut Node(ref mut dsp, _) = &mut graph[idx];
+                let dsp: &mut D = dsp;
+                // Without the following unsafe block, rustc complains about
+                // input_ref_mut not having a suitable life time. This is because
+                // it is concerned about creating aliasing mutable references,
+                // however we know that only one mutable reference will be returned
+                // at a time and that they will never alias. Thus, we transmute to
+                // silence the lifetime warning!
+                Some((unsafe { ::std::mem::transmute(dsp) }, idx))
+            },
+            None => None,
+        }
+    }
+}
+
 
