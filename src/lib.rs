@@ -1,5 +1,5 @@
 #![deny(missing_docs)]
-#![feature(collections, core)]
+#![feature(collections)]
 
 //! 
 //! A pure Rust audio digital signal processing library for Piston.

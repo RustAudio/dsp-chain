@@ -239,16 +239,16 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
 impl<S, D> ::std::ops::Index<NodeIndex> for Graph<S, D> {
     type Output = D;
     #[inline]
-    fn index<'a>(&'a self, index: &NodeIndex) -> &'a D {
-        let &Node(ref dsp, _) = &self.graph[*index];
+    fn index<'a>(&'a self, index: NodeIndex) -> &'a D {
+        let &Node(ref dsp, _) = &self.graph[index];
         dsp
     }
 }
 
 impl<S, D> ::std::ops::IndexMut<NodeIndex> for Graph<S, D> {
     #[inline]
-    fn index_mut(&mut self, index: &NodeIndex) -> &mut D {
-        let &mut Node(ref mut dsp, _) = &mut self.graph[*index];
+    fn index_mut(&mut self, index: NodeIndex) -> &mut D {
+        let &mut Node(ref mut dsp, _) = &mut self.graph[index];
         dsp
     }
 }
