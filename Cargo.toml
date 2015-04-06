@@ -21,5 +21,6 @@ name = "dsp"
 path = "./src/lib.rs"
 
 [dependencies]
+num = "*"
 petgraph = "*"
 sound_stream = "*"

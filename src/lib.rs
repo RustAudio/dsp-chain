@@ -22,6 +22,7 @@
 //! crate. See more [here](https://crates.io/crates/petgraph).
 //!
 
+extern crate num;
 extern crate petgraph;
 extern crate sound_stream;
 
@@ -53,6 +54,7 @@ pub use sound_stream::Error as SoundStreamError;
 
 mod dsp;
 mod graph;
+pub mod iter;
 mod node;
 
 /// The amplitude multiplier.
