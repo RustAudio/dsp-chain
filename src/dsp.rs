@@ -22,7 +22,7 @@ pub trait Dsp<S> where S: Sample {
     /// replaced with an `n` channels method.
     #[inline]
     fn vol_per_channel(&self) -> [Amplitude; 2] {
-        use std::num::Float;
+        use num::Float;
         if self.pan() >= 0.0 {
             [self.vol() * (self.pan() - 1.0).abs(), self.vol()]
         } else {
