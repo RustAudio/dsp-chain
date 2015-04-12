@@ -3,9 +3,8 @@
 //! Synthesiser with 3 sine wave oscillators.
 //!
 
-#![feature(core)]
-
 extern crate dsp;
+extern crate num;
 
 use dsp::{Event, Node, Sample, Settings, SoundStream, Wave};
 
@@ -94,8 +93,8 @@ impl Node<Output> for Oscillator {
 
 /// Return a sine wave for the given phase.
 fn sine_wave<S: Sample>(phase: Phase, volume: Volume) -> S {
-    use std::f64::consts::PI_2;
-    use std::num::Float;
-    Sample::from_wave((phase * PI_2).sin() as Wave * volume)
+    use std::f64::consts::PI;
+    use num::Float;
+    Sample::from_wave((phase * PI * 2.0).sin() as Wave * volume)
 }
 

@@ -308,13 +308,29 @@ fn request_audio_from_node<S, D>(graph: &mut pg::Graph<Node<S, D>, ()>,
         let &mut Node(ref mut dsp, ref mut maybe_buffer) = &mut graph[idx];
         let buffer = match *maybe_buffer {
             Some(ref buffer) => {
-                output.clone_from_slice(&buffer[..]);
+
+                for (output_sample, sample) in output.iter_mut().zip(buffer.iter().map(|&s| s)) {
+                    *output_sample = sample;
+                }
+
+                // NOTE: The following line will replace the above once `clone_from_slice` is
+                // stabilised.
+                // output.clone_from_slice(&buffer[..]);
+
                 return;
             },
             None => {
                 let mut buffer = vec![Sample::zero(); settings.buffer_size()];
                 dsp.audio_requested(&mut buffer[..], settings);
-                output.clone_from_slice(&buffer[..]);
+
+                for (output_sample, sample) in output.iter_mut().zip(buffer.iter().map(|&s| s)) {
+                    *output_sample = sample;
+                }
+
+                // NOTE: The following line will replace the above once `clone_from_slice` is
+                // stabilised.
+                // output.clone_from_slice(&buffer[..]);
+
                 buffer
             },
         };

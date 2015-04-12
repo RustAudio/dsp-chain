@@ -1,6 +1,3 @@
-#![deny(missing_docs)]
-#![feature(collections)]
-
 //! 
 //! A pure Rust audio digital signal processing library for Piston.
 //!
@@ -21,6 +18,8 @@
 //! `Node` trait, though entirely unrelated). Internally, `Graph` uses bluss's petgraph
 //! crate. See more [here](https://crates.io/crates/petgraph).
 //!
+
+#![deny(missing_docs)]
 
 extern crate num;
 extern crate petgraph;
