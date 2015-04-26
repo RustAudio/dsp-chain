@@ -42,13 +42,13 @@ pub use graph::{
 pub use node::Node;
 pub use sound_stream::{
     Amplitude,
-    Event,
     PaSample,
     Sample,
     Settings,
     SoundStream,
     Wave
 };
+pub use sound_stream::duplex::Event;
 pub use sound_stream::Error as SoundStreamError;
 
 mod dsp;
