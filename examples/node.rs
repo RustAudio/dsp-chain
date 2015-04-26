@@ -6,13 +6,10 @@
 extern crate dsp;
 extern crate num;
 
-use dsp::{Event, Node, Sample, Settings, SoundStream, Wave};
+use dsp::{CallbackFlags, CallbackResult, Node, Sample, Settings, SoundStream, StreamParams, Wave};
 
 /// SoundStream is currently generic over i8, i32 and f32. Feel free to change it!
-type AudioSample = f32;
-
-type Input = AudioSample;
-type Output = AudioSample;
+type Output = f32;
 
 type Phase = f64;
 type Frequency = f64;
@@ -24,12 +21,6 @@ const F5_HZ: Frequency = 698.46;
 
 fn main() {
 
-    // Construct the stream and handle any errors that may have occurred.
-    let mut stream = match SoundStream::<Input, Output>::new().run() {
-        Ok(stream) => { println!("It begins!"); stream },
-        Err(err) => panic!("An error occurred while constructing SoundStream: {}", err),
-    };
-
     // Construct our fancy Synth!
     let mut synth = Synth([
             Oscillator(0.0, A5_HZ, 0.2), 
@@ -40,26 +31,26 @@ fn main() {
     // We'll use this to count down from three seconds and then break from the loop.
     let mut timer: f64 = 3.0;
 
-    // The SoundStream iterator will automatically return these events in this order.
-    for event in stream.by_ref() {
-        match event {
-            Event::Out(buffer, settings) => synth.audio_requested(buffer, settings),
-            Event::Update(dt) => if timer > 0.0 { timer -= dt } else { break },
-            _ => (),
-        }
-    }
+    // The callback we'll use to pass to the Stream. It will request audio from our synth.
+    let callback = Box::new(move |output: &mut[Output], settings: Settings, dt: f64, _: CallbackFlags| {
+        Sample::zero_buffer(output);
+        synth.audio_requested(output, settings);
+        timer -= dt;
+        if timer >= 0.0 { CallbackResult::Continue } else { CallbackResult::Complete }
+    });
 
-    // Close the stream and shut down PortAudio.
-    match stream.close() {
-        Ok(()) => println!("Great success!"),
-        Err(err) => println!("An error occurred while closing SoundStream: {}", err),
-    }
+    // Construct the stream and handle any errors that may have occurred.
+    let stream = SoundStream::new().output(StreamParams::new()).run_callback(callback).unwrap();
+
+    // Wait for our stream to finish.
+    while let Ok(true) = stream.is_active() {}
 
 }
 
 
 /// Synth will be our demonstration of a parent DspNode where the Oscillators
 /// that it owns are it's children.
+#[derive(Debug)]
 struct Synth([Oscillator; 3]);
 
 impl Node<Output> for Synth {
@@ -75,6 +66,7 @@ impl Node<Output> for Synth {
 
 /// Oscillator will be our generator type of node, meaning that we will override
 /// the way it provides audio via its `audio_requested` method.
+#[derive(Debug)]
 struct Oscillator(Phase, Frequency, Volume);
 
 impl Node<Output> for Oscillator {
@@ -82,19 +74,17 @@ impl Node<Output> for Oscillator {
     fn audio_requested(&mut self, buffer: &mut [Output], settings: Settings) {
         let Oscillator(ref mut phase, frequency, volume) = *self;
         for frame in buffer.chunks_mut(settings.channels as usize) {
-            *phase += frequency / settings.sample_hz as f64;
             let val = sine_wave(*phase, volume);
             for channel in frame.iter_mut() {
                 *channel = val;
             }
+            *phase += frequency / settings.sample_hz as f64;
         }
     }
 }
 
-/// Return a sine wave for the given phase.
+/// Return a sine wave for the given phase for any sample type.
 fn sine_wave<S: Sample>(phase: Phase, volume: Volume) -> S {
-    use std::f64::consts::PI;
-    use num::Float;
-    Sample::from_wave((phase * PI * 2.0).sin() as Wave * volume)
+    Sample::from_wave((phase * ::std::f64::consts::PI * 2.0).sin() as Wave * volume)
 }
 
