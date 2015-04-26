@@ -6,13 +6,10 @@
 extern crate dsp;
 extern crate num;
 
-use dsp::{Dsp, Event, Graph, Sample, Settings, SoundStream, Wave};
+use dsp::{Dsp, CallbackFlags, CallbackResult, Graph, Sample, Settings, SoundStream, StreamParams, Wave};
 
 /// SoundStream is currently generic over i8, i32 and f32. Feel free to change it!
-type AudioSample = f32;
-
-type Input = AudioSample;
-type Output = AudioSample;
+type Output = f32;
 
 type Phase = f64;
 type Frequency = f64;
@@ -23,12 +20,6 @@ const D5_HZ: Frequency = 587.33;
 const F5_HZ: Frequency = 698.46;
 
 fn main() {
-
-    // Construct the stream and handle any errors that may have occurred.
-    let mut stream = match SoundStream::<Input, Output>::new().run() {
-        Ok(stream) => { println!("It begins!"); stream },
-        Err(err) => panic!("An error occurred while constructing SoundStream: {}", err),
-    };
 
     // Construct our dsp graph.
     let mut dsp_graph = Graph::new();
@@ -55,28 +46,24 @@ fn main() {
     // We'll use this to count down from three seconds and then break from the loop.
     let mut timer: f64 = 3.0;
 
-    // The SoundStream iterator will automatically return these events in this order.
-    for event in stream.by_ref() {
-        match event {
-            Event::Out(buffer, settings) => dsp_graph.audio_requested(buffer, settings),
-            Event::Update(dt) => {
-                if timer > 0.0 { timer -= dt } else { break }
-                // Pitch down each of the oscillators (just for fun).
-                for input in dsp_graph.inputs_mut(synth) {
-                    if let DspNode::Oscillator(_, ref mut pitch, _) = *input {
-                        *pitch -= 1.0;
-                    }
-                }
-            },
-            _ => (),
+    // The callback we'll use to pass to the Stream. It will request audio from our dsp_graph.
+    let callback = Box::new(move |output: &mut[Output], settings: Settings, dt: f64, _: CallbackFlags| {
+        Sample::zero_buffer(output);
+        dsp_graph.audio_requested(output, settings);
+        timer -= dt;
+        for input in dsp_graph.inputs_mut(synth) {
+            if let DspNode::Oscillator(_, ref mut pitch, _) = *input {
+                *pitch -= 0.1;
+            }
         }
-    }
+        if timer >= 0.0 { CallbackResult::Continue } else { CallbackResult::Complete }
+    });
 
-    // Close the stream and shut down PortAudio.
-    match stream.close() {
-        Ok(()) => println!("Great success!"),
-        Err(err) => println!("An error occurred while closing SoundStream: {}", err),
-    }
+    // Construct the stream and handle any errors that may have occurred.
+    let stream = SoundStream::new().output(StreamParams::new()).run_callback(callback).unwrap();
+
+    // Wait for our stream to finish.
+    while let Ok(true) = stream.is_active() {}
 
 }
 
@@ -96,11 +83,11 @@ impl Dsp<Output> for DspNode {
             DspNode::Synth => (),
             DspNode::Oscillator(ref mut phase, frequency, volume) => {
                 for frame in buffer.chunks_mut(settings.channels as usize) {
-                    *phase += frequency / settings.sample_hz as f64;
                     let val = sine_wave(*phase, volume);
                     for channel in frame.iter_mut() {
                         *channel = val;
                     }
+                    *phase += frequency / settings.sample_hz as f64;
                 }
             },
         }

@@ -2,7 +2,6 @@
 use {Panning, Volume};
 use dsp::Dsp;
 use sound_stream::{Amplitude, Sample, Settings};
-use num::Float;
 
 /// DSP Node trait. Implement this for any audio instrument or effects types that are to be used
 /// within your DSP chain. Override all methods that you wish. If the Node is a parent of other
@@ -46,9 +45,7 @@ pub trait Node<S> where S: Sample {
     /// types.
     #[inline]
     fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
-        let frames = settings.frames as usize;
-        let channels = settings.channels as usize;
-        let buffer_size = frames * channels;
+        let buffer_size = settings.buffer_size();
         let vol_per_channel = self.vol_per_channel();
         for input in self.inputs() {
             let mut working = vec![Sample::zero(); buffer_size];

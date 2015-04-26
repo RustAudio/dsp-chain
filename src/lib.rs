@@ -41,12 +41,20 @@ pub use graph::{
 };
 pub use node::Node;
 pub use sound_stream::{
+    input,
+    output,
+    duplex,
     Amplitude,
-    Event,
+    CallbackFlags,
+    CallbackResult,
+    DeltaTimeSeconds,
+    Latency,
     PaSample,
     Sample,
     Settings,
     SoundStream,
+    StreamFlags,
+    StreamParams,
     Wave
 };
 pub use sound_stream::Error as SoundStreamError;
