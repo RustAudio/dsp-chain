@@ -1,19 +1,27 @@
 
-use dsp::Dsp;
+use node::Node;
 use petgraph as pg;
 use sound_stream::{Sample, Settings};
 
 /// A directed, acyclic DSP graph.
 #[derive(Clone, Debug)]
-pub struct Graph<S, D> {
-    graph: pg::Graph<Node<S, D>, ()>,
+pub struct Graph<S, N> {
+    graph: pg::Graph<Slot<S, N>, ()>,
     maybe_master: Option<NodeIndex>,
-    phantom_data: ::std::marker::PhantomData<S>,
 }
 
 /// A Dsp object and it's sample buffer.
 #[derive(Clone, Debug)]
-struct Node<S, D>(D, Option<Vec<S>>);
+struct Slot<S, N> {
+    /// User defined DspNode type.
+    node: N,
+    /// The Node's sample buffer.
+    buffer: Vec<S>,
+    /// Indicates whether or not the buffer has already been rendered
+    /// for the current audio_requested duration. This saves us from re-rendering
+    /// the buffer in the case that the Node has multiple output connections.
+    is_rendered: bool,
+}
 
 /// Represents a graph node index.
 pub type NodeIndex = pg::graph::NodeIndex<u32>;
@@ -24,55 +32,54 @@ pub type NodeIndex = pg::graph::NodeIndex<u32>;
 pub struct WouldCycle;
 
 /// An iterator over references to the inputs of a Graph node.
-pub type Inputs<'a, S, D> = Neighbors<'a, S, D>;
+pub type Inputs<'a, S, N> = Neighbors<'a, S, N>;
 /// An iterator over references to the inputs of a Graph node along with their indices.
-pub type InputsWithIndices<'a, S, D> = NeighborsWithIndices<'a, S, D>;
+pub type InputsWithIndices<'a, S, N> = NeighborsWithIndices<'a, S, N>;
 /// An iterator over mutable references to the inputs of a Graph node.
-pub type InputsMut<'a, S, D> = NeighborsMut<'a, S, D>;
+pub type InputsMut<'a, S, N> = NeighborsMut<'a, S, N>;
 /// An iterator over mutable references to the inputs of a Graph node along with their indices.
-pub type InputsMutWithIndices<'a, S, D> = NeighborsMutWithIndices<'a, S, D>;
+pub type InputsMutWithIndices<'a, S, N> = NeighborsMutWithIndices<'a, S, N>;
 /// An iterator over references to the outputs of a Graph node.
-pub type Outputs<'a, S, D> = Neighbors<'a, S, D>;
+pub type Outputs<'a, S, N> = Neighbors<'a, S, N>;
 /// An iterator over references to the outputs of a Graph node along with their indices.
-pub type OutputsWithIndices<'a, S, D> = NeighborsWithIndices<'a, S, D>;
+pub type OutputsWithIndices<'a, S, N> = NeighborsWithIndices<'a, S, N>;
 /// An iterator over mutable references to the outputs of a Graph node.
-pub type OutputsMut<'a, S, D> = NeighborsMut<'a, S, D>;
+pub type OutputsMut<'a, S, N> = NeighborsMut<'a, S, N>;
 /// An iterator over mutable references to the outputs of a Graph node alonw with their indices.
-pub type OutputsMutWithIndices<'a, S, D> = NeighborsMutWithIndices<'a, S, D>;
+pub type OutputsMutWithIndices<'a, S, N> = NeighborsMutWithIndices<'a, S, N>;
 
 /// An iterator over references to the neighbors of a Graph node.
-pub struct Neighbors<'a, S: 'a, D: 'a> {
-    graph: &'a pg::Graph<Node<S, D>, ()>,
+pub struct Neighbors<'a, S: 'a, N: 'a> {
+    graph: &'a pg::Graph<Slot<S, N>, ()>,
     neighbors: pg::graph::Neighbors<'a, (), u32>,
 }
 
 /// An iterator over references to the neighbors of a Graph node.
-pub struct NeighborsWithIndices<'a, S: 'a, D: 'a> {
-    graph: &'a pg::Graph<Node<S, D>, ()>,
+pub struct NeighborsWithIndices<'a, S: 'a, N: 'a> {
+    graph: &'a pg::Graph<Slot<S, N>, ()>,
     neighbors: pg::graph::Neighbors<'a, (), u32>,
 }
 
 /// An iterator over mutable references to the neighbors of a Graph node.
-pub struct NeighborsMut<'a, S: 'a, D: 'a> {
-    graph: &'a mut pg::Graph<Node<S, D>, ()>,
+pub struct NeighborsMut<'a, S: 'a, N: 'a> {
+    graph: &'a mut pg::Graph<Slot<S, N>, ()>,
     neighbors: pg::graph::Neighbors<'a, (), u32>,
 }
 
 /// An iterator over mutable references to the neighbors of a Graph node.
-pub struct NeighborsMutWithIndices<'a, S: 'a, D: 'a> {
-    graph: &'a mut pg::Graph<Node<S, D>, ()>,
+pub struct NeighborsMutWithIndices<'a, S: 'a, N: 'a> {
+    graph: &'a mut pg::Graph<Slot<S, N>, ()>,
     neighbors: pg::graph::Neighbors<'a, (), u32>,
 }
 
-impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
+impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
 
     /// Constructor for a new dsp Graph.
-    pub fn new() -> Graph<S, D> {
+    pub fn new() -> Graph<S, N> {
         let graph = pg::Graph::new();
         Graph {
             graph: graph,
             maybe_master: None,
-            phantom_data: ::std::marker::PhantomData,
         }
     }
 
@@ -97,21 +104,25 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
     }
 
     /// Add a node to the dsp graph.
-    pub fn add_node(&mut self, dsp: D) -> NodeIndex {
-        self.graph.add_node(Node(dsp, None))
+    pub fn add_node(&mut self, node: N) -> NodeIndex {
+        self.graph.add_node(Slot {
+            node: node,
+            buffer: Vec::new(),
+            is_rendered: false,
+        })
     }
 
     /// Remove a node from the dsp graph.
     /// Reset maybe_master to None if the index matches the current master index.
-    pub fn remove_node(&mut self, idx: NodeIndex) -> Option<D> {
+    pub fn remove_node(&mut self, idx: NodeIndex) -> Option<N> {
         if let Some(master_idx) = self.maybe_master {
             if idx == master_idx {
                 self.maybe_master = None;
             }
         }
-        self.graph.remove_node(idx).map(|node| {
-            let Node(dsp, _) = node;
-            dsp
+        self.graph.remove_node(idx).map(|slot| {
+            let Slot { node, .. } = slot;
+            node
         })
     }
 
@@ -138,7 +149,7 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
 
     /// Returns an iterator over references to each neighboring node in the given direction.
     fn neighbors<'a>(&'a self, idx: NodeIndex,
-                     direction: pg::EdgeDirection) -> Neighbors<'a, S, D> {
+                     direction: pg::EdgeDirection) -> Neighbors<'a, S, N> {
         Neighbors {
             graph: &self.graph,
             neighbors: self.graph.neighbors_directed(idx, direction),
@@ -147,8 +158,8 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
 
     /// Returns an iterator over mutable references to each neighboring node in the given direction.
     fn neighbors_mut<'a>(&'a mut self, idx: NodeIndex,
-                         direction: pg::EdgeDirection) -> NeighborsMut<'a, S, D> {
-        let graph = &mut self.graph as *mut pg::Graph<Node<S, D>, ()>;
+                         direction: pg::EdgeDirection) -> NeighborsMut<'a, S, N> {
+        let graph = &mut self.graph as *mut pg::Graph<Slot<S, N>, ()>;
         // Here we use `unsafe` to allow for aliasing references to the Graph.
         // We allow aliasing in this case because we know that it is impossible
         // for a user to use InputsMut unsafely as it's fields are private and
@@ -161,22 +172,22 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
     }
 
     /// Returns an iterator over references to each input node.
-    pub fn inputs<'a>(&'a self, idx: NodeIndex) -> Inputs<'a, S, D> {
+    pub fn inputs<'a>(&'a self, idx: NodeIndex) -> Inputs<'a, S, N> {
         self.neighbors(idx, pg::Incoming)
     }
 
     /// Returns an iterator over mutable references to each input node.
-    pub fn inputs_mut<'a>(&'a mut self, idx: NodeIndex) -> InputsMut<'a, S, D> {
+    pub fn inputs_mut<'a>(&'a mut self, idx: NodeIndex) -> InputsMut<'a, S, N> {
         self.neighbors_mut(idx, pg::Incoming)
     }
 
     /// Returns an iterator over references to each output node.
-    pub fn outputs<'a>(&'a self, idx: NodeIndex) -> Outputs<'a, S, D> {
+    pub fn outputs<'a>(&'a self, idx: NodeIndex) -> Outputs<'a, S, N> {
         self.neighbors(idx, pg::Outgoing)
     }
 
     /// Returns an iterator over mutable references to each output node.
-    pub fn outputs_mut<'a>(&'a mut self, idx: NodeIndex) -> OutputsMut<'a, S, D> {
+    pub fn outputs_mut<'a>(&'a mut self, idx: NodeIndex) -> OutputsMut<'a, S, N> {
         self.neighbors_mut(idx, pg::Outgoing)
     }
 
@@ -233,31 +244,42 @@ impl<S, D> Graph<S, D> where S: Sample, D: Dsp<S> {
         self.maybe_master = None;
     }
 
+    /// Prepare the buffers for all nodes within the Graph.
+    pub fn prepare_buffers(&mut self, settings: Settings) {
+        let target_len = settings.buffer_size();
+        for node in self.graph.all_node_weights_mut() {
+            let len = node.buffer.len();
+            if len < target_len {
+                node.buffer.extend((len..target_len).map(|_| Sample::zero()));
+            } else if len > target_len {
+                node.buffer.truncate(target_len);
+            }
+        }
+    }
+
 }
 
 
-impl<S, D> ::std::ops::Index<NodeIndex> for Graph<S, D> {
-    type Output = D;
+impl<S, N> ::std::ops::Index<NodeIndex> for Graph<S, N> {
+    type Output = N;
     #[inline]
-    fn index<'a>(&'a self, index: NodeIndex) -> &'a D {
-        let &Node(ref dsp, _) = &self.graph[index];
-        dsp
+    fn index<'a>(&'a self, index: NodeIndex) -> &'a N {
+        &self.graph[index].node
     }
 }
 
-impl<S, D> ::std::ops::IndexMut<NodeIndex> for Graph<S, D> {
+impl<S, N> ::std::ops::IndexMut<NodeIndex> for Graph<S, N> {
     #[inline]
-    fn index_mut(&mut self, index: NodeIndex) -> &mut D {
-        let &mut Node(ref mut dsp, _) = &mut self.graph[index];
-        dsp
+    fn index_mut(&mut self, index: NodeIndex) -> &mut N {
+        &mut self.graph[index].node
     }
 }
 
 
-impl<S, D> Dsp<S> for Graph<S, D>
+impl<S, N> Node<S> for Graph<S, N>
     where
         S: Sample,
-        D: Dsp<S>,
+        N: Node<S>,
 {
     fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
         if let Some(idx) = self.maybe_master {
@@ -271,107 +293,82 @@ impl<S, D> Dsp<S> for Graph<S, D>
 /// If the node does have incoming neighbors, they will be requested and summed first.
 /// This process will continue recursively until all incoming connections have been visited.
 #[inline]
-fn request_audio_from_graph<S, D>(graph: &mut pg::Graph<Node<S, D>, ()>,
+fn request_audio_from_graph<S, N>(graph: &mut pg::Graph<Slot<S, N>, ()>,
                                   idx: pg::graph::NodeIndex,
                                   output: &mut [S],
                                   settings: Settings)
     where
         S: Sample,
-        D: Dsp<S>,
+        N: Node<S>,
 {
-    {
-        let graph = graph as *mut pg::Graph<Node<S, D>, ()>;
-        for neighbor_idx in unsafe { (*graph).neighbors_directed(idx, pg::Incoming) } {
-            let graph: &mut pg::Graph<Node<S, D>, ()> = unsafe { ::std::mem::transmute(graph) };
-            let mut working = vec![Sample::zero(); settings.buffer_size()];
-            request_audio_from_graph(graph, neighbor_idx, &mut working, settings);
-            let Node(ref dsp, _) = graph[neighbor_idx];
-            let vol_per_channel = dsp.vol_per_channel();
-            Sample::add_buffers(output, &working[..], &vol_per_channel[..]);
+
+    let graph = graph as *mut pg::Graph<Slot<S, N>, ()>;
+
+    let &mut Slot { ref mut node, ref mut buffer, ref mut is_rendered } = unsafe {
+        &mut(*graph)[idx]
+    };
+
+    // If the node at the current index hasn't already been rendered then:
+    // - Initialise the buffer, ensuring it is the correct length and zeroed.
+    // - If the Node has inputs, request audio from them and have it summed upon `buffer`.
+    // - Request audio from this node using `buffer`.
+    if !*is_rendered {
+
+        // If the buffer's size does not match the output's, we need to change to the right size.
+        if buffer.len() != output.len() {
+            let len = buffer.len();
+            let target_len = output.len();
+            if len < target_len {
+                buffer.extend((len..target_len).map(|_| Sample::zero()));
+            } else if len > target_len {
+                buffer.truncate(target_len);
+            }
         }
+
+        // Zero the buffer, ready to sum the inputs.
+        for sample in buffer.iter_mut() { *sample = Sample::zero(); }
+
+        // Iterate over all of our inputs.
+        let inputs = unsafe { (*graph).neighbors_directed(idx, pg::Incoming) };
+        for neighbor_idx in inputs {
+            let graph: &mut pg::Graph<Slot<S, N>, ()> = unsafe { ::std::mem::transmute(graph) };
+            request_audio_from_graph(graph, neighbor_idx, buffer, settings);
+        }
+
+        // Request audio from the node.
+        node.audio_requested(buffer, settings);
+
+        *is_rendered = true;
     }
-    request_audio_from_node(graph, idx, output, settings);
-}
 
-
-/// If the node at the given index already has a prepared buffer, clone that.
-/// Otherwise, request a new buffer from the dsp object.
-fn request_audio_from_node<S, D>(graph: &mut pg::Graph<Node<S, D>, ()>,
-                                 idx: pg::graph::NodeIndex,
-                                 output: &mut [S],
-                                 settings: Settings)
-    where
-        S: Sample,
-        D: Dsp<S>,
-{
-    if graph.neighbors_directed(idx, pg::Outgoing).take(2).count() > 1 {
-        let &mut Node(ref mut dsp, ref mut maybe_buffer) = &mut graph[idx];
-        let buffer = match *maybe_buffer {
-            Some(ref buffer) => {
-
-                for (output_sample, sample) in output.iter_mut().zip(buffer.iter().map(|&s| s)) {
-                    *output_sample = sample;
-                }
-
-                // NOTE: The following line will replace the above once `clone_from_slice` is
-                // stabilised.
-                // output.clone_from_slice(&buffer[..]);
-
-                return;
-            },
-            None => {
-                let mut buffer = vec![Sample::zero(); settings.buffer_size()];
-                dsp.audio_requested(&mut buffer[..], settings);
-
-                for (output_sample, sample) in output.iter_mut().zip(buffer.iter().map(|&s| s)) {
-                    *output_sample = sample;
-                }
-
-                // NOTE: The following line will replace the above once `clone_from_slice` is
-                // stabilised.
-                // output.clone_from_slice(&buffer[..]);
-
-                buffer
-            },
-        };
-        *maybe_buffer = Some(buffer);
-    } else {
-        let &mut Node(ref mut dsp, _) = &mut graph[idx];
-        dsp.audio_requested(output, settings);
+    // Some the rendered buffer onto the output buffer.
+    for (output_sample, sample) in output.iter_mut().zip(buffer.iter()) {
+        *output_sample = *output_sample + *sample;
     }
+
 }
 
 
 /// Reset all buffers within all nodes that have incoming connections towards the node at the
 /// given index.
-fn reset_graph_buffers<S, D>(graph: &mut pg::Graph<Node<S, D>, ()>,
+fn reset_graph_buffers<S, N>(graph: &mut pg::Graph<Slot<S, N>, ()>,
                              idx: pg::graph::NodeIndex,)
     where
         S: Sample,
-        D: Dsp<S>,
+        N: Node<S>,
 {
     {
-        let graph = graph as *mut pg::Graph<Node<S, D>, ()>;
+        let graph = graph as *mut pg::Graph<Slot<S, N>, ()>;
         for neighbor_idx in unsafe { (*graph).neighbors_directed(idx, pg::Incoming) } {
-            let graph: &mut pg::Graph<Node<S, D>, ()> = unsafe { ::std::mem::transmute(graph) };
+            let graph: &mut pg::Graph<Slot<S, N>, ()> = unsafe { ::std::mem::transmute(graph) };
             reset_graph_buffers(graph, neighbor_idx);
         }
     }
-    reset_node_buffer(graph, idx);
-}
-
-
-/// Reset the buffer owned by the node at the given index.
-fn reset_node_buffer<S, D>(graph: &mut pg::Graph<Node<S, D>, ()>,
-                           idx: pg::graph::NodeIndex)
-    where
-        S: Sample,
-        D: Dsp<S>,
-{
-    let &mut Node(_, ref mut maybe_buffer) = &mut graph[idx];
-    if maybe_buffer.is_some() {
-        *maybe_buffer = None;
+    let &mut Slot { ref mut buffer, ref mut is_rendered, .. } = &mut graph[idx];
+    for sample in buffer.iter_mut() {
+        *sample = Sample::zero();
     }
+    *is_rendered = false;
 }
 
 
@@ -388,10 +385,10 @@ impl ::std::error::Error for WouldCycle {
 }
 
 
-impl<'a, S, D> Neighbors<'a, S, D> {
+impl<'a, S, N> Neighbors<'a, S, N> {
     /// Return an adaptor that will also return the neighor's NodeIndex.
     #[inline]
-    pub fn with_indices(self) -> NeighborsWithIndices<'a, S, D> {
+    pub fn with_indices(self) -> NeighborsWithIndices<'a, S, N> {
         let Neighbors { graph, neighbors } = self;
         NeighborsWithIndices {
             graph: graph,
@@ -400,10 +397,10 @@ impl<'a, S, D> Neighbors<'a, S, D> {
     }
 }
 
-impl<'a, S, D> NeighborsMut <'a, S, D> {
+impl<'a, S, N> NeighborsMut <'a, S, N> {
     /// Return an adaptor that will also return the neighor's NodeIndex.
     #[inline]
-    pub fn with_indices(self) -> NeighborsMutWithIndices<'a, S, D> {
+    pub fn with_indices(self) -> NeighborsMutWithIndices<'a, S, N> {
         let NeighborsMut { graph, neighbors } = self;
         NeighborsMutWithIndices {
             graph: graph,
@@ -413,73 +410,65 @@ impl<'a, S, D> NeighborsMut <'a, S, D> {
 }
 
 
-impl<'a, S, D> Iterator for Neighbors<'a, S, D> {
-    type Item = &'a D;
+impl<'a, S, N> Iterator for Neighbors<'a, S, N> {
+    type Item = &'a N;
     #[inline]
-    fn next(&mut self) -> Option<&'a D> {
+    fn next(&mut self) -> Option<&'a N> {
         match self.neighbors.next() {
-            Some(idx) => {
-                let &Node(ref dsp, _) = &self.graph[idx];
-                Some(dsp)
-            },
+            Some(idx) => Some(&self.graph[idx].node),
             None => None,
         }
     }
 }
 
-impl<'a, S, D> Iterator for NeighborsWithIndices<'a, S, D> {
-    type Item = (&'a D, NodeIndex);
+impl<'a, S, N> Iterator for NeighborsWithIndices<'a, S, N> {
+    type Item = (&'a N, NodeIndex);
     #[inline]
-    fn next(&mut self) -> Option<(&'a D, NodeIndex)> {
+    fn next(&mut self) -> Option<(&'a N, NodeIndex)> {
         match self.neighbors.next() {
-            Some(idx) => {
-                let &Node(ref dsp, _) = &self.graph[idx];
-                Some((dsp, idx))
-            },
+            Some(idx) => Some((&self.graph[idx].node, idx)),
             None => None,
         }
     }
 }
 
 
-impl<'a, S, D> Iterator for NeighborsMut<'a, S, D> {
-    type Item = &'a mut D;
+impl<'a, S, N> Iterator for NeighborsMut<'a, S, N> {
+    type Item = &'a mut N;
     #[inline]
-    fn next(&mut self) -> Option<&'a mut D> {
+    fn next(&mut self) -> Option<&'a mut N> {
         let NeighborsMut { ref mut graph, ref mut neighbors } = *self;
         match neighbors.next() {
             Some(idx) => {
-                let &mut Node(ref mut dsp, _) = &mut graph[idx];
-                let dsp: &mut D = dsp;
+                let node: &mut N = &mut graph[idx].node;
                 // Without the following unsafe block, rustc complains about
                 // input_ref_mut not having a suitable life time. This is because
                 // it is concerned about creating aliasing mutable references,
                 // however we know that only one mutable reference will be returned
                 // at a time and that they will never alias. Thus, we transmute to
                 // silence the lifetime warning!
-                Some(unsafe { ::std::mem::transmute(dsp) })
+                Some(unsafe { ::std::mem::transmute(node) })
             },
             None => None,
         }
     }
 }
 
-impl<'a, S, D> Iterator for NeighborsMutWithIndices<'a, S, D> {
-    type Item = (&'a mut D, NodeIndex);
+impl<'a, S, N> Iterator for NeighborsMutWithIndices<'a, S, N> {
+    type Item = (&'a mut N, NodeIndex);
     #[inline]
-    fn next(&mut self) -> Option<(&'a mut D, NodeIndex)> {
+    fn next(&mut self) -> Option<(&'a mut N, NodeIndex)> {
         let NeighborsMutWithIndices { ref mut graph, ref mut neighbors } = *self;
         match neighbors.next() {
             Some(idx) => {
-                let &mut Node(ref mut dsp, _) = &mut graph[idx];
-                let dsp: &mut D = dsp;
+                let node: &mut N = &mut graph[idx].node;
                 // Without the following unsafe block, rustc complains about
                 // input_ref_mut not having a suitable life time. This is because
                 // it is concerned about creating aliasing mutable references,
                 // however we know that only one mutable reference will be returned
                 // at a time and that they will never alias. Thus, we transmute to
                 // silence the lifetime warning!
-                Some((unsafe { ::std::mem::transmute(dsp) }, idx))
+                Some((unsafe { ::std::mem::transmute(node) }, idx))
             },
             None => None,
         }
