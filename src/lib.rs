@@ -1,22 +1,9 @@
 //! 
 //! A pure Rust audio digital signal processing library for Piston.
 //!
-//! There are two primary modules of interest within this library, both of which
-//! are unrelated and are designed to be used separately.
-//! 1. node.rs and the `Node` trait.
-//! 2. graph.rs and the `Graph` type.
-//!
-//! The `Node` trait offers a DSP chaining design via its `inputs` method. It is
-//! slightly simpler to use than the `Graph` type however also slightly more limited.
-//! Using the `Node` trait, it is impossible for two nodes to reference the same
-//! input `Node` making it difficult to perform "bussing" and "side-chaining".
-//!
-//! The `Graph` type constructs a directed, acyclic graph of DSP nodes. It is
-//! the recommended approach for more advanced DSP chains that involve things like
-//! "bussing", "side-chaining" or more DAW-esque behaviour. The `Graph` type requires
-//! its nodes to have implemented the `Dsp` trait (a slightly simplified version of the
-//! `Node` trait, though entirely unrelated). Internally, `Graph` uses bluss's petgraph
-//! crate. See more [here](https://crates.io/crates/petgraph).
+//! There are two primary modules of interest within this library.
+//! 1. graph.rs and the `Graph` type.
+//! 2. node.rs and the `Node` trait.
 //!
 
 #![deny(missing_docs)]

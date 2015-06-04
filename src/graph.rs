@@ -1,3 +1,10 @@
+//! 
+//! The `Graph` type constructs a directed, acyclic graph of DSP `Node` types.
+//! It supports multiple input and multiple output nodes.
+//! `Graph` uses bluss's petgraph crate. See more [here](https://crates.io/crates/petgraph).
+//! The `Graph` type requires its nodes to have implemented the `Node` trait.
+//!
+
 
 use node::Node;
 use petgraph as pg;
