@@ -204,7 +204,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
                                      output: &mut[S],
                                      settings: Settings) {
         request_audio_from_graph(&mut self.graph, idx, output, settings);
-        reset_graph_buffers(&mut self.graph, idx);
+        self.reset_buffers();
     }
 
     /// Remove all incoming connections to the node at the given index.
@@ -261,6 +261,17 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
             } else if len > target_len {
                 node.buffer.truncate(target_len);
             }
+        }
+    }
+
+    /// Reset all buffers within all nodes that have incoming connections towards the node at the
+    /// given index.
+    fn reset_buffers(&mut self) {
+        for node in self.graph.all_node_weights_mut() {
+            for sample in node.buffer.iter_mut() {
+                *sample = Sample::zero();
+            }
+            node.is_rendered = false;
         }
     }
 
@@ -355,28 +366,6 @@ fn request_audio_from_graph<S, N>(graph: &mut pg::Graph<Slot<S, N>, ()>,
 
 }
 
-
-/// Reset all buffers within all nodes that have incoming connections towards the node at the
-/// given index.
-fn reset_graph_buffers<S, N>(graph: &mut pg::Graph<Slot<S, N>, ()>,
-                             idx: pg::graph::NodeIndex,)
-    where
-        S: Sample,
-        N: Node<S>,
-{
-    {
-        let graph = graph as *mut pg::Graph<Slot<S, N>, ()>;
-        for neighbor_idx in unsafe { (*graph).neighbors_directed(idx, pg::Incoming) } {
-            let graph: &mut pg::Graph<Slot<S, N>, ()> = unsafe { ::std::mem::transmute(graph) };
-            reset_graph_buffers(graph, neighbor_idx);
-        }
-    }
-    let &mut Slot { ref mut buffer, ref mut is_rendered, .. } = &mut graph[idx];
-    for sample in buffer.iter_mut() {
-        *sample = Sample::zero();
-    }
-    *is_rendered = false;
-}
 
 
 impl ::std::fmt::Display for WouldCycle {
