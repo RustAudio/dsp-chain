@@ -268,9 +268,6 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// given index.
     fn reset_buffers(&mut self) {
         for node in self.graph.all_node_weights_mut() {
-            for sample in node.buffer.iter_mut() {
-                *sample = Sample::zero();
-            }
             node.is_rendered = false;
         }
     }
@@ -344,7 +341,9 @@ fn request_audio_from_graph<S, N>(graph: &mut pg::Graph<Slot<S, N>, ()>,
         }
 
         // Zero the buffer, ready to sum the inputs.
-        for sample in buffer.iter_mut() { *sample = Sample::zero(); }
+        for sample in buffer.iter_mut() {
+            *sample = Sample::zero();
+        }
 
         // Iterate over all of our inputs.
         let inputs = unsafe { (*graph).neighbors_directed(idx, pg::Incoming) };
