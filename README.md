@@ -40,7 +40,8 @@ dsp_graph.audio_requested(&mut buffer, settings);
 Here are [two working examples](https://github.com/PistonDevelopers/dsp-chain/blob/master/examples) of using dsp-chain to create a very basic synth and an oscillating volume.
 
 Add dsp-chain to your Cargo.toml dependencies like so:
-```
+
+```toml
 [dependencies]
 dsp-chain = "*"
 ```
