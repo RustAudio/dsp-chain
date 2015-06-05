@@ -254,7 +254,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Prepare the buffers for all nodes within the Graph.
     pub fn prepare_buffers(&mut self, settings: Settings) {
         let target_len = settings.buffer_size();
-        for node in self.graph.all_node_weights_mut() {
+        for node in self.graph.node_weights_mut() {
             let len = node.buffer.len();
             if len < target_len {
                 node.buffer.extend((len..target_len).map(|_| Sample::zero()));
@@ -267,7 +267,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Reset all buffers within all nodes that have incoming connections towards the node at the
     /// given index.
     fn reset_buffers(&mut self) {
-        for node in self.graph.all_node_weights_mut() {
+        for node in self.graph.node_weights_mut() {
             node.is_rendered = false;
         }
     }
