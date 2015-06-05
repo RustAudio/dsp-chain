@@ -71,6 +71,7 @@ fn main() {
 }
 
 /// Our type for which we will implement the `Dsp` trait.
+#[derive(Debug)]
 enum DspNode {
     /// Synth will be our demonstration of a master GraphNode.
     Synth,
