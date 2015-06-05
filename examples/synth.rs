@@ -6,7 +6,8 @@
 extern crate dsp;
 extern crate num;
 
-use dsp::{Dsp, CallbackFlags, CallbackResult, Graph, Sample, Settings, SoundStream, StreamParams, Wave};
+use dsp::{CallbackFlags, CallbackResult, Graph, Node, Sample,
+          Settings, SoundStream, StreamParams, Wave};
 
 /// SoundStream is currently generic over i8, i32 and f32. Feel free to change it!
 type Output = f32;
@@ -63,7 +64,9 @@ fn main() {
     let stream = SoundStream::new().output(StreamParams::new()).run_callback(callback).unwrap();
 
     // Wait for our stream to finish.
-    while let Ok(true) = stream.is_active() {}
+    while let Ok(true) = stream.is_active() {
+        ::std::thread::sleep_ms(16);
+    }
 
 }
 
@@ -76,7 +79,7 @@ enum DspNode {
     Oscillator(Phase, Frequency, Volume),
 }
 
-impl Dsp<Output> for DspNode {
+impl Node<Output> for DspNode {
     /// Here we'll override the audio_requested method and generate a sine wave.
     fn audio_requested(&mut self, buffer: &mut [Output], settings: Settings) {
         match *self {
