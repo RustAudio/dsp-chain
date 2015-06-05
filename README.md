@@ -2,16 +2,16 @@
 
 A simple library for chaining together multiple audio dsp processors/generators, written in Rust!
 
-
-Usage
------
-
 Use cases for dsp-chain include:
 - Designing effects.
 - Creating an audio mixer.
 - Making a sampler.
 - Writing a dsp backend for a DAW.
 - Any kind of modular audio synthesis/processing.
+
+
+Usage
+-----
 
 Here's what it looks like:
 
