@@ -10,28 +10,38 @@ use node::Node;
 use petgraph as pg;
 use sound_stream::{Sample, Settings};
 
+
+/// An alias for our Graph's Node Index.
+pub type NodeIndex = pg::graph::NodeIndex<u32>;
+/// An alias for our Graph's Edge Index.
+pub type EdgeIndex = pg::graph::EdgeIndex<u32>;
+
+/// An alias for the petgraph Graph used within our DSP Graph.
+pub type PetGraph<S, N> = pg::Graph<Slot<N>, Connection<S>, pg::Directed>;
+
+/// An alias representing neighboring nodes.
+pub type PgNeighbors<'a, S> = pg::graph::Neighbors<'a, Connection<S>, u32>;
+
 /// A directed, acyclic DSP graph.
 #[derive(Clone, Debug)]
 pub struct Graph<S, N> {
-    graph: pg::Graph<Slot<S, N>, ()>,
+    graph: PetGraph<S, N>,
+    dfs_visit_order: Vec<NodeIndex>,
     maybe_master: Option<NodeIndex>,
 }
 
-/// A Dsp object and it's sample buffer.
+/// A Dsp object and its sample buffer.
 #[derive(Clone, Debug)]
-struct Slot<S, N> {
+struct Slot<N> {
     /// User defined DspNode type.
     node: N,
-    /// The Node's sample buffer.
-    buffer: Vec<S>,
-    /// Indicates whether or not the buffer has already been rendered
-    /// for the current audio_requested duration. This saves us from re-rendering
-    /// the buffer in the case that the Node has multiple output connections.
-    is_rendered: bool,
 }
 
-/// Represents a graph node index.
-pub type NodeIndex = pg::graph::NodeIndex<u32>;
+/// Describes a connection between two Nodes within the Graph.
+#[derive(Clone, Debug)]
+struct Connection<S> {
+    buffer: Vec<S>,
+}
 
 /// A type for representing an error on the occasion
 /// that a connection would create a cyclic graph.
@@ -57,26 +67,26 @@ pub type OutputsMutWithIndices<'a, S, N> = NeighborsMutWithIndices<'a, S, N>;
 
 /// An iterator over references to the neighbors of a Graph node.
 pub struct Neighbors<'a, S: 'a, N: 'a> {
-    graph: &'a pg::Graph<Slot<S, N>, ()>,
-    neighbors: pg::graph::Neighbors<'a, (), u32>,
+    graph: &'a PetGraph<S, N>,
+    neighbors: PgNeighbors<'a, S>,
 }
 
 /// An iterator over references to the neighbors of a Graph node.
 pub struct NeighborsWithIndices<'a, S: 'a, N: 'a> {
-    graph: &'a pg::Graph<Slot<S, N>, ()>,
-    neighbors: pg::graph::Neighbors<'a, (), u32>,
+    graph: &'a PetGraph<S, N>,
+    neighbors: PgNeighbors<'a, S>,
 }
 
 /// An iterator over mutable references to the neighbors of a Graph node.
 pub struct NeighborsMut<'a, S: 'a, N: 'a> {
-    graph: &'a mut pg::Graph<Slot<S, N>, ()>,
-    neighbors: pg::graph::Neighbors<'a, (), u32>,
+    graph: &'a mut PetGraph<S, N>,
+    neighbors: PgNeighbors<'a, S>,
 }
 
 /// An iterator over mutable references to the neighbors of a Graph node.
 pub struct NeighborsMutWithIndices<'a, S: 'a, N: 'a> {
-    graph: &'a mut pg::Graph<Slot<S, N>, ()>,
-    neighbors: pg::graph::Neighbors<'a, (), u32>,
+    graph: &'a mut PetGraph<S, N>,
+    neighbors: PgNeighbors<'a, S>,
 }
 
 impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
@@ -86,6 +96,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         let graph = pg::Graph::new();
         Graph {
             graph: graph,
+            dfs_visit_order: Vec::new(),
             maybe_master: None,
         }
     }
@@ -103,6 +114,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
             None => None,
         };
         self.maybe_master = maybe_index;
+        self.prepare_visit_order();
     }
 
     /// Return the master index if there is one.
@@ -112,11 +124,28 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
 
     /// Add a node to the dsp graph.
     pub fn add_node(&mut self, node: N) -> NodeIndex {
-        self.graph.add_node(Slot {
-            node: node,
-            buffer: Vec::new(),
-            is_rendered: false,
-        })
+        let idx = self.graph.add_node(Slot { node: node, });
+        self.prepare_visit_order();
+        idx
+    }
+
+    /// Prepare the visit order for the graph in its current state.
+    fn prepare_visit_order(&mut self) {
+        self.dfs_visit_order.clear();
+        if let Some(idx) = self.maybe_master {
+
+            // Here we'll use petgraph's Dfs (Depth-first search) to construct our visit order. We
+            // need to walk all `Incoming` connections, (normally Dfs follows outgoing edges) so we
+            // must use pg::visit::Reversed to do this.
+            //
+            // Note that when rendering our graph, we will actually iterate over the nodes in the
+            // reverse of the Dfs' visit order. This is so we can render all children nodes prior
+            // to their parents.
+            let mut dfs = pg::Dfs::new(&self.graph, idx);
+            while let Some(idx) = dfs.next(&pg::visit::Reversed(&self.graph)) {
+                self.dfs_visit_order.push(idx);
+            }
+        }
     }
 
     /// Remove a node from the dsp graph.
@@ -127,20 +156,30 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
                 self.maybe_master = None;
             }
         }
-        self.graph.remove_node(idx).map(|slot| {
+        let maybe_removed = self.graph.remove_node(idx).map(|slot| {
             let Slot { node, .. } = slot;
             node
-        })
+        });
+        self.prepare_visit_order();
+        maybe_removed
     }
 
     /// Adds a connection from `a` to `b`. That is, `a` is now an input to `b`.
     /// Returns an error instead if the input would create a cycle in the graph.
     pub fn add_input(&mut self, a: NodeIndex, b: NodeIndex) -> Result<(), WouldCycle> {
-        let edge = self.graph.add_edge(a, b, ());
+
+        // Add the input connection between the two nodes with a Buffer the size of the output's.
+        let edge = self.graph.add_edge(a, b, Connection { buffer: Vec::new() });
+
+
+        // If the connection would create a cycle, remove the node and return an error.
         if pg::algo::is_cyclic_directed(&self.graph) {
             self.graph.remove_edge(edge);
             Err(WouldCycle)
-        } else {
+        }
+        // Otherwise the method was successful.
+        else {
+            self.prepare_visit_order();
             Ok(())
         }
     }
@@ -152,10 +191,12 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         } else if let Some(edge) = self.graph.find_edge(b, a) {
             self.graph.remove_edge(edge);
         }
+        self.prepare_visit_order();
     }
 
     /// Returns an iterator over references to each neighboring node in the given direction.
-    fn neighbors<'a>(&'a self, idx: NodeIndex,
+    fn neighbors<'a>(&'a self,
+                     idx: NodeIndex,
                      direction: pg::EdgeDirection) -> Neighbors<'a, S, N> {
         Neighbors {
             graph: &self.graph,
@@ -164,9 +205,10 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     }
 
     /// Returns an iterator over mutable references to each neighboring node in the given direction.
-    fn neighbors_mut<'a>(&'a mut self, idx: NodeIndex,
+    fn neighbors_mut<'a>(&'a mut self,
+                         idx: NodeIndex,
                          direction: pg::EdgeDirection) -> NeighborsMut<'a, S, N> {
-        let graph = &mut self.graph as *mut pg::Graph<Slot<S, N>, ()>;
+        let graph = &mut self.graph as *mut PetGraph<S, N>;
         // Here we use `unsafe` to allow for aliasing references to the Graph.
         // We allow aliasing in this case because we know that it is impossible
         // for a user to use InputsMut unsafely as it's fields are private and
@@ -196,15 +238,6 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Returns an iterator over mutable references to each output node.
     pub fn outputs_mut<'a>(&'a mut self, idx: NodeIndex) -> OutputsMut<'a, S, N> {
         self.neighbors_mut(idx, pg::Outgoing)
-    }
-
-    /// Request audio from the node at the given index.
-    pub fn audio_requested_from_node(&mut self,
-                                     idx: NodeIndex,
-                                     output: &mut[S],
-                                     settings: Settings) {
-        request_audio_from_graph(&mut self.graph, idx, output, settings);
-        self.reset_buffers();
     }
 
     /// Remove all incoming connections to the node at the given index.
@@ -254,21 +287,15 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Prepare the buffers for all nodes within the Graph.
     pub fn prepare_buffers(&mut self, settings: Settings) {
         let target_len = settings.buffer_size();
-        for node in self.graph.node_weights_mut() {
-            let len = node.buffer.len();
-            if len < target_len {
-                node.buffer.extend((len..target_len).map(|_| Sample::zero()));
-            } else if len > target_len {
-                node.buffer.truncate(target_len);
-            }
-        }
-    }
 
-    /// Reset all buffers within all nodes that have incoming connections towards the node at the
-    /// given index.
-    fn reset_buffers(&mut self) {
-        for node in self.graph.node_weights_mut() {
-            node.is_rendered = false;
+        // Initialise all connection buffers.
+        for connection in self.graph.edge_weights_mut() {
+            let len = connection.buffer.len();
+            if len < target_len {
+                connection.buffer.extend((len..target_len).map(|_| Sample::zero()));
+            } else if len > target_len {
+                connection.buffer.truncate(target_len);
+            }
         }
     }
 
@@ -297,74 +324,72 @@ impl<S, N> Node<S> for Graph<S, N>
         N: Node<S>,
 {
     fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
-        if let Some(idx) = self.maybe_master {
-            self.audio_requested_from_node(idx, output, settings);
-        }
-    }
-}
 
+        let Graph { ref dfs_visit_order, ref mut graph, .. } = *self;
 
-/// Request audio from the node at the given index and all incoming nodes.
-/// If the node does have incoming neighbors, they will be requested and summed first.
-/// This process will continue recursively until all incoming connections have been visited.
-#[inline]
-fn request_audio_from_graph<S, N>(graph: &mut pg::Graph<Slot<S, N>, ()>,
-                                  idx: pg::graph::NodeIndex,
-                                  output: &mut [S],
-                                  settings: Settings)
-    where
-        S: Sample,
-        N: Node<S>,
-{
+        // Iterate over the Dfs visit order in reverse in order to visit all children nodes before
+        // their parents as we want to render our graph from the bottom up.
+        for &idx in dfs_visit_order.iter().rev() {
 
-    let graph = graph as *mut pg::Graph<Slot<S, N>, ()>;
-
-    let &mut Slot { ref mut node, ref mut buffer, ref mut is_rendered } = unsafe {
-        &mut(*graph)[idx]
-    };
-
-    // If the node at the current index hasn't already been rendered then:
-    // - Initialise the buffer, ensuring it is the correct length and zeroed.
-    // - If the Node has inputs, request audio from them and have it summed upon `buffer`.
-    // - Request audio from this node using `buffer`.
-    if !*is_rendered {
-
-        // If the buffer's size does not match the output's, we need to change to the right size.
-        if buffer.len() != output.len() {
-            let len = buffer.len();
-            let target_len = output.len();
-            if len < target_len {
-                buffer.extend((len..target_len).map(|_| Sample::zero()));
-            } else if len > target_len {
-                buffer.truncate(target_len);
+            // Zero the buffer, ready to sum the inputs.
+            for sample in output.iter_mut() {
+                *sample = Sample::zero();
             }
+
+            // Iterate over each of the incoming connections to sum their buffers to the output.
+            // FIXME: Once the related `edges` API work lands, this should be replaced. petgraph#4.
+            {
+                let graph = graph as *mut PetGraph<S, N>;
+                let incoming_connections = unsafe {
+                    (*graph).neighbors_directed(idx, pg::Incoming)
+                        .map(|neighbor_idx| (*graph).find_edge(neighbor_idx, idx).unwrap())
+                        .map(|edge_idx| (*graph).edge_weight(edge_idx).unwrap())
+                };
+                for connection in incoming_connections {
+                    let iter = output.iter_mut().zip(connection.buffer.iter());
+                    for (sample, input_sample) in iter {
+                        *sample = *sample + *input_sample;
+                    }
+                }
+            }
+
+            // Render our `output` buffer with the current node.
+            {
+                let node = &mut graph[idx].node;
+                node.audio_requested(output, settings);
+            }
+
+            // Iterate over each of the outgoing connections and write the rendered output to them.
+            // FIXME: Once the related `edges` API work lands, this should be replaced. petgraph#4.
+            {
+                let graph = graph as *mut PetGraph<S, N>;
+                let outgoing_connections = unsafe {
+                    (*graph).neighbors_directed(idx, pg::Outgoing)
+                        .map(|neighbor_idx| (*graph).find_edge(idx, neighbor_idx).unwrap())
+                        .map(|edge_idx| (*graph).edge_weight_mut(edge_idx).unwrap())
+                };
+                for connection in outgoing_connections {
+
+                    // Ensure the buffer matches the target length.
+                    let len = connection.buffer.len();
+                    let target_len = output.len();
+                    if len < target_len {
+                        connection.buffer.extend((len..target_len).map(|_| Sample::zero()));
+                    } else if len > target_len {
+                        connection.buffer.truncate(target_len);
+                    }
+
+                    let iter = connection.buffer.iter_mut().zip(output.iter());
+                    for (outgoing_sample, output) in iter {
+                        *outgoing_sample = *output;
+                    }
+                }
+            }
+
         }
 
-        // Zero the buffer, ready to sum the inputs.
-        for sample in buffer.iter_mut() {
-            *sample = Sample::zero();
-        }
-
-        // Iterate over all of our inputs.
-        let inputs = unsafe { (*graph).neighbors_directed(idx, pg::Incoming) };
-        for neighbor_idx in inputs {
-            let graph: &mut pg::Graph<Slot<S, N>, ()> = unsafe { ::std::mem::transmute(graph) };
-            request_audio_from_graph(graph, neighbor_idx, buffer, settings);
-        }
-
-        // Request audio from the node.
-        node.audio_requested(buffer, settings);
-
-        *is_rendered = true;
     }
-
-    // Some the rendered buffer onto the output buffer.
-    for (output_sample, sample) in output.iter_mut().zip(buffer.iter()) {
-        *output_sample = *output_sample + *sample;
-    }
-
 }
-
 
 
 impl ::std::fmt::Display for WouldCycle {
