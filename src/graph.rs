@@ -211,7 +211,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         let graph = &mut self.graph as *mut PetGraph<S, N>;
         // Here we use `unsafe` to allow for aliasing references to the Graph.
         // We allow aliasing in this case because we know that it is impossible
-        // for a user to use InputsMut unsafely as it's fields are private and
+        // for a user to use NeighborsMut unsafely as its fields are private and
         // it only exposes its Iterator implementation, which we know is safe.
         // (see the Iterator implementation below the Graph implementation).
         NeighborsMut {
@@ -281,6 +281,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Clear all dsp nodes.
     pub fn clear(&mut self) {
         self.graph.clear();
+        self.dfs_visit_order.clear();
         self.maybe_master = None;
     }
 
@@ -329,60 +330,42 @@ impl<S, N> Node<S> for Graph<S, N>
 
         // Iterate over the Dfs visit order in reverse in order to visit all children nodes before
         // their parents as we want to render our graph from the bottom up.
-        for &idx in dfs_visit_order.iter().rev() {
+        // This is in reverse topological order.
+        for &node_idx in dfs_visit_order.iter().rev() {
 
             // Zero the buffer, ready to sum the inputs.
             for sample in output.iter_mut() {
                 *sample = Sample::zero();
             }
 
-            // Iterate over each of the incoming connections to sum their buffers to the output.
-            // FIXME: Once the related `edges` API work lands, this should be replaced. petgraph#4.
-            {
-                let graph = graph as *mut PetGraph<S, N>;
-                let incoming_connections = unsafe {
-                    (*graph).neighbors_directed(idx, pg::Incoming)
-                        .map(|neighbor_idx| (*graph).find_edge(neighbor_idx, idx).unwrap())
-                        .map(|edge_idx| (*graph).edge_weight(edge_idx).unwrap())
-                };
-                for connection in incoming_connections {
-                    let iter = output.iter_mut().zip(connection.buffer.iter());
-                    for (sample, input_sample) in iter {
-                        *sample = *sample + *input_sample;
-                    }
+            // Walk over each of the incoming connections to sum their buffers to the output.
+            let mut incoming_edges = graph.walk_edges_directed(node_idx, pg::Incoming);
+            while let Some(edge) = incoming_edges.next(graph) {
+                let connection = &graph[edge];
+                for (sample, in_sample) in output.iter_mut().zip(connection.buffer.iter()) {
+                    *sample = *sample + *in_sample;
                 }
             }
 
             // Render our `output` buffer with the current node.
-            {
-                let node = &mut graph[idx].node;
-                node.audio_requested(output, settings);
-            }
+            graph[node_idx].node.audio_requested(output, settings);
 
-            // Iterate over each of the outgoing connections and write the rendered output to them.
-            // FIXME: Once the related `edges` API work lands, this should be replaced. petgraph#4.
-            {
-                let graph = graph as *mut PetGraph<S, N>;
-                let outgoing_connections = unsafe {
-                    (*graph).neighbors_directed(idx, pg::Outgoing)
-                        .map(|neighbor_idx| (*graph).find_edge(idx, neighbor_idx).unwrap())
-                        .map(|edge_idx| (*graph).edge_weight_mut(edge_idx).unwrap())
-                };
-                for connection in outgoing_connections {
+            // Walk over each of the outgoing connections and write the rendered output to them.
+            let mut outgoing_edges = graph.walk_edges_directed(node_idx, pg::Outgoing);
+            while let Some(edge) = outgoing_edges.next(graph) {
+                let connection = &mut graph[edge];
 
-                    // Ensure the buffer matches the target length.
-                    let len = connection.buffer.len();
-                    let target_len = output.len();
-                    if len < target_len {
-                        connection.buffer.extend((len..target_len).map(|_| Sample::zero()));
-                    } else if len > target_len {
-                        connection.buffer.truncate(target_len);
-                    }
+                // Ensure the buffer matches the target length.
+                let len = connection.buffer.len();
+                let target_len = output.len();
+                if len < target_len {
+                    connection.buffer.extend((len..target_len).map(|_| Sample::zero()));
+                } else if len > target_len {
+                    connection.buffer.truncate(target_len);
+                }
 
-                    let iter = connection.buffer.iter_mut().zip(output.iter());
-                    for (outgoing_sample, output) in iter {
-                        *outgoing_sample = *output;
-                    }
+                for (out_sample, rendered) in connection.buffer.iter_mut().zip(output.iter()) {
+                    *out_sample = *rendered;
                 }
             }
 
