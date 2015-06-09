@@ -26,7 +26,7 @@ pub type PgNeighbors<'a, S> = pg::graph::Neighbors<'a, Connection<S>, u32>;
 #[derive(Clone, Debug)]
 pub struct Graph<S, N> {
     graph: PetGraph<S, N>,
-    dfs_visit_order: Vec<NodeIndex>,
+    visit_order: Vec<NodeIndex>,
     maybe_master: Option<NodeIndex>,
 }
 
@@ -96,7 +96,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         let graph = pg::Graph::new();
         Graph {
             graph: graph,
-            dfs_visit_order: Vec::new(),
+            visit_order: Vec::new(),
             maybe_master: None,
         }
     }
@@ -130,22 +130,12 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     }
 
     /// Prepare the visit order for the graph in its current state.
+    ///
+    /// When audio is requested from the graph, we need to iterate through all nodes so that all
+    /// child nodes are visited before their parents. To do this, we can use petgraph's toposort
+    /// algorithm to return the topological order of our graph.
     fn prepare_visit_order(&mut self) {
-        self.dfs_visit_order.clear();
-        if let Some(idx) = self.maybe_master {
-
-            // Here we'll use petgraph's Dfs (Depth-first search) to construct our visit order. We
-            // need to walk all `Incoming` connections, (normally Dfs follows outgoing edges) so we
-            // must use pg::visit::Reversed to do this.
-            //
-            // Note that when rendering our graph, we will actually iterate over the nodes in the
-            // reverse of the Dfs' visit order. This is so we can render all children nodes prior
-            // to their parents.
-            let mut dfs = pg::Dfs::new(&self.graph, idx);
-            while let Some(idx) = dfs.next(&pg::visit::Reversed(&self.graph)) {
-                self.dfs_visit_order.push(idx);
-            }
-        }
+        self.visit_order = pg::algo::toposort(&self.graph);
     }
 
     /// Remove a node from the dsp graph.
@@ -281,7 +271,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Clear all dsp nodes.
     pub fn clear(&mut self) {
         self.graph.clear();
-        self.dfs_visit_order.clear();
+        self.visit_order.clear();
         self.maybe_master = None;
     }
 
@@ -326,12 +316,9 @@ impl<S, N> Node<S> for Graph<S, N>
 {
     fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
 
-        let Graph { ref dfs_visit_order, ref mut graph, .. } = *self;
+        let Graph { ref visit_order, ref mut graph, .. } = *self;
 
-        // Iterate over the Dfs visit order in reverse in order to visit all children nodes before
-        // their parents as we want to render our graph from the bottom up.
-        // This is in reverse topological order.
-        for &node_idx in dfs_visit_order.iter().rev() {
+        for &node_idx in visit_order.iter() {
 
             // Zero the buffer, ready to sum the inputs.
             for sample in output.iter_mut() {
