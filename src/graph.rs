@@ -318,8 +318,6 @@ impl<S, N> Node<S> for Graph<S, N>
 
         let Graph { ref visit_order, ref mut graph, .. } = *self;
 
-        // Iterate over the topological order in order to visit all children nodes before
-        // their parents as we want to render our graph from the bottom up.
         for &node_idx in visit_order.iter() {
 
             // Zero the buffer, ready to sum the inputs.
