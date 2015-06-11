@@ -283,7 +283,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         for connection in self.graph.edge_weights_mut() {
             let len = connection.buffer.len();
             if len < target_len {
-                connection.buffer.extend((len..target_len).map(|_| Sample::zero()));
+                connection.buffer.extend((len..target_len).map(|_| S::zero()));
             } else if len > target_len {
                 connection.buffer.truncate(target_len);
             }
@@ -322,7 +322,7 @@ impl<S, N> Node<S> for Graph<S, N>
 
             // Zero the buffer, ready to sum the inputs.
             for sample in output.iter_mut() {
-                *sample = Sample::zero();
+                *sample = S::zero();
             }
 
             // Walk over each of the incoming connections to sum their buffers to the output.
@@ -346,7 +346,7 @@ impl<S, N> Node<S> for Graph<S, N>
                 let len = connection.buffer.len();
                 let target_len = output.len();
                 if len < target_len {
-                    connection.buffer.extend((len..target_len).map(|_| Sample::zero()));
+                    connection.buffer.extend((len..target_len).map(|_| S::zero()));
                 } else if len > target_len {
                     connection.buffer.truncate(target_len);
                 }
