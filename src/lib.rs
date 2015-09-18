@@ -27,6 +27,7 @@ pub use graph::{
 };
 pub use node::Node;
 pub use sound_stream::{
+    portaudio,
     input,
     output,
     duplex,
@@ -36,6 +37,7 @@ pub use sound_stream::{
     DeltaTimeSeconds,
     Latency,
     PaSample,
+    PaStream,
     Sample,
     Settings,
     SoundStream,
