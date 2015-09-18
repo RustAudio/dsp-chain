@@ -28,6 +28,7 @@ pub struct Graph<S, N> {
     graph: PetGraph<S, N>,
     visit_order: Vec<NodeIndex>,
     maybe_master: Option<NodeIndex>,
+    dry_buffer: Vec<S>,
 }
 
 /// A Dsp object and its sample buffer.
@@ -35,6 +36,10 @@ pub struct Graph<S, N> {
 struct Slot<N> {
     /// User defined DspNode type.
     node: N,
+    /// The amount of Dry signal that should be produced (0.0...1.0).
+    dry: f32,
+    /// The amount of Wet signal to be produced (0.0...1.0).
+    wet: f32,
 }
 
 /// Describes a connection between two Nodes within the Graph.
@@ -98,6 +103,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
             graph: graph,
             visit_order: Vec::new(),
             maybe_master: None,
+            dry_buffer: Vec::new(),
         }
     }
 
@@ -124,7 +130,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
 
     /// Add a node to the dsp graph.
     pub fn add_node(&mut self, node: N) -> NodeIndex {
-        let idx = self.graph.add_node(Slot { node: node, });
+        let idx = self.graph.add_node(Slot { node: node, dry: 0.0, wet: 1.0 });
         self.prepare_visit_order();
         idx
     }
@@ -279,15 +285,32 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     pub fn prepare_buffers(&mut self, settings: Settings) {
         let target_len = settings.buffer_size();
 
+        let prepare_buffer = |buffer: &mut Vec<S>| {
+            let len = buffer.len();
+            if len < target_len {
+                buffer.extend((len..target_len).map(|_| S::zero()))
+            } else if len > target_len {
+                buffer.truncate(target_len);
+            }
+        };
+
+        // Initialise the dry signal buffer.
+        prepare_buffer(&mut self.dry_buffer);
+
         // Initialise all connection buffers.
         for connection in self.graph.edge_weights_mut() {
-            let len = connection.buffer.len();
-            if len < target_len {
-                connection.buffer.extend((len..target_len).map(|_| S::zero()));
-            } else if len > target_len {
-                connection.buffer.truncate(target_len);
-            }
+            prepare_buffer(&mut connection.buffer);
         }
+    }
+
+    /// Set the amplitude of the wet signal for the node at the given index.
+    pub fn set_wet_amp(&mut self, idx: NodeIndex, amp: f32) {
+        self.graph[idx].wet = amp;
+    }
+
+    /// Set the amplitude of the dry signal for the node at the given index.
+    pub fn set_dry_amp(&mut self, idx: NodeIndex, amp: f32) {
+        self.graph[idx].dry = amp;
     }
 
 }
@@ -309,33 +332,46 @@ impl<S, N> ::std::ops::IndexMut<NodeIndex> for Graph<S, N> {
 }
 
 
-impl<S, N> Node<S> for Graph<S, N>
-    where
-        S: Sample,
-        N: Node<S>,
+impl<S, N> Node<S> for Graph<S, N> where
+    S: Sample,
+    N: Node<S>,
 {
     fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
 
-        let Graph { ref visit_order, ref mut graph, .. } = *self;
+        let Graph { ref visit_order, ref mut graph, ref mut dry_buffer, .. } = *self;
 
         for &node_idx in visit_order.iter() {
 
-            // Zero the buffer, ready to sum the inputs.
-            for sample in output.iter_mut() {
+            // Zero the buffers, ready to sum the inputs.
+            for (sample, dry_sample) in output.iter_mut().zip(dry_buffer.iter_mut()) {
                 *sample = S::zero();
+                *dry_sample = S::zero();
             }
 
             // Walk over each of the incoming connections to sum their buffers to the output.
             let mut incoming_edges = graph.walk_edges_directed(node_idx, pg::Incoming);
             while let Some(edge) = incoming_edges.next(graph) {
                 let connection = &graph[edge];
-                for (sample, in_sample) in output.iter_mut().zip(connection.buffer.iter()) {
+                let iter = output.iter_mut()
+                    .zip(dry_buffer.iter_mut())
+                    .zip(connection.buffer.iter());
+                for ((sample, dry_sample), in_sample) in iter {
                     *sample = *sample + *in_sample;
+                    *dry_sample = *sample;
                 }
             }
 
-            // Render our `output` buffer with the current node.
-            graph[node_idx].node.audio_requested(output, settings);
+            {
+                let &mut Slot { ref mut node, dry, wet } = &mut graph[node_idx];
+                // Render our `output` buffer with the current node.
+                // The `output` buffer is now representative of a fully wet signal.
+                node.audio_requested(output, settings);
+
+                // Combine the dry and wet signals.
+                for (output_sample, dry_sample) in output.iter_mut().zip(dry_buffer.iter()) {
+                    *output_sample = output_sample.mul_amp(wet) + dry_sample.mul_amp(dry);
+                }
+            }
 
             // Walk over each of the outgoing connections and write the rendered output to them.
             let mut outgoing_edges = graph.walk_edges_directed(node_idx, pg::Outgoing);
