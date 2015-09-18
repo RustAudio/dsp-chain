@@ -167,7 +167,6 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         // Add the input connection between the two nodes with a Buffer the size of the output's.
         let edge = self.graph.add_edge(a, b, Connection { buffer: Vec::new() });
 
-
         // If the connection would create a cycle, remove the node and return an error.
         if pg::algo::is_cyclic_directed(&self.graph) {
             self.graph.remove_edge(edge);
@@ -285,21 +284,12 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     pub fn prepare_buffers(&mut self, settings: Settings) {
         let target_len = settings.buffer_size();
 
-        let prepare_buffer = |buffer: &mut Vec<S>| {
-            let len = buffer.len();
-            if len < target_len {
-                buffer.extend((len..target_len).map(|_| S::zero()))
-            } else if len > target_len {
-                buffer.truncate(target_len);
-            }
-        };
-
         // Initialise the dry signal buffer.
-        prepare_buffer(&mut self.dry_buffer);
+        resize_buffer_to(&mut self.dry_buffer, target_len);
 
         // Initialise all connection buffers.
         for connection in self.graph.edge_weights_mut() {
-            prepare_buffer(&mut connection.buffer);
+            resize_buffer_to(&mut connection.buffer, target_len);
         }
     }
 
@@ -337,8 +327,12 @@ impl<S, N> Node<S> for Graph<S, N> where
     N: Node<S>,
 {
     fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
-
         let Graph { ref visit_order, ref mut graph, ref mut dry_buffer, .. } = *self;
+
+        // Ensure the dry_buffer is the same length as the output buffer.
+        if dry_buffer.len() != output.len() {
+            resize_buffer_to(dry_buffer, output.len());
+        }
 
         for &node_idx in visit_order.iter() {
 
@@ -352,17 +346,20 @@ impl<S, N> Node<S> for Graph<S, N> where
             let mut incoming_edges = graph.walk_edges_directed(node_idx, pg::Incoming);
             while let Some(edge) = incoming_edges.next(graph) {
                 let connection = &graph[edge];
-                let iter = output.iter_mut()
-                    .zip(dry_buffer.iter_mut())
-                    .zip(connection.buffer.iter());
-                for ((sample, dry_sample), in_sample) in iter {
+                for (sample, in_sample) in output.iter_mut().zip(connection.buffer.iter()) {
                     *sample = *sample + *in_sample;
-                    *dry_sample = *sample;
                 }
             }
 
+            // Render the audio with the current node and sum the dry and wet signals.
             {
                 let &mut Slot { ref mut node, dry, wet } = &mut graph[node_idx];
+
+                // Store the dry signal in the dry buffer for later summing.
+                for (dry_sample, output_sample) in dry_buffer.iter_mut().zip(output.iter()) {
+                    *dry_sample = *output_sample;
+                }
+
                 // Render our `output` buffer with the current node.
                 // The `output` buffer is now representative of a fully wet signal.
                 node.audio_requested(output, settings);
@@ -379,14 +376,11 @@ impl<S, N> Node<S> for Graph<S, N> where
                 let connection = &mut graph[edge];
 
                 // Ensure the buffer matches the target length.
-                let len = connection.buffer.len();
-                let target_len = output.len();
-                if len < target_len {
-                    connection.buffer.extend((len..target_len).map(|_| S::zero()));
-                } else if len > target_len {
-                    connection.buffer.truncate(target_len);
+                if connection.buffer.len() != output.len() {
+                    resize_buffer_to(&mut connection.buffer, output.len());
                 }
 
+                // Write the rendered audio to the outgoing connection buffers.
                 for (out_sample, rendered) in connection.buffer.iter_mut().zip(output.iter()) {
                     *out_sample = *rendered;
                 }
@@ -394,6 +388,17 @@ impl<S, N> Node<S> for Graph<S, N> where
 
         }
 
+    }
+}
+
+
+/// Resize the given buffer to the given target length.
+fn resize_buffer_to<S>(buffer: &mut Vec<S>, target_len: usize) where S: Sample {
+    let len = buffer.len();
+    if len < target_len {
+        buffer.extend((len..target_len).map(|_| S::zero()))
+    } else if len > target_len {
+        buffer.truncate(target_len);
     }
 }
 
