@@ -31,15 +31,12 @@ pub struct Graph<S, N> {
     dry_buffer: Vec<S>,
 }
 
+
 /// A Dsp object and its sample buffer.
 #[derive(Clone, Debug)]
 struct Slot<N> {
     /// User defined DspNode type.
     node: N,
-    /// The amount of Dry signal that should be produced (0.0...1.0).
-    dry: f32,
-    /// The amount of Wet signal to be produced (0.0...1.0).
-    wet: f32,
 }
 
 /// Describes a connection between two Nodes within the Graph.
@@ -130,7 +127,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
 
     /// Add a node to the dsp graph.
     pub fn add_node(&mut self, node: N) -> NodeIndex {
-        let idx = self.graph.add_node(Slot { node: node, dry: 0.0, wet: 1.0 });
+        let idx = self.graph.add_node(Slot { node: node });
         self.prepare_visit_order();
         idx
     }
@@ -293,16 +290,6 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         }
     }
 
-    /// Set the amplitude of the wet signal for the node at the given index.
-    pub fn set_wet_amp(&mut self, idx: NodeIndex, amp: f32) {
-        self.graph[idx].wet = amp;
-    }
-
-    /// Set the amplitude of the dry signal for the node at the given index.
-    pub fn set_dry_amp(&mut self, idx: NodeIndex, amp: f32) {
-        self.graph[idx].dry = amp;
-    }
-
 }
 
 
@@ -353,7 +340,7 @@ impl<S, N> Node<S> for Graph<S, N> where
 
             // Render the audio with the current node and sum the dry and wet signals.
             {
-                let &mut Slot { ref mut node, dry, wet } = &mut graph[node_idx];
+                let node = &mut graph[node_idx].node;
 
                 // Store the dry signal in the dry buffer for later summing.
                 for (dry_sample, output_sample) in dry_buffer.iter_mut().zip(output.iter()) {
@@ -363,6 +350,9 @@ impl<S, N> Node<S> for Graph<S, N> where
                 // Render our `output` buffer with the current node.
                 // The `output` buffer is now representative of a fully wet signal.
                 node.audio_requested(output, settings);
+
+                let dry = node.dry();
+                let wet = node.wet();
 
                 // Combine the dry and wet signals.
                 for (output_sample, dry_sample) in output.iter_mut().zip(dry_buffer.iter()) {
