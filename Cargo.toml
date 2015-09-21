@@ -5,7 +5,7 @@ version = "0.6.0"
 authors = [
     "mitchmindtree <mitchell.nordine@gmail.com>",
     "bvssvni <bvssvni@gmail.com>",
-    "indiv0 <contact@nikitapek.in>"
+    "indiv0"
 ]
 description = "Provides a Node trait and a Graph type for chaining together audio generators/processors in a dsp graph."
 readme = "README.md"
