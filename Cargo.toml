@@ -21,6 +21,6 @@ name = "dsp"
 path = "./src/lib.rs"
 
 [dependencies]
-num = { version = "*", default-features = false }
-petgraph = "*"
+num = { version = "0.1.27", default-features = false }
+petgraph = "0.1.11"
 sound_stream = "0.4.4"
