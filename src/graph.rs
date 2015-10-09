@@ -369,7 +369,8 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Returns an index to both the new `dest` node and the edge that represents the new connection
     /// between it and the node at `src`.
     ///
-    /// Computes in **O(1)** time.
+    /// Computes in **O(n)** time where n is the number of nodes. This is because must update the
+    /// visit order after adding the new connection.
     ///
     /// **Panics** if there is no node for the given `dest` index.
     ///
