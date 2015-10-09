@@ -350,13 +350,16 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Returns an index to both the new `src` node and the edge that represents the new connection
     /// between it and the node at `dest`.
     ///
-    /// Computes in **O(1)** time.
+    /// Computes in **O(n)** time where n is the number of nodes. This is because must update the
+    /// visit order after adding the new connection.
     ///
     /// **Panics** if there is no node for the given `dest` index.
     ///
     /// **Panics** if the Graph is at the maximum number of edges for its index.
     pub fn add_input(&mut self, src: N, dest: NodeIndex) -> (EdgeIndex, NodeIndex) {
-        self.dag.add_parent(dest, Connection { buffer: Vec::new() }, src)
+        let indices = self.dag.add_parent(dest, Connection { buffer: Vec::new() }, src);
+        self.prepare_visit_order();
+        indices
     }
 
     /// Add a new node weight to the graph as an output to the wait at the given `src` node index.
@@ -372,7 +375,9 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     ///
     /// **Panics** if the Graph is at the maximum number of edges for its index.
     pub fn add_output(&mut self, src: NodeIndex, dest: N) -> (EdgeIndex, NodeIndex) {
-        self.dag.add_child(src, Connection { buffer: Vec::new() }, dest)
+        let indices = self.dag.add_child(src, Connection { buffer: Vec::new() }, dest);
+        self.prepare_visit_order();
+        indices
     }
 
     /// An iterator yielding indices to the nodes that are inputs to the node at the given index.
