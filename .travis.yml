@@ -1,7 +1,6 @@
 language: rust
 rust:
 - stable
-- beta
 notifications:
   email:
   - mitchell.nordine@gmail.com
