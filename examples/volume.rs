@@ -8,34 +8,31 @@ use dsp::{CallbackFlags, CallbackResult, Graph, Node, Sample,
 fn main() {
 
     // Construct our dsp graph.
-    let mut dsp_graph = Graph::new();
+    let mut graph = Graph::new();
 
     // Construct our fancy Synth and add it to the graph!
-    let synth = dsp_graph.add_node(DspNode::Synth(0.0));
+    let synth = graph.add_node(DspNode::Synth(0.0));
 
-    // Construct our volume node.
-    let volume = dsp_graph.add_node(DspNode::Volume(1.0));
-
-    // Plug the synth into our Volume node.
-    dsp_graph.add_input(synth, volume).unwrap();
+    // Output our synth to a marvellous volume node.
+    let (_, volume) = graph.add_output(synth, DspNode::Volume(1.0));
 
     // Set the synth as the master node for the graph.
-    dsp_graph.set_master(Some(volume));
+    graph.set_master(Some(volume));
 
     // We'll use this to count down from three seconds and then break from the loop.
     let mut timer: f64 = 0.0;
 
-    // The callback we'll use to pass to the Stream. It will request audio from our dsp_graph.
+    // The callback we'll use to pass to the Stream. It will request audio from our graph.
     let callback = Box::new(move |output: &mut[f32], settings: Settings, dt: f64, _: CallbackFlags| {
 
         // Zero the sample buffer.
         Sample::zero_buffer(output);
 
         // Request audio from the graph.
-        dsp_graph.audio_requested(output, settings);
+        graph.audio_requested(output, settings);
 
         // Oscillate the volume.
-        if let &mut DspNode::Volume(ref mut vol) = &mut dsp_graph[volume] {
+        if let &mut DspNode::Volume(ref mut vol) = &mut graph[volume] {
             *vol = (4.0 * timer as f32).sin();
         }
 

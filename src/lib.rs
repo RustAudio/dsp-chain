@@ -1,28 +1,39 @@
 //! 
-//! A pure Rust audio digital signal processing library for Piston.
+//! A generic, fast, audio digital signal processing library.
 //!
-//! There are two primary modules of interest within this library.
-//! 1. graph.rs and the `Graph` type.
-//! 2. node.rs and the `Node` trait.
+//! There are two primary points of interest:
+//! 1. The [**Graph** type](./graph/struct.Graph.html) - a directed, acyclic audio DSP graph.
+//! 2. The [**Node** trait](./node/trait.Node.html) - to be implemented for types used within the
+//!    **Graph**.
 //!
 
+#![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
+extern crate daggy as daggy_lib;
 extern crate num;
-extern crate petgraph;
-extern crate sound_stream;
+extern crate sound_stream as sound_stream_lib;
+
+pub use daggy_lib as daggy;
+pub use sound_stream_lib as sound_stream;
 
 pub use graph::{
+    Connection,
+    Dag,
+    EdgeIndex,
     Graph,
-    NodeIndex,
     Inputs,
-    InputsWithIndices,
-    InputsMut,
-    InputsMutWithIndices,
+    NodeIndex,
+    NodesMut,
     Outputs,
-    OutputsWithIndices,
-    OutputsMut,
-    OutputsMutWithIndices,
+    PetGraph,
+    RawEdges,
+    RawNodes,
+    VisitOrder,
+    WalkInputs,
+    WalkOutputs,
+    WalkVisitOrder,
+    WalkVisitOrderReverse,
     WouldCycle,
 };
 pub use node::Node;
