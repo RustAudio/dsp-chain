@@ -49,9 +49,9 @@ pub type PetGraph<S, N> = daggy::PetGraph<N, Connection<S>, usize>;
 ///
 /// An input -> output connection in this `Graph` is represented as a parent -> child connection
 /// within the internal `Dag`. The following terms are all equivalent:
-///   - input -> output
-///   - src -> dest
-///   - parent -> child
+/// - *input -> output*
+/// - *src -> dest*
+/// - *parent -> child*
 ///
 /// Audio can be requested from any node in the **Graph** using the
 /// [`audio_requested_from`](./struct.Graph.html#method.audio_requested_from) method.
@@ -326,8 +326,8 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         }
     }
 
-    /// Find and remove any connection between a and b if there is one, whether it is "a -> b" or
-    /// "b -> a". We know that their may only be one edge as our API does not allow for creating a
+    /// Find and remove any connection between a and b if there is one, whether it is *a -> b* or
+    /// *b -> a*. We know that their may only be one edge as our API does not allow for creating a
     /// cyclic graph.
     ///
     /// Returns true if an edge was removed, returns false if there was no edge at the given index.
