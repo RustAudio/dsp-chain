@@ -23,26 +23,23 @@ const F5_HZ: Frequency = 698.46;
 fn main() {
 
     // Construct our dsp graph.
-    let mut dsp_graph = Graph::new();
+    let mut graph = Graph::new();
 
     // Construct our fancy Synth and add it to the graph!
-    let synth = dsp_graph.add_node(DspNode::Synth);
+    let synth = graph.add_node(DspNode::Synth);
 
-    // Construct a few oscillators, add them to the graph and connect them to the synth.
-    let oscillator_a = dsp_graph.add_node(DspNode::Oscillator(0.0, A5_HZ, 0.2));
-    let oscillator_b = dsp_graph.add_node(DspNode::Oscillator(0.0, D5_HZ, 0.1));
-    let oscillator_c = dsp_graph.add_node(DspNode::Oscillator(0.0, F5_HZ, 0.15));
-    dsp_graph.add_input(oscillator_a, synth).unwrap();
-    dsp_graph.add_input(oscillator_b, synth).unwrap();
-    dsp_graph.add_input(oscillator_c, synth).unwrap();
+    // Connect a few oscillators to the synth.
+    let (_, oscillator_a) = graph.add_input(DspNode::Oscillator(0.0, A5_HZ, 0.2), synth);
+    graph.add_input(DspNode::Oscillator(0.0, D5_HZ, 0.1), synth);
+    graph.add_input(DspNode::Oscillator(0.0, F5_HZ, 0.15), synth);
 
     // If adding a connection between two nodes would create a cycle, Graph will return an Err.
-    if let Err(err) = dsp_graph.add_input(synth, oscillator_a) {
-        println!("Test for graph cycle error: {:?}", ::std::error::Error::description(&err));
+    if let Err(err) = graph.add_connection(synth, oscillator_a) {
+        println!("Testing for cycle error: {:?}", ::std::error::Error::description(&err));
     }
 
     // Set the synth as the master node for the graph.
-    dsp_graph.set_master(Some(synth));
+    graph.set_master(Some(synth));
 
     // We'll use this to count down from three seconds and then break from the loop.
     let mut timer: f64 = 3.0;
@@ -50,13 +47,18 @@ fn main() {
     // The callback we'll use to pass to the Stream. It will request audio from our dsp_graph.
     let callback = Box::new(move |output: &mut[Output], settings: Settings, dt: f64, _: CallbackFlags| {
         Sample::zero_buffer(output);
-        dsp_graph.audio_requested(output, settings);
+        graph.audio_requested(output, settings);
         timer -= dt;
-        for input in dsp_graph.inputs_mut(synth) {
-            if let DspNode::Oscillator(_, ref mut pitch, _) = *input {
+
+        // Traverse inputs or outputs of a node with the following pattern.
+        let mut inputs = graph.walk_inputs(synth);
+        while let Some(input_idx) = inputs.next_node(&mut graph) {
+            if let DspNode::Oscillator(_, ref mut pitch, _) = graph[input_idx] {
+                // Pitch down our oscillators for fun.
                 *pitch -= 0.1;
             }
         }
+
         if timer >= 0.0 { CallbackResult::Continue } else { CallbackResult::Complete }
     });
 

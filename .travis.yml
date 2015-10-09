@@ -7,7 +7,6 @@ notifications:
         - mitchell.nordine@gmail.com
 os:
     - linux
-    - osx
 env:
     - LD_LIBRARY_PATH: /usr/local/lib
 install:
