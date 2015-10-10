@@ -35,7 +35,8 @@ pub type PetGraph<S, N> = daggy::PetGraph<N, Connection<S>, usize>;
 /// Designed for easily and safely setting up high performance audio signal generating, processing
 /// and mixing. Useful for both simple and highly complex signal graphs.
 ///
-/// There are a variety of use cases for `Graph`.
+/// There are a variety of use cases for `Graph`:
+///
 /// - Designing effects.
 /// - Creating an audio mixer.
 /// - Making a sampler.
@@ -49,6 +50,7 @@ pub type PetGraph<S, N> = daggy::PetGraph<N, Connection<S>, usize>;
 ///
 /// An input -> output connection in this `Graph` is represented as a parent -> child connection
 /// within the internal `Dag`. The following terms are all equivalent:
+///
 /// - *input -> output*
 /// - *src -> dest*
 /// - *parent -> child*
@@ -150,6 +152,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     }
 
     /// Constructor for a new dsp Graph with some minimum capacity.
+    ///
     /// - **nodes** is the capacity for the underlying **Dag**'s node `Vec`.
     /// - **connections** is the capacity for the underlying **Dag**'s edge `Vec`.
     /// - **samples_per_buffer** is the capacity for the **Graph**'s `dry_buffer`, which is used
