@@ -24,6 +24,9 @@ pub type RawNodes<'a, N> = daggy::RawNodes<'a, N, usize>;
 /// Read only access to a **Graph**'s internal edge array.
 pub type RawEdges<'a, S> = daggy::RawEdges<'a, Connection<S>, usize>;
 
+/// An iterator yielding indices to recently added connections.
+pub type EdgeIndices = daggy::EdgeIndices<usize>;
+
 /// An alias for the **Dag** used within our **Graph**.
 pub type Dag<S, N> = daggy::Dag<N, Connection<S>, usize>;
 
@@ -292,7 +295,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// If you're using `add_node` followed by this method, consider using
     /// [`add_input`](./struct.Graph.html#method.add_input) or
     /// [`add_output`](./struct.Graph.html#method.add_output) instead for greater performance.
-    /// This is because when adding the node and edge simultaneously, we don't have to check
+    /// This is because when adding a new node and edge simultaneously, we don't have to check
     /// whether adding the edge would create a cycle.
     ///
     /// **Panics** if there is no node for either `src` or `dest`.
@@ -303,6 +306,34 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     {
         self.dag.add_edge(src, dest, Connection { buffer: Vec::new() })
             .map(|edge| { self.prepare_visit_order(); edge })
+            .map_err(|_| WouldCycle)
+    }
+
+    /// The same as [`add_connection`](./struct.Graph.html#method.add_connection) but adds
+    /// multiple connections to the **Graph**. Rather than checking for introduced cycles and
+    /// re-preparing the visit order after adding each edge, we only do so after **all** edges are
+    /// added. Thus, this is a far more efficient alternative to repeatedly calling the
+    /// `add_connection` method.
+    ///
+    /// Returns an error instead if any of the connections would create a cycle in the graph.
+    ///
+    /// **Graph** will re-prepare its visit order if the connections were successfully added.
+    ///
+    /// If you're using `add_node` followed by this method, consider using
+    /// [`add_input`](./struct.Graph.html#method.add_input) or
+    /// [`add_output`](./struct.Graph.html#method.add_output) instead for greater performance.
+    /// This is because when adding a new node and edge simultaneously, we don't have to check
+    /// whether adding the edge would create a cycle.
+    ///
+    /// **Panics** if there is no node for either `src` or `dest`.
+    ///
+    /// **Panics** if the Graph is at the maximum number of edges for its index.
+    pub fn add_connections<I>(&mut self, connections: I) -> Result<EdgeIndices, WouldCycle> where
+        I: ::std::iter::IntoIterator<Item=(NodeIndex, NodeIndex)>,
+    {
+        fn new_connection<S>() -> Connection<S> { Connection { buffer: Vec::new() } }
+        self.dag.add_edges(connections.into_iter().map(|(src, dest)| (src, dest, new_connection())))
+            .map(|edges| { self.prepare_visit_order(); edges })
             .map_err(|_| WouldCycle)
     }
 
