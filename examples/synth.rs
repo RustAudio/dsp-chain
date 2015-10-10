@@ -52,7 +52,7 @@ fn main() {
 
         // Traverse inputs or outputs of a node with the following pattern.
         let mut inputs = graph.walk_inputs(synth);
-        while let Some(input_idx) = inputs.next_node(&mut graph) {
+        while let Some(input_idx) = inputs.next_node(&graph) {
             if let DspNode::Oscillator(_, ref mut pitch, _) = graph[input_idx] {
                 // Pitch down our oscillators for fun.
                 *pitch -= 0.1;
