@@ -566,13 +566,11 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
             let mut inputs = self.walk_inputs(node_idx);
             while let Some(connection_idx) = inputs.next_connection(self) {
                 let connection = &self[connection_idx];
-                for i in 0..buffer_size {
-                    // We can be certain that `connection`'s buffer is the same size as the
-                    // `output` buffer as all connections are visited from their input nodes
-                    // (towards the end of the visit_order while loop) before being visited here
-                    // by their output nodes.
-                    output[i] = output[i] + connection.buffer[i];
-                }
+                // We can be certain that `connection`'s buffer is the same size as the
+                // `output` buffer as all connections are visited from their input nodes
+                // (towards the end of the visit_order while loop) before being visited here
+                // by their output nodes.
+                S::add_buffer(output, &connection.buffer);
             }
 
             // Store the dry signal in the dry buffer for later summing.
@@ -614,9 +612,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
                 }
 
                 // Write the rendered audio to the outgoing connection buffers.
-                for i in 0..buffer_size {
-                    connection.buffer[i] = output[i];
-                }
+                S::write_buffer(&mut connection.buffer, output);
             }
         }
 
