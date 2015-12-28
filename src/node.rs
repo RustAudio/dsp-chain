@@ -1,6 +1,4 @@
-
-use sound_stream::{Sample, Settings};
-
+use {Sample, Settings};
 
 /// Types to be used as a **Node** within the DSP **Graph**.
 pub trait Node<S> where S: Sample {
@@ -44,4 +42,3 @@ pub trait Node<S> where S: Sample {
     fn wet(&self) -> f32 { 1.0 }
 
 }
-

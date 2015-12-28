@@ -13,12 +13,9 @@
 #![deny(missing_docs)]
 
 extern crate daggy as daggy_lib;
-extern crate num;
-extern crate sound_stream as sound_stream_lib;
+extern crate sample;
 
 pub use daggy_lib as daggy;
-pub use sound_stream_lib as sound_stream;
-
 pub use graph::{
     Connection,
     Dag,
@@ -39,29 +36,12 @@ pub use graph::{
     WouldCycle,
 };
 pub use node::Node;
-pub use sound_stream::{
-    portaudio,
-    input,
-    output,
-    duplex,
-    Amplitude,
-    CallbackFlags,
-    CallbackResult,
-    DeltaTimeSeconds,
-    Latency,
-    PaSample,
-    PaStream,
-    Sample,
-    Settings,
-    SoundStream,
-    StreamFlags,
-    StreamParams,
-    Wave
-};
-pub use sound_stream::Error as SoundStreamError;
+pub use sample::{Amplitude, Sample, Wave};
+pub use settings::Settings;
 
 mod graph;
 mod node;
+mod settings;
 
 /// The amplitude multiplier.
 pub type Volume = Amplitude;
@@ -71,4 +51,3 @@ pub type Volume = Amplitude;
 ///  0.0 = Center.
 ///  1.0 = Right.
 pub type Panning = f32;
-

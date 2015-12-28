@@ -1,13 +1,12 @@
-//! 
-//! An example of using dsp-chain's `Graph` type to create a simple
-//! Synthesiser with 3 sine wave oscillators.
-//!
+//! An example of using dsp-chain's `Graph` type to create a simple Synthesiser with 3 sine wave
+//! oscillators.
 
 extern crate dsp;
-extern crate num;
+extern crate portaudio;
 
-use dsp::{CallbackFlags, CallbackResult, Graph, Node, Sample,
-          Settings, SoundStream, StreamParams, Wave};
+use dsp::{Graph, Node, Sample, Settings, Wave};
+use portaudio as pa;
+
 
 /// SoundStream is currently generic over i8, i32 and f32. Feel free to change it!
 type Output = f32;
@@ -16,11 +15,19 @@ type Phase = f64;
 type Frequency = f64;
 type Volume = f32;
 
+const CHANNELS: i32 = 2;
+const FRAMES: u32 = 64;
+const SAMPLE_HZ: f64 = 44_100.0;
+
 const A5_HZ: Frequency = 440.0;
 const D5_HZ: Frequency = 587.33;
 const F5_HZ: Frequency = 698.46;
 
 fn main() {
+    run().unwrap()
+}
+
+fn run() -> Result<(), pa::Error> {
 
     // Construct our dsp graph.
     let mut graph = Graph::new();
@@ -44,11 +51,20 @@ fn main() {
     // We'll use this to count down from three seconds and then break from the loop.
     let mut timer: f64 = 3.0;
 
+    // This will be used to determine the delta time between calls to the callback.
+    let mut prev_time = None;
+
     // The callback we'll use to pass to the Stream. It will request audio from our dsp_graph.
-    let callback = Box::new(move |output: &mut[Output], settings: Settings, dt: f64, _: CallbackFlags| {
-        Sample::zero_buffer(output);
-        graph.audio_requested(output, settings);
+    let callback = move |pa::OutputStreamCallbackArgs { buffer, frames, time, .. }| {
+
+        Sample::zero_buffer(buffer);
+        let settings = Settings::new(SAMPLE_HZ as u32, frames as u16, CHANNELS as u16);
+        graph.audio_requested(buffer, settings);
+
+        let last_time = prev_time.unwrap_or(time.current);
+        let dt = time.current - last_time;
         timer -= dt;
+        prev_time = Some(time.current);
 
         // Traverse inputs or outputs of a node with the following pattern.
         let mut inputs = graph.walk_inputs(synth);
@@ -59,17 +75,21 @@ fn main() {
             }
         }
 
-        if timer >= 0.0 { CallbackResult::Continue } else { CallbackResult::Complete }
-    });
+        if timer >= 0.0 { pa::Continue } else { pa::Complete }
+    };
 
-    // Construct the stream and handle any errors that may have occurred.
-    let stream = SoundStream::new().output(StreamParams::new()).run_callback(callback).unwrap();
+    // Construct PortAudio and the stream.
+    let pa = try!(pa::PortAudio::new());
+    let settings = try!(pa.default_output_stream_settings(CHANNELS, SAMPLE_HZ, FRAMES));
+    let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
+    try!(stream.start());
 
     // Wait for our stream to finish.
-    while let Ok(true) = stream.is_active() {
+    while let true = try!(stream.is_active()) {
         ::std::thread::sleep_ms(16);
     }
 
+    Ok(())
 }
 
 /// Our type for which we will implement the `Dsp` trait.
@@ -103,7 +123,5 @@ impl Node<Output> for DspNode {
 /// Return a sine wave for the given phase.
 fn sine_wave<S: Sample>(phase: Phase, volume: Volume) -> S {
     use std::f64::consts::PI;
-    use num::Float;
     Sample::from_wave((phase * PI * 2.0).sin() as Wave * volume)
 }
-

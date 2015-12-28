@@ -1,6 +1,6 @@
 language: rust
 rust:
-- stable
+- nightly
 notifications:
   email:
   - mitchell.nordine@gmail.com
