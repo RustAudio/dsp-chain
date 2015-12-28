@@ -14,13 +14,13 @@ license = "MIT"
 repository = "https://github.com/RustAudio/dsp-chain.git"
 homepage = "https://github.com/RustAudio/dsp-chain"
 
-
 [lib]
-
 name = "dsp"
 path = "./src/lib.rs"
 
 [dependencies]
 daggy = "0.1.4"
-num = { version = "0.1.27", default-features = false }
-sound_stream = "0.6.0"
+sample = "0.2.0"
+
+[dev-dependencies]
+portaudio = "0.6.1"

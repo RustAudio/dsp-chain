@@ -1,14 +1,16 @@
-//! 
-//! The `Graph` type constructs a directed, acyclic graph of DSP `Node` types.
-//! It supports multiple input and multiple output nodes.
-//! `Graph` uses bluss's petgraph crate. See more [here](https://crates.io/crates/petgraph).
-//! The `Graph` type requires its nodes to have implemented the `Node` trait.
+//! The [`Graph`](./struct.Graph.html) type constructs a directed, acyclic graph of DSP `Node`
+//! types.
 //!
+//! It supports multiple input and multiple output nodes per node.
+//!
+//! `Graph` uses the daggy crate. See more [here](https://crates.io/crates/daggy).
+//!
+//! The `Graph` type requires that its nodes implement the [`Node`](../node/trait.Node.html) trait.
 
-
+use Sample;
 use daggy;
 use node::Node;
-use sound_stream::{Sample, Settings};
+use settings::Settings;
 
 
 /// An alias for our Graph's Node Index.
