@@ -50,16 +50,3 @@ Add dsp-chain to your Cargo.toml dependencies like so:
 [dependencies]
 dsp-chain = "*"
 ```
-
-
-PortAudio
----------
-
-The dsp-chain examples use [PortAudio](http://www.portaudio.com) as a cross-platform audio backend. The [rust-portaudio](https://github.com/jeremyletang/rust-portaudio) dependency will first try to find an already installed version on your system before trying to download it and build PortAudio itself.
-
-
-License
--------
-
-MIT - Same license as [PortAudio](http://www.portaudio.com/license.html).
-
