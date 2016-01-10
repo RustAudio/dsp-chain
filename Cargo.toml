@@ -19,7 +19,7 @@ name = "dsp"
 path = "./src/lib.rs"
 
 [dependencies]
-daggy = "0.1.4"
+daggy = "0.3.0"
 sample = "0.2.0"
 
 [dev-dependencies]

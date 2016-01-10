@@ -15,7 +15,7 @@
 extern crate daggy as daggy_lib;
 extern crate sample;
 
-pub use daggy_lib as daggy;
+pub use daggy_lib::{Walker, self as daggy};
 pub use graph::{
     Connection,
     Dag,
@@ -29,10 +29,7 @@ pub use graph::{
     RawEdges,
     RawNodes,
     VisitOrder,
-    WalkInputs,
-    WalkOutputs,
-    WalkVisitOrder,
-    WalkVisitOrderReverse,
+    VisitOrderReverse,
     WouldCycle,
 };
 pub use node::Node;
