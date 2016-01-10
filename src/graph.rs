@@ -8,7 +8,7 @@
 //! The `Graph` type requires that its nodes implement the [`Node`](../node/trait.Node.html) trait.
 
 use Sample;
-use daggy;
+use daggy::{self, Walker};
 use node::Node;
 use settings::Settings;
 
@@ -104,37 +104,25 @@ pub struct Connection<S> {
 #[derive(Copy, Clone, Debug)]
 pub struct WouldCycle;
 
-/// An iterator yielding indices to nodes that are inputs to some node.
-pub type Inputs<'a, S> = daggy::Parents<'a, Connection<S>, usize>;
-
 /// A walker object for walking over nodes that are inputs to some node.
-pub struct WalkInputs {
-    walk_parents: daggy::WalkParents<usize>,
+pub struct Inputs<S, N> {
+    parents: daggy::Parents<N, Connection<S>, usize>,
 }
-
-/// An iterator yielding indices to nodes that are outputs to some node.
-pub type Outputs<'a, S> = daggy::Children<'a, Connection<S>, usize>;
 
 /// A walker object for walking over nodes that are outputs to some node.
-pub struct WalkOutputs {
-    walk_children: daggy::WalkChildren<usize>,
-}
-
-/// An iterator yielding a **Graph**'s node indices in the order in which they will be visited when
-/// audio is requested from the **Graph**.
-pub struct VisitOrder<'a> {
-    indices: ::std::slice::Iter<'a, NodeIndex>,
+pub struct Outputs<S, N> {
+    children: daggy::Children<N, Connection<S>, usize>,
 }
 
 /// A walker type for walking over a **Graph**'s nodes in the order in which they will visited when
 /// audio is requested from the **Graph**.
-pub struct WalkVisitOrder {
+pub struct VisitOrder {
     current_visit_order_idx: usize,
 }
 
 /// A walker type for walking over a **Graph**'s nodes in the order in which they will visited when
 /// audio is requested from the **Graph**.
-pub struct WalkVisitOrderReverse {
+pub struct VisitOrderReverse {
     current_visit_order_idx: usize,
 }
 
@@ -417,63 +405,45 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         indices
     }
 
-    /// An iterator yielding indices to the nodes that are inputs to the node at the given index.
-    ///
-    /// Produces an empty iterator if there is no node at the given index.
-    pub fn inputs(&self, idx: NodeIndex) -> Inputs<S> {
-        self.dag.parents(idx)
-    }
-
     /// A "walker" object that may be used to step through the inputs of the given node.
     ///
     /// Unlike the `Inputs` type, `WalkInputs` does not borrow the `Graph`.
-    pub fn walk_inputs(&self, idx: NodeIndex) -> WalkInputs {
-        WalkInputs { walk_parents: self.dag.walk_parents(idx) }
-    }
-
-    /// An iterator yielding indices to the nodes that are outputs to the node at the given index.
     ///
-    /// Produces an empty iterator if there is no node at the given index.
-    pub fn outputs(&self, idx: NodeIndex) -> Outputs<S> {
-        self.dag.children(idx)
+    /// Can be converted to an iterator using `.iter()`.
+    pub fn inputs(&self, idx: NodeIndex) -> Inputs<S, N> {
+        Inputs { parents: self.dag.parents(idx) }
     }
 
     /// A "walker" object that may be used to step through the outputs of the given node.
     ///
     /// Unlike the `Outputs` type, `WalkOutputs` does not borrow the **Graph**.
-    pub fn walk_outputs(&self, idx: NodeIndex) -> WalkOutputs {
-        WalkOutputs { walk_children: self.dag.walk_children(idx) }
+    ///
+    /// Can be converted to an iterator using `.iter()`.
+    pub fn outputs(&self, idx: NodeIndex) -> Outputs<S, N> {
+        Outputs { children: self.dag.children(idx) }
     }
 
-    /// An iterator yielding node indices in the order in which they will be visited when audio is
-    /// requested from the **Graph**.
+    /// A "walker" type that may be used to step through all node indices in the order in which
+    /// they will be visited when audio is requested from the **Graph**.
     pub fn visit_order(&self) -> VisitOrder {
-        VisitOrder { indices: self.visit_order.iter() }
+        VisitOrder { current_visit_order_idx: 0 }
     }
 
     /// A "walker" type that may be used to step through all node indices in the order in which
     /// they will be visited when audio is requested from the **Graph**.
     ///
-    /// Unlike the VisitOrder type, WalkVisitOrder does not borrow the **Graph**.
-    pub fn walk_visit_order(&self) -> WalkVisitOrder {
-        WalkVisitOrder { current_visit_order_idx: 0 }
-    }
-
-    /// A "walker" type that may be used to step through all node indices in the order in which
-    /// they will be visited when audio is requested from the **Graph**.
-    ///
-    /// Unlike the VisitOrder type, WalkVisitOrder does not borrow the **Graph**.
-    pub fn walk_visit_order_rev(&self) -> WalkVisitOrderReverse {
-        WalkVisitOrderReverse { current_visit_order_idx: self.visit_order.len() }
+    /// Unlike the VisitOrder type, VisitOrder does not borrow the **Graph**.
+    pub fn visit_order_rev(&self) -> VisitOrderReverse {
+        VisitOrderReverse { current_visit_order_idx: self.visit_order.len() }
     }
 
     /// Remove all incoming connections to the node at the given index.
     ///
     /// Return the number of connections removed.
     pub fn remove_all_input_connections(&mut self, idx: NodeIndex) -> usize {
-        let mut inputs = self.walk_inputs(idx);
+        let mut inputs = self.inputs(idx);
         let mut num = 0;
-        while let Some(connection) = inputs.next_connection(&self) {
+        while let Some(connection) = inputs.next_edge(&self) {
             self.remove_edge(connection);
             num += 1;
         }
@@ -484,9 +454,9 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     ///
     /// Return the number of connections removed.
     pub fn remove_all_output_connections(&mut self, idx: NodeIndex) -> usize {
-        let mut outputs = self.walk_outputs(idx);
+        let mut outputs = self.outputs(idx);
         let mut num = 0;
-        while let Some(connection) = outputs.next_connection(&self) {
+        while let Some(connection) = outputs.next_edge(&self) {
             self.remove_edge(connection);
             num += 1;
         }
@@ -502,8 +472,8 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         let mut num_removed = 0;
         for i in 0..self.dag.node_count() {
             let idx = NodeIndex::new(i);
-            let num_inputs = self.inputs(idx).count();
-            let num_outputs = self.outputs(idx).count();
+            let num_inputs = self.inputs(idx).count(self);
+            let num_outputs = self.outputs(idx).count(self);
             if num_inputs == 0 && num_outputs == 0 {
                 if self.maybe_master == Some(idx) {
                     self.maybe_master = None;
@@ -555,7 +525,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
             resize_buffer_to(&mut self.dry_buffer, buffer_size);
         }
 
-        let mut visit_order = self.walk_visit_order();
+        let mut visit_order = self.visit_order();
         while let Some(node_idx) =  visit_order.next(self) {
 
             // Zero the buffers, ready to sum the inputs of the current node.
@@ -565,8 +535,8 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
             }
 
             // Walk over each of the input connections to sum their buffers to the output.
-            let mut inputs = self.walk_inputs(node_idx);
-            while let Some(connection_idx) = inputs.next_connection(self) {
+            let mut inputs = self.inputs(node_idx);
+            while let Some(connection_idx) = inputs.next_edge(self) {
                 let connection = &self[connection_idx];
                 // We can be certain that `connection`'s buffer is the same size as the
                 // `output` buffer as all connections are visited from their input nodes
@@ -604,8 +574,8 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
             }
 
             // Walk over each of the outgoing connections and write the rendered output to them.
-            let mut outputs = self.walk_outputs(node_idx);
-            while let Some(connection_idx) = outputs.next_connection(self) {
+            let mut outputs = self.outputs(node_idx);
+            while let Some(connection_idx) = outputs.next_edge(self) {
                 let connection = &mut self.dag[connection_idx];
 
                 // Ensure the buffer matches the target length.
@@ -671,9 +641,9 @@ impl<S, N> Node<S> for Graph<S, N> where
             None => {
                 // If there is no set master node, we'll start from the back of the visit_order and
                 // use the first node that has no output connections.
-                let mut visit_order_rev = self.walk_visit_order_rev();
+                let mut visit_order_rev = self.visit_order_rev();
                 while let Some(node) = visit_order_rev.next(self) {
-                    if self.inputs(node).count() == 0 {
+                    if self.inputs(node).count(self) == 0 {
                         self.audio_requested_from(node, output, settings);
                         return;
                     }
@@ -684,56 +654,58 @@ impl<S, N> Node<S> for Graph<S, N> where
 }
 
 
-impl WalkInputs {
+impl<S, N> Walker<Graph<S, N>> for Inputs<S, N> {
+    type Index = usize;
 
     /// The next (connection, node) input pair to some node in our walk for the given **Graph**. 
-    pub fn next<S, N>(&mut self, graph: &Graph<S, N>) -> Option<(EdgeIndex, NodeIndex)> {
-        self.walk_parents.next_parent(&graph.dag)
+    #[inline]
+    fn next(&mut self, graph: &Graph<S, N>) -> Option<(EdgeIndex, NodeIndex)> {
+        self.parents.next(&graph.dag)
     }
 
     /// The next input connection to some node in our walk for the given **Graph**.
-    pub fn next_connection<S, N>(&mut self, graph: &Graph<S, N>) -> Option<EdgeIndex> {
-        self.walk_parents.next(&graph.dag)
+    #[inline]
+    fn next_edge(&mut self, graph: &Graph<S, N>) -> Option<EdgeIndex> {
+        self.parents.next_edge(&graph.dag)
     }
 
     /// The next input node to some node in our walk for the given **Graph**.
-    pub fn next_node<S, N>(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
-        self.walk_parents.next_parent(&graph.dag).map(|(_, node)| node)
+    #[inline]
+    fn next_node(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
+        self.parents.next_node(&graph.dag)
     }
 
 }
 
 
-impl WalkOutputs {
+impl<S, N> Walker<Graph<S, N>> for Outputs<S, N> {
+    type Index = usize;
 
     /// The next (connection, node) output pair from some node in our walk for the given **Graph**.
-    pub fn next<S, N>(&mut self, graph: &Graph<S, N>) -> Option<(EdgeIndex, NodeIndex)> {
-        self.walk_children.next_child(&graph.dag)
+    #[inline]
+    fn next(&mut self, graph: &Graph<S, N>) -> Option<(EdgeIndex, NodeIndex)> {
+        self.children.next(&graph.dag)
     }
 
     /// The next output connection from some node in our walk for the given **Graph**.
-    pub fn next_connection<S, N>(&mut self, graph: &Graph<S, N>) -> Option<EdgeIndex> {
-        self.walk_children.next(&graph.dag)
+    #[inline]
+    fn next_edge(&mut self, graph: &Graph<S, N>) -> Option<EdgeIndex> {
+        self.children.next_edge(&graph.dag)
     }
 
     /// The next output node from some node in our walk for the given **Graph**.
-    pub fn next_node<S, N>(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
-        self.walk_children.next_child(&graph.dag).map(|(_, node)| node)
+    #[inline]
+    fn next_node(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
+        self.children.next_node(&graph.dag)
     }
 
 }
 
 
-impl<'a> Iterator for VisitOrder<'a> {
-    type Item = NodeIndex;
-    fn next(&mut self) -> Option<NodeIndex> {
-        self.indices.next().map(|&idx| idx)
-    }
-}
-
-impl WalkVisitOrder {
+impl VisitOrder {
     /// The index of the next node that would be visited during audio requested in our walk of the
     /// given **Graph**'s visit order.
+    #[inline]
     pub fn next<S, N>(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
         graph.visit_order.get(self.current_visit_order_idx).map(|&idx| {
             self.current_visit_order_idx += 1;
@@ -742,9 +714,10 @@ impl WalkVisitOrder {
     }
 }
 
-impl WalkVisitOrderReverse {
+impl VisitOrderReverse {
     /// The index of the next node that would be visited during audio requested in our walk of the
     /// given **Graph**'s visit order.
+    #[inline]
     pub fn next<S, N>(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
         if self.current_visit_order_idx > 0 {
             self.current_visit_order_idx -= 1;

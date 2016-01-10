@@ -4,7 +4,7 @@
 extern crate dsp;
 extern crate portaudio;
 
-use dsp::{Graph, Node, Sample, Settings, Wave};
+use dsp::{Graph, Node, Sample, Settings, Walker, Wave};
 use portaudio as pa;
 
 
@@ -67,7 +67,7 @@ fn run() -> Result<(), pa::Error> {
         prev_time = Some(time.current);
 
         // Traverse inputs or outputs of a node with the following pattern.
-        let mut inputs = graph.walk_inputs(synth);
+        let mut inputs = graph.inputs(synth);
         while let Some(input_idx) = inputs.next_node(&graph) {
             if let DspNode::Oscillator(_, ref mut pitch, _) = graph[input_idx] {
                 // Pitch down our oscillators for fun.
