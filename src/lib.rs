@@ -13,7 +13,7 @@
 #![deny(missing_docs)]
 
 extern crate daggy as daggy_lib;
-extern crate sample;
+extern crate sample as sample_lib;
 
 pub use daggy_lib::{Walker, self as daggy};
 pub use graph::{
@@ -33,7 +33,7 @@ pub use graph::{
     WouldCycle,
 };
 pub use node::Node;
-pub use sample::{Amplitude, Sample, Wave};
+pub use sample_lib::{self as sample, FromSample, Sample};
 pub use settings::Settings;
 
 mod graph;
@@ -41,7 +41,7 @@ mod node;
 mod settings;
 
 /// The amplitude multiplier.
-pub type Volume = Amplitude;
+pub type Volume = f32;
 
 /// The spacial positioning of the node. Currently only supports Stereo or Mono.
 /// -1.0 = Left.

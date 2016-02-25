@@ -7,9 +7,9 @@
 //!
 //! The `Graph` type requires that its nodes implement the [`Node`](../node/trait.Node.html) trait.
 
-use Sample;
 use daggy::{self, Walker};
 use node::Node;
+use sample::{self, Sample, FromSample};
 use settings::Settings;
 
 
@@ -512,6 +512,8 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
                                 output_node: NodeIndex,
                                 output: &mut [S],
                                 settings: Settings)
+        where S: FromSample<f32>,
+              f32: FromSample<S>,
     {
         // We can only go on if a node actually exists for the given index.
         if self.node(output_node).is_none() {
@@ -528,10 +530,10 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
         let mut visit_order = self.visit_order();
         while let Some(node_idx) =  visit_order.next(self) {
 
-            // Zero the buffers, ready to sum the inputs of the current node.
+            // Set the buffers to equilibrium, ready to sum the inputs of the current node.
             for i in 0..buffer_size {
-                output[i] = S::zero();
-                self.dry_buffer[i] = S::zero();
+                output[i] = S::equilibrium();
+                self.dry_buffer[i] = S::equilibrium();
             }
 
             // Walk over each of the input connections to sum their buffers to the output.
@@ -542,7 +544,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
                 // `output` buffer as all connections are visited from their input nodes
                 // (towards the end of the visit_order while loop) before being visited here
                 // by their output nodes.
-                S::add_buffer(output, &connection.buffer);
+                sample::buffer::add(output, &connection.buffer);
             }
 
             // Store the dry signal in the dry buffer for later summing.
@@ -565,7 +567,9 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
 
             // Combine the dry and wet signals.
             for i in 0..buffer_size {
-                output[i] = output[i].mul_amp(wet) + self.dry_buffer[i].mul_amp(dry);
+                let wet = (output[i].to_sample::<f32>() * wet).to_sample::<S>();
+                let dry = (self.dry_buffer[i].to_sample::<f32>() * dry).to_sample::<S>();
+                output[i] = wet + dry;
             }
 
             // If we've reached our output node, we're done!
@@ -584,7 +588,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
                 }
 
                 // Write the rendered audio to the outgoing connection buffers.
-                S::write_buffer(&mut connection.buffer, output);
+                sample::buffer::write(&mut connection.buffer, output);
             }
         }
 
@@ -632,8 +636,9 @@ impl<S, N> ::std::ops::Index<EdgeIndex> for Graph<S, N> {
 
 
 impl<S, N> Node<S> for Graph<S, N> where
-    S: Sample,
+    S: Sample + FromSample<f32>,
     N: Node<S>,
+    f32: FromSample<S>,
 {
     fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
         match self.maybe_master {
@@ -734,7 +739,7 @@ impl VisitOrderReverse {
 fn resize_buffer_to<S>(buffer: &mut Vec<S>, target_len: usize) where S: Sample {
     let len = buffer.len();
     if len < target_len {
-        buffer.extend((len..target_len).map(|_| S::zero()))
+        buffer.extend((len..target_len).map(|_| S::equilibrium()))
     } else if len > target_len {
         buffer.truncate(target_len);
     }

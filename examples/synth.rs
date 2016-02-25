@@ -4,7 +4,7 @@
 extern crate dsp;
 extern crate portaudio;
 
-use dsp::{Graph, Node, Sample, Settings, Walker, Wave};
+use dsp::{sample, Graph, Node, FromSample, Sample, Settings, Walker};
 use portaudio as pa;
 
 
@@ -57,7 +57,7 @@ fn run() -> Result<(), pa::Error> {
     // The callback we'll use to pass to the Stream. It will request audio from our dsp_graph.
     let callback = move |pa::OutputStreamCallbackArgs { buffer, frames, time, .. }| {
 
-        Sample::zero_buffer(buffer);
+        sample::buffer::equilibrium(buffer);
         let settings = Settings::new(SAMPLE_HZ as u32, frames as u16, CHANNELS as u16);
         graph.audio_requested(buffer, settings);
 
@@ -86,7 +86,7 @@ fn run() -> Result<(), pa::Error> {
 
     // Wait for our stream to finish.
     while let true = try!(stream.is_active()) {
-        ::std::thread::sleep_ms(16);
+        ::std::thread::sleep(::std::time::Duration::from_millis(16));
     }
 
     Ok(())
@@ -121,7 +121,9 @@ impl Node<Output> for DspNode {
 }
 
 /// Return a sine wave for the given phase.
-fn sine_wave<S: Sample>(phase: Phase, volume: Volume) -> S {
+fn sine_wave<S: Sample>(phase: Phase, volume: Volume) -> S
+    where S: Sample + FromSample<f32>,
+{
     use std::f64::consts::PI;
-    Sample::from_wave((phase * PI * 2.0).sin() as Wave * volume)
+    ((phase * PI * 2.0).sin() as f32 * volume).to_sample::<S>()
 }
