@@ -33,7 +33,7 @@ pub use graph::{
     WouldCycle,
 };
 pub use node::Node;
-pub use sample_lib::{self as sample, FromSample, Sample};
+pub use sample_lib::{self as sample, Duplex as DuplexSample, FromSample, ToSample, Sample};
 pub use settings::Settings;
 
 mod graph;
