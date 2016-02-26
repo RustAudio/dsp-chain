@@ -9,7 +9,7 @@
 
 use daggy::{self, Walker};
 use node::Node;
-use sample::{self, Sample, FromSample};
+use sample::{self, Sample};
 use settings::Settings;
 
 
@@ -512,8 +512,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
                                 output_node: NodeIndex,
                                 output: &mut [S],
                                 settings: Settings)
-        where S: FromSample<f32>,
-              f32: FromSample<S>,
+        where S: sample::Duplex<f32>,
     {
         // We can only go on if a node actually exists for the given index.
         if self.node(output_node).is_none() {
@@ -636,9 +635,8 @@ impl<S, N> ::std::ops::Index<EdgeIndex> for Graph<S, N> {
 
 
 impl<S, N> Node<S> for Graph<S, N> where
-    S: Sample + FromSample<f32>,
+    S: Sample + sample::Duplex<f32>,
     N: Node<S>,
-    f32: FromSample<S>,
 {
     fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
         match self.maybe_master {
