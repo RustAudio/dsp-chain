@@ -20,7 +20,7 @@ path = "./src/lib.rs"
 
 [dependencies]
 daggy = "0.4.0"
-sample = "0.3.0"
+sample = "0.5.1"
 
 [dev-dependencies]
 portaudio = "0.6.3"

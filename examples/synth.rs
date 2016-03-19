@@ -4,7 +4,8 @@
 extern crate dsp;
 extern crate portaudio;
 
-use dsp::{sample, Graph, Node, FromSample, Sample, Settings, Walker};
+use dsp::{Graph, Node, Frame, FromSample, Sample, Settings, Walker};
+use dsp::sample::ToFrameSliceMut;
 use portaudio as pa;
 
 
@@ -15,7 +16,7 @@ type Phase = f64;
 type Frequency = f64;
 type Volume = f32;
 
-const CHANNELS: i32 = 2;
+const CHANNELS: usize = 2;
 const FRAMES: u32 = 64;
 const SAMPLE_HZ: f64 = 44_100.0;
 
@@ -57,8 +58,9 @@ fn run() -> Result<(), pa::Error> {
     // The callback we'll use to pass to the Stream. It will request audio from our dsp_graph.
     let callback = move |pa::OutputStreamCallbackArgs { buffer, frames, time, .. }| {
 
-        sample::buffer::equilibrium(buffer);
         let settings = Settings::new(SAMPLE_HZ as u32, frames as u16, CHANNELS as u16);
+        let buffer: &mut [[Output; CHANNELS]] = buffer.to_frame_slice_mut().unwrap();
+        dsp::slice::equilibrium(buffer);
         graph.audio_requested(buffer, settings);
 
         let last_time = prev_time.unwrap_or(time.current);
@@ -80,7 +82,7 @@ fn run() -> Result<(), pa::Error> {
 
     // Construct PortAudio and the stream.
     let pa = try!(pa::PortAudio::new());
-    let settings = try!(pa.default_output_stream_settings(CHANNELS, SAMPLE_HZ, FRAMES));
+    let settings = try!(pa.default_output_stream_settings::<Output>(CHANNELS as i32, SAMPLE_HZ, FRAMES));
     let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
     try!(stream.start());
 
@@ -102,19 +104,17 @@ enum DspNode {
     Oscillator(Phase, Frequency, Volume),
 }
 
-impl Node<Output> for DspNode {
+impl Node<[Output; CHANNELS]> for DspNode {
     /// Here we'll override the audio_requested method and generate a sine wave.
-    fn audio_requested(&mut self, buffer: &mut [Output], settings: Settings) {
+    fn audio_requested(&mut self, buffer: &mut [[Output; CHANNELS]], settings: Settings) {
         match *self {
             DspNode::Synth => (),
             DspNode::Oscillator(ref mut phase, frequency, volume) => {
-                for frame in buffer.chunks_mut(settings.channels as usize) {
+                dsp::slice::map_in_place(buffer, |_| {
                     let val = sine_wave(*phase, volume);
-                    for channel in frame.iter_mut() {
-                        *channel = val;
-                    }
                     *phase += frequency / settings.sample_hz as f64;
-                }
+                    Frame::from_fn(|_| val)
+                });
             },
         }
     }
