@@ -9,8 +9,7 @@
 
 use daggy::{self, Walker};
 use node::Node;
-use sample::{self, Sample};
-use settings::Settings;
+use sample::{self, Frame, Sample};
 
 
 /// An alias for our Graph's Node Index.
@@ -24,16 +23,16 @@ pub type NodesMut<'a, N> = daggy::NodeWeightsMut<'a, N, usize>;
 /// Read only access to a **Graph**'s internal node array.
 pub type RawNodes<'a, N> = daggy::RawNodes<'a, N, usize>;
 /// Read only access to a **Graph**'s internal edge array.
-pub type RawEdges<'a, S> = daggy::RawEdges<'a, Connection<S>, usize>;
+pub type RawEdges<'a, F> = daggy::RawEdges<'a, Connection<F>, usize>;
 
 /// An iterator yielding indices to recently added connections.
 pub type EdgeIndices = daggy::EdgeIndices<usize>;
 
 /// An alias for the **Dag** used within our **Graph**.
-pub type Dag<S, N> = daggy::Dag<N, Connection<S>, usize>;
+pub type Dag<F, N> = daggy::Dag<N, Connection<F>, usize>;
 
 /// An alias for the **PetGraph** used by our **Graph**'s internal **Dag**.
-pub type PetGraph<S, N> = daggy::PetGraph<N, Connection<S>, usize>;
+pub type PetGraph<F, N> = daggy::PetGraph<N, Connection<F>, usize>;
 
 /// A directed, acyclic DSP graph.
 ///
@@ -77,27 +76,27 @@ pub type PetGraph<S, N> = daggy::PetGraph<N, Connection<S>, usize>;
 ///
 /// **Graph** also offers methods for accessing its underlying **Dag** or **PetGraph**.
 #[derive(Clone, Debug)]
-pub struct Graph<S, N> {
-    dag: Dag<S, N>,
+pub struct Graph<F, N> {
+    dag: Dag<F, N>,
     /// The order in which audio will be requested from each node.
     visit_order: Vec<NodeIndex>,
     /// The node from which audio will be requested upon a call to `Node::audio_requested`.
     maybe_master: Option<NodeIndex>,
     /// A buffer to re-use when mixing the dry and wet signals when audio is requested.
-    dry_buffer: Vec<S>,
+    dry_buffer: Vec<F>,
 }
 
 /// Describes a connection between two Nodes within the Graph: *input -> connection -> output*.
 ///
 /// **Graph**'s API only allows for read-only access to **Connection**s, so you can be sure that
-/// their buffers always represent the last samples rendered by their input node.
+/// their buffers always represent the last frames rendered by their input node.
 #[derive(Clone, Debug)]
-pub struct Connection<S> {
+pub struct Connection<F> {
     /// The buffer used to pass audio between nodes.
     ///
     /// After `Graph::audio_requested_from` is called, this buffer will contain the audio rendered
     /// by the **Connection**'s input node.
-    pub buffer: Vec<S>,
+    pub buffer: Vec<F>,
 }
 
 /// The error returned when adding an edge that would create a cycle.
@@ -105,13 +104,13 @@ pub struct Connection<S> {
 pub struct WouldCycle;
 
 /// A walker object for walking over nodes that are inputs to some node.
-pub struct Inputs<S, N> {
-    parents: daggy::Parents<N, Connection<S>, usize>,
+pub struct Inputs<F, N> {
+    parents: daggy::Parents<N, Connection<F>, usize>,
 }
 
 /// A walker object for walking over nodes that are outputs to some node.
-pub struct Outputs<S, N> {
-    children: daggy::Children<N, Connection<S>, usize>,
+pub struct Outputs<F, N> {
+    children: daggy::Children<N, Connection<F>, usize>,
 }
 
 /// A walker type for walking over a **Graph**'s nodes in the order in which they will visited when
@@ -127,12 +126,14 @@ pub struct VisitOrderReverse {
 }
 
 
-impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
+impl<F, N> Graph<F, N>
+    where F: Frame, N: Node<F>
+{
 
     /// Constructor for a new dsp Graph.
     ///
     /// [`with_capacity`](./struct.Graph.html#method.with_capacity) is recommended if you have a
-    /// rough idea of the number of nodes, connections and samples per buffer upon the **Graph**'s
+    /// rough idea of the number of nodes, connections and frames per buffer upon the **Graph**'s
     /// instantiation.
     pub fn new() -> Self {
         let dag = daggy::Dag::new();
@@ -148,35 +149,35 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     ///
     /// - **nodes** is the capacity for the underlying **Dag**'s node `Vec`.
     /// - **connections** is the capacity for the underlying **Dag**'s edge `Vec`.
-    /// - **samples_per_buffer** is the capacity for the **Graph**'s `dry_buffer`, which is used
+    /// - **frames_per_buffer** is the capacity for the **Graph**'s `dry_buffer`, which is used
     /// for mixing the dry and wet signals when `Node::audio_requested` is called.
-    pub fn with_capacity(nodes: usize, connections: usize, samples_per_buffer: usize) -> Self {
+    pub fn with_capacity(nodes: usize, connections: usize, frames_per_buffer: usize) -> Self {
         Graph {
             dag: daggy::Dag::with_capacity(nodes, connections),
             visit_order: Vec::with_capacity(nodes),
-            dry_buffer: Vec::with_capacity(samples_per_buffer),
+            dry_buffer: Vec::with_capacity(frames_per_buffer),
             maybe_master: None,
         }
     }
 
     /// A reference to the underlying **Dag**.
-    pub fn dag(&self) -> &Dag<S, N> {
+    pub fn dag(&self) -> &Dag<F, N> {
         &self.dag
     }
 
     /// Takes ownership of the **Graph** and returns the underlying **Dag**.
-    pub fn into_dag(self) -> Dag<S, N> {
+    pub fn into_dag(self) -> Dag<F, N> {
         let Graph { dag, .. } = self;
         dag
     }
 
     /// A reference to the internal **Dag**'s underlying **PetGraph**.
-    pub fn pet_graph(&self) -> &PetGraph<S, N> {
+    pub fn pet_graph(&self) -> &PetGraph<F, N> {
         self.dag.graph()
     }
 
     /// Takes ownership of the **Graph** and returns the internal **Dag**'s underlying **PetGraph**.
-    pub fn into_pet_graph(self) -> PetGraph<S, N> {
+    pub fn into_pet_graph(self) -> PetGraph<F, N> {
         self.into_dag().into_graph()
     }
 
@@ -243,12 +244,12 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     }
 
     /// A reference to the connection at the given index (or `None` if it doesn't exist).
-    pub fn connection(&self, edge: EdgeIndex) -> Option<&Connection<S>> {
+    pub fn connection(&self, edge: EdgeIndex) -> Option<&Connection<F>> {
         self.dag.edge_weight(edge)
     }
 
     /// Read only access to the internal edge array.
-    pub fn raw_edges(&self) -> RawEdges<S> {
+    pub fn raw_edges(&self) -> RawEdges<F> {
         self.dag.raw_edges()
     }
 
@@ -321,7 +322,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     pub fn add_connections<I>(&mut self, connections: I) -> Result<EdgeIndices, WouldCycle> where
         I: ::std::iter::IntoIterator<Item=(NodeIndex, NodeIndex)>,
     {
-        fn new_connection<S>() -> Connection<S> { Connection { buffer: Vec::new() } }
+        fn new_connection<F>() -> Connection<F> { Connection { buffer: Vec::new() } }
         self.dag.add_edges(connections.into_iter().map(|(src, dest)| (src, dest, new_connection())))
             .map(|edges| { self.prepare_visit_order(); edges })
             .map_err(|_| WouldCycle)
@@ -410,7 +411,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Unlike the `Inputs` type, `WalkInputs` does not borrow the `Graph`.
     ///
     /// Can be converted to an iterator using `.iter()`.
-    pub fn inputs(&self, idx: NodeIndex) -> Inputs<S, N> {
+    pub fn inputs(&self, idx: NodeIndex) -> Inputs<F, N> {
         Inputs { parents: self.dag.parents(idx) }
     }
 
@@ -419,7 +420,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     /// Unlike the `Outputs` type, `WalkOutputs` does not borrow the **Graph**.
     ///
     /// Can be converted to an iterator using `.iter()`.
-    pub fn outputs(&self, idx: NodeIndex) -> Outputs<S, N> {
+    pub fn outputs(&self, idx: NodeIndex) -> Outputs<F, N> {
         Outputs { children: self.dag.children(idx) }
     }
 
@@ -493,29 +494,23 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
     }
 
     /// Prepare the buffers for all nodes within the Graph.
-    pub fn prepare_buffers(&mut self, settings: Settings) {
-        let target_len = settings.buffer_size();
+    pub fn prepare_buffers(&mut self, buffer_size: usize) {
 
         // Initialise the dry signal buffer.
-        resize_buffer_to(&mut self.dry_buffer, target_len);
+        resize_buffer_to(&mut self.dry_buffer, buffer_size);
 
         // Initialise all connection buffers.
         for connection in self.dag.edge_weights_mut() {
-            resize_buffer_to(&mut connection.buffer, target_len);
+            resize_buffer_to(&mut connection.buffer, buffer_size);
         }
     }
 
     /// Request audio from the node at the given index.
     ///
     /// **Panics** if there is no node for the given index.
-    pub fn audio_requested_from(&mut self,
-                                output_node: NodeIndex,
-                                output: &mut [S],
-                                settings: Settings)
-        where S: sample::Duplex<f32>,
-    {
+    pub fn audio_requested_from(&mut self, out_node: NodeIndex, output: &mut [F], sample_hz: f64) {
         // We can only go on if a node actually exists for the given index.
-        if self.node(output_node).is_none() {
+        if self.node(out_node).is_none() {
             panic!("No node for the given index");
         }
 
@@ -531,25 +526,31 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
 
             // Set the buffers to equilibrium, ready to sum the inputs of the current node.
             for i in 0..buffer_size {
-                output[i] = S::equilibrium();
-                self.dry_buffer[i] = S::equilibrium();
+                output[i] = F::equilibrium();
+                self.dry_buffer[i] = F::equilibrium();
             }
 
             // Walk over each of the input connections to sum their buffers to the output.
             let mut inputs = self.inputs(node_idx);
             while let Some(connection_idx) = inputs.next_edge(self) {
                 let connection = &self[connection_idx];
+                // Sum the connection's buffer onto the output.
+                //
                 // We can be certain that `connection`'s buffer is the same size as the
                 // `output` buffer as all connections are visited from their input nodes
                 // (towards the end of the visit_order while loop) before being visited here
                 // by their output nodes.
-                sample::buffer::add(output, &connection.buffer);
+                sample::slice::zip_map_in_place(output, &connection.buffer, |out_frame, con_frame| {
+                    out_frame.zip_map(con_frame, |out_sample, con_sample| {
+                        let out_signed = out_sample.to_sample::<<F::Sample as Sample>::Signed>();
+                        let con_signed = con_sample.to_sample::<<F::Sample as Sample>::Signed>();
+                        (out_signed + con_signed).to_sample::<F::Sample>()
+                    })
+                });
             }
 
             // Store the dry signal in the dry buffer for later summing.
-            for i in 0..buffer_size {
-                self.dry_buffer[i] = output[i];
-            }
+            sample::slice::write(&mut self.dry_buffer, output);
 
             // Render the audio with the current node and sum the dry and wet signals.
             let (dry, wet) = {
@@ -557,7 +558,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
 
                 // Render our `output` buffer with the current node.
                 // The `output` buffer is now representative of a fully wet signal.
-                node.audio_requested(output, settings);
+                node.audio_requested(output, sample_hz);
 
                 let dry = node.dry();
                 let wet = node.wet();
@@ -565,14 +566,14 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
             };
 
             // Combine the dry and wet signals.
-            for i in 0..buffer_size {
-                let wet = (output[i].to_sample::<f32>() * wet).to_sample::<S>();
-                let dry = (self.dry_buffer[i].to_sample::<f32>() * dry).to_sample::<S>();
-                output[i] = wet + dry;
-            }
+            sample::slice::map_in_place(output, |f| f.map(|s| {
+                let wet = s.mul_amp(wet);
+                let dry = s.mul_amp(dry);
+                wet.add_amp(dry.to_sample())
+            }));
 
             // If we've reached our output node, we're done!
-            if node_idx == output_node {
+            if node_idx == out_node {
                 return;
             }
 
@@ -587,7 +588,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
                 }
 
                 // Write the rendered audio to the outgoing connection buffers.
-                sample::buffer::write(&mut connection.buffer, output);
+                sample::slice::write(&mut connection.buffer, output);
             }
         }
 
@@ -610,7 +611,7 @@ impl<S, N> Graph<S, N> where S: Sample, N: Node<S> {
 }
 
 
-impl<S, N> ::std::ops::Index<NodeIndex> for Graph<S, N> {
+impl<F, N> ::std::ops::Index<NodeIndex> for Graph<F, N> {
     type Output = N;
     #[inline]
     fn index<'a>(&'a self, index: NodeIndex) -> &'a N {
@@ -618,36 +619,36 @@ impl<S, N> ::std::ops::Index<NodeIndex> for Graph<S, N> {
     }
 }
 
-impl<S, N> ::std::ops::IndexMut<NodeIndex> for Graph<S, N> {
+impl<F, N> ::std::ops::IndexMut<NodeIndex> for Graph<F, N> {
     #[inline]
     fn index_mut(&mut self, index: NodeIndex) -> &mut N {
         &mut self.dag[index]
     }
 }
 
-impl<S, N> ::std::ops::Index<EdgeIndex> for Graph<S, N> {
-    type Output = Connection<S>;
+impl<F, N> ::std::ops::Index<EdgeIndex> for Graph<F, N> {
+    type Output = Connection<F>;
     #[inline]
-    fn index<'a>(&'a self, index: EdgeIndex) -> &'a Connection<S> {
+    fn index<'a>(&'a self, index: EdgeIndex) -> &'a Connection<F> {
         &self.dag[index]
     }
 }
 
 
-impl<S, N> Node<S> for Graph<S, N> where
-    S: Sample + sample::Duplex<f32>,
-    N: Node<S>,
+impl<F, N> Node<F> for Graph<F, N> where
+    F: Frame,
+    N: Node<F>,
 {
-    fn audio_requested(&mut self, output: &mut [S], settings: Settings) {
+    fn audio_requested(&mut self, output: &mut [F], sample_hz: f64) {
         match self.maybe_master {
-            Some(master) => self.audio_requested_from(master, output, settings),
+            Some(master) => self.audio_requested_from(master, output, sample_hz),
             None => {
                 // If there is no set master node, we'll start from the back of the visit_order and
                 // use the first node that has no output connections.
                 let mut visit_order_rev = self.visit_order_rev();
                 while let Some(node) = visit_order_rev.next(self) {
                     if self.inputs(node).count(self) == 0 {
-                        self.audio_requested_from(node, output, settings);
+                        self.audio_requested_from(node, output, sample_hz);
                         return;
                     }
                 }
@@ -657,48 +658,48 @@ impl<S, N> Node<S> for Graph<S, N> where
 }
 
 
-impl<S, N> Walker<Graph<S, N>> for Inputs<S, N> {
+impl<F, N> Walker<Graph<F, N>> for Inputs<F, N> {
     type Index = usize;
 
     /// The next (connection, node) input pair to some node in our walk for the given **Graph**. 
     #[inline]
-    fn next(&mut self, graph: &Graph<S, N>) -> Option<(EdgeIndex, NodeIndex)> {
+    fn next(&mut self, graph: &Graph<F, N>) -> Option<(EdgeIndex, NodeIndex)> {
         self.parents.next(&graph.dag)
     }
 
     /// The next input connection to some node in our walk for the given **Graph**.
     #[inline]
-    fn next_edge(&mut self, graph: &Graph<S, N>) -> Option<EdgeIndex> {
+    fn next_edge(&mut self, graph: &Graph<F, N>) -> Option<EdgeIndex> {
         self.parents.next_edge(&graph.dag)
     }
 
     /// The next input node to some node in our walk for the given **Graph**.
     #[inline]
-    fn next_node(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
+    fn next_node(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
         self.parents.next_node(&graph.dag)
     }
 
 }
 
 
-impl<S, N> Walker<Graph<S, N>> for Outputs<S, N> {
+impl<F, N> Walker<Graph<F, N>> for Outputs<F, N> {
     type Index = usize;
 
     /// The next (connection, node) output pair from some node in our walk for the given **Graph**.
     #[inline]
-    fn next(&mut self, graph: &Graph<S, N>) -> Option<(EdgeIndex, NodeIndex)> {
+    fn next(&mut self, graph: &Graph<F, N>) -> Option<(EdgeIndex, NodeIndex)> {
         self.children.next(&graph.dag)
     }
 
     /// The next output connection from some node in our walk for the given **Graph**.
     #[inline]
-    fn next_edge(&mut self, graph: &Graph<S, N>) -> Option<EdgeIndex> {
+    fn next_edge(&mut self, graph: &Graph<F, N>) -> Option<EdgeIndex> {
         self.children.next_edge(&graph.dag)
     }
 
     /// The next output node from some node in our walk for the given **Graph**.
     #[inline]
-    fn next_node(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
+    fn next_node(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
         self.children.next_node(&graph.dag)
     }
 
@@ -709,7 +710,7 @@ impl VisitOrder {
     /// The index of the next node that would be visited during audio requested in our walk of the
     /// given **Graph**'s visit order.
     #[inline]
-    pub fn next<S, N>(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
+    pub fn next<F, N>(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
         graph.visit_order.get(self.current_visit_order_idx).map(|&idx| {
             self.current_visit_order_idx += 1;
             idx
@@ -721,7 +722,7 @@ impl VisitOrderReverse {
     /// The index of the next node that would be visited during audio requested in our walk of the
     /// given **Graph**'s visit order.
     #[inline]
-    pub fn next<S, N>(&mut self, graph: &Graph<S, N>) -> Option<NodeIndex> {
+    pub fn next<F, N>(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
         if self.current_visit_order_idx > 0 {
             self.current_visit_order_idx -= 1;
             graph.visit_order.get(self.current_visit_order_idx).map(|&idx| idx)
@@ -734,10 +735,12 @@ impl VisitOrderReverse {
 
 
 /// Resize the given buffer to the given target length.
-fn resize_buffer_to<S>(buffer: &mut Vec<S>, target_len: usize) where S: Sample {
+fn resize_buffer_to<F>(buffer: &mut Vec<F>, target_len: usize)
+    where F: Frame,
+{
     let len = buffer.len();
     if len < target_len {
-        buffer.extend((len..target_len).map(|_| S::equilibrium()))
+        buffer.extend((len..target_len).map(|_| F::equilibrium()))
     } else if len > target_len {
         buffer.truncate(target_len);
     }

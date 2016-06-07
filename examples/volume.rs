@@ -3,10 +3,11 @@
 extern crate dsp;
 extern crate portaudio;
 
-use dsp::{sample, Graph, Node, FromSample, Sample, Settings};
+use dsp::{Graph, Frame, Node, FromSample, Sample};
+use dsp::sample::ToFrameSliceMut;
 use portaudio as pa;
 
-const CHANNELS: i32 = 2;
+const CHANNELS: usize = 2;
 const FRAMES: u32 = 64;
 const SAMPLE_HZ: f64 = 44_100.0;
 
@@ -35,18 +36,19 @@ fn run() -> Result<(), pa::Error> {
     let mut prev_time = None;
 
     // The callback we'll use to pass to the Stream. It will request audio from our graph.
-    let callback = move |pa::OutputStreamCallbackArgs { buffer, frames, time, .. }| {
+    let callback = move |pa::OutputStreamCallbackArgs { buffer, time, .. }| {
+
+        let buffer: &mut [[f32; CHANNELS]] = buffer.to_frame_slice_mut().unwrap();
 
         // Zero the sample buffer.
-        sample::buffer::equilibrium(buffer);
+        dsp::slice::equilibrium(buffer);
 
         // Request audio from the graph.
-        let settings = Settings::new(SAMPLE_HZ as u32, frames as u16, CHANNELS as u16);
-        graph.audio_requested(buffer, settings);
+        graph.audio_requested(buffer, SAMPLE_HZ);
 
         // Oscillate the volume.
         if let &mut DspNode::Volume(ref mut vol) = &mut graph[volume] {
-            *vol = (4.0 * timer as f32).sin();
+            *vol = (4.0 * timer as f32).sin() * 0.5;
         }
 
         let last_time = prev_time.unwrap_or(time.current);
@@ -58,7 +60,7 @@ fn run() -> Result<(), pa::Error> {
 
     // Construct PortAudio and the stream.
     let pa = try!(pa::PortAudio::new());
-    let settings = try!(pa.default_output_stream_settings(CHANNELS, SAMPLE_HZ, FRAMES));
+    let settings = try!(pa.default_output_stream_settings::<f32>(CHANNELS as i32, SAMPLE_HZ, FRAMES));
     let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
     try!(stream.start());
 
@@ -78,22 +80,16 @@ enum DspNode {
 }
 
 /// Implement the `Node` trait for our DspNode.
-impl Node<f32> for DspNode {
-    fn audio_requested(&mut self, buffer: &mut [f32], settings: Settings) {
+impl Node<[f32; CHANNELS]> for DspNode {
+    fn audio_requested(&mut self, buffer: &mut [[f32; CHANNELS]], sample_hz: f64) {
         match *self {
-            DspNode::Synth(ref mut phase) => {
-                for frame in buffer.chunks_mut(settings.channels as usize) {
-                    let val = sine_wave(*phase);
-                    for channel in frame.iter_mut() {
-                        *channel = val;
-                    }
-                    const SYNTH_HZ: f64 = 110.0;
-                    *phase += SYNTH_HZ / settings.sample_hz as f64;
-                }
-            },
-            DspNode::Volume(vol) => for sample in buffer.iter_mut() {
-                *sample = *sample * vol;
-            },
+            DspNode::Synth(ref mut phase) => dsp::slice::map_in_place(buffer, |_| {
+                let val = sine_wave(*phase);
+                const SYNTH_HZ: f64 = 110.0;
+                *phase += SYNTH_HZ / sample_hz;
+                Frame::from_fn(|_| val)
+            }),
+            DspNode::Volume(vol) => dsp::slice::map_in_place(buffer, |f| f.map(|s| s.mul_amp(vol))),
         }
     }
 }
