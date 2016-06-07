@@ -566,11 +566,13 @@ impl<F, N> Graph<F, N>
             };
 
             // Combine the dry and wet signals.
-            sample::slice::map_in_place(output, |f| f.map(|s| {
-                let wet = s.mul_amp(wet);
-                let dry = s.mul_amp(dry);
-                wet.add_amp(dry.to_sample())
-            }));
+            sample::slice::zip_map_in_place(output, &self.dry_buffer,
+                |f_wet, f_dry| f_wet.zip_map(f_dry, |s_wet, s_dry| {
+                    let wet = s_wet.mul_amp(wet);
+                    let dry = s_dry.mul_amp(dry);
+                    wet.add_amp(dry.to_sample())
+                })
+            );
 
             // If we've reached our output node, we're done!
             if node_idx == out_node {
