@@ -12,10 +12,10 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-extern crate daggy as daggy_lib;
-extern crate sample as sample_lib;
+pub extern crate daggy;
+pub extern crate sample;
 
-pub use daggy_lib::{Walker, self as daggy};
+pub use daggy::Walker;
 pub use graph::{
     Connection,
     Dag,
@@ -33,8 +33,7 @@ pub use graph::{
     WouldCycle,
 };
 pub use node::Node;
-pub use sample_lib::{
-    self as sample,
+pub use sample::{
     conv,
     rate,
     slice,
@@ -46,11 +45,9 @@ pub use sample_lib::{
     Sample,
     Signal,
 };
-pub use settings::Settings;
 
 mod graph;
 mod node;
-mod settings;
 
 /// The amplitude multiplier.
 pub type Volume = f32;

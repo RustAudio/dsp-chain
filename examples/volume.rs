@@ -3,7 +3,7 @@
 extern crate dsp;
 extern crate portaudio;
 
-use dsp::{Graph, Frame, Node, FromSample, Sample, Settings};
+use dsp::{Graph, Frame, Node, FromSample, Sample};
 use dsp::sample::ToFrameSliceMut;
 use portaudio as pa;
 
@@ -36,16 +36,15 @@ fn run() -> Result<(), pa::Error> {
     let mut prev_time = None;
 
     // The callback we'll use to pass to the Stream. It will request audio from our graph.
-    let callback = move |pa::OutputStreamCallbackArgs { buffer, frames, time, .. }| {
+    let callback = move |pa::OutputStreamCallbackArgs { buffer, time, .. }| {
 
-        let settings = Settings::new(SAMPLE_HZ as u32, frames as u16, CHANNELS as u16);
         let buffer: &mut [[f32; CHANNELS]] = buffer.to_frame_slice_mut().unwrap();
 
         // Zero the sample buffer.
         dsp::slice::equilibrium(buffer);
 
         // Request audio from the graph.
-        graph.audio_requested(buffer, settings);
+        graph.audio_requested(buffer, SAMPLE_HZ);
 
         // Oscillate the volume.
         if let &mut DspNode::Volume(ref mut vol) = &mut graph[volume] {
@@ -82,12 +81,12 @@ enum DspNode {
 
 /// Implement the `Node` trait for our DspNode.
 impl Node<[f32; CHANNELS]> for DspNode {
-    fn audio_requested(&mut self, buffer: &mut [[f32; CHANNELS]], settings: Settings) {
+    fn audio_requested(&mut self, buffer: &mut [[f32; CHANNELS]], sample_hz: f64) {
         match *self {
             DspNode::Synth(ref mut phase) => dsp::slice::map_in_place(buffer, |_| {
                 let val = sine_wave(*phase);
                 const SYNTH_HZ: f64 = 110.0;
-                *phase += SYNTH_HZ / settings.sample_hz as f64;
+                *phase += SYNTH_HZ / sample_hz;
                 Frame::from_fn(|_| val)
             }),
             DspNode::Volume(vol) => dsp::slice::map_in_place(buffer, |f| f.map(|s| s.mul_amp(vol))),

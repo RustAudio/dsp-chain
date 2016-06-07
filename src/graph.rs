@@ -10,7 +10,6 @@
 use daggy::{self, Walker};
 use node::Node;
 use sample::{self, Frame, Sample};
-use settings::Settings;
 
 
 /// An alias for our Graph's Node Index.
@@ -495,28 +494,23 @@ impl<F, N> Graph<F, N>
     }
 
     /// Prepare the buffers for all nodes within the Graph.
-    pub fn prepare_buffers(&mut self, settings: Settings) {
-        let target_len = settings.buffer_size();
+    pub fn prepare_buffers(&mut self, buffer_size: usize) {
 
         // Initialise the dry signal buffer.
-        resize_buffer_to(&mut self.dry_buffer, target_len);
+        resize_buffer_to(&mut self.dry_buffer, buffer_size);
 
         // Initialise all connection buffers.
         for connection in self.dag.edge_weights_mut() {
-            resize_buffer_to(&mut connection.buffer, target_len);
+            resize_buffer_to(&mut connection.buffer, buffer_size);
         }
     }
 
     /// Request audio from the node at the given index.
     ///
     /// **Panics** if there is no node for the given index.
-    pub fn audio_requested_from(&mut self,
-                                output_node: NodeIndex,
-                                output: &mut [F],
-                                settings: Settings)
-    {
+    pub fn audio_requested_from(&mut self, out_node: NodeIndex, output: &mut [F], sample_hz: f64) {
         // We can only go on if a node actually exists for the given index.
-        if self.node(output_node).is_none() {
+        if self.node(out_node).is_none() {
             panic!("No node for the given index");
         }
 
@@ -564,7 +558,7 @@ impl<F, N> Graph<F, N>
 
                 // Render our `output` buffer with the current node.
                 // The `output` buffer is now representative of a fully wet signal.
-                node.audio_requested(output, settings);
+                node.audio_requested(output, sample_hz);
 
                 let dry = node.dry();
                 let wet = node.wet();
@@ -579,7 +573,7 @@ impl<F, N> Graph<F, N>
             }));
 
             // If we've reached our output node, we're done!
-            if node_idx == output_node {
+            if node_idx == out_node {
                 return;
             }
 
@@ -645,16 +639,16 @@ impl<F, N> Node<F> for Graph<F, N> where
     F: Frame,
     N: Node<F>,
 {
-    fn audio_requested(&mut self, output: &mut [F], settings: Settings) {
+    fn audio_requested(&mut self, output: &mut [F], sample_hz: f64) {
         match self.maybe_master {
-            Some(master) => self.audio_requested_from(master, output, settings),
+            Some(master) => self.audio_requested_from(master, output, sample_hz),
             None => {
                 // If there is no set master node, we'll start from the back of the visit_order and
                 // use the first node that has no output connections.
                 let mut visit_order_rev = self.visit_order_rev();
                 while let Some(node) = visit_order_rev.next(self) {
                     if self.inputs(node).count(self) == 0 {
-                        self.audio_requested_from(node, output, settings);
+                        self.audio_requested_from(node, output, sample_hz);
                         return;
                     }
                 }

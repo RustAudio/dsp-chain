@@ -4,7 +4,7 @@
 extern crate dsp;
 extern crate portaudio;
 
-use dsp::{Graph, Node, Frame, FromSample, Sample, Settings, Walker};
+use dsp::{Graph, Node, Frame, FromSample, Sample, Walker};
 use dsp::sample::ToFrameSliceMut;
 use portaudio as pa;
 
@@ -56,12 +56,11 @@ fn run() -> Result<(), pa::Error> {
     let mut prev_time = None;
 
     // The callback we'll use to pass to the Stream. It will request audio from our dsp_graph.
-    let callback = move |pa::OutputStreamCallbackArgs { buffer, frames, time, .. }| {
+    let callback = move |pa::OutputStreamCallbackArgs { buffer, time, .. }| {
 
-        let settings = Settings::new(SAMPLE_HZ as u32, frames as u16, CHANNELS as u16);
         let buffer: &mut [[Output; CHANNELS]] = buffer.to_frame_slice_mut().unwrap();
         dsp::slice::equilibrium(buffer);
-        graph.audio_requested(buffer, settings);
+        graph.audio_requested(buffer, SAMPLE_HZ);
 
         let last_time = prev_time.unwrap_or(time.current);
         let dt = time.current - last_time;
@@ -106,13 +105,13 @@ enum DspNode {
 
 impl Node<[Output; CHANNELS]> for DspNode {
     /// Here we'll override the audio_requested method and generate a sine wave.
-    fn audio_requested(&mut self, buffer: &mut [[Output; CHANNELS]], settings: Settings) {
+    fn audio_requested(&mut self, buffer: &mut [[Output; CHANNELS]], sample_hz: f64) {
         match *self {
             DspNode::Synth => (),
             DspNode::Oscillator(ref mut phase, frequency, volume) => {
                 dsp::slice::map_in_place(buffer, |_| {
                     let val = sine_wave(*phase, volume);
-                    *phase += frequency / settings.sample_hz as f64;
+                    *phase += frequency / sample_hz;
                     Frame::from_fn(|_| val)
                 });
             },
