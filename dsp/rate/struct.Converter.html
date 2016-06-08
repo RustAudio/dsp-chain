@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Converter` struct in crate `dsp`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Converter">
+
+    <title>dsp::rate::Converter - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>dsp</a>::<wbr><a href='index.html'>rate</a></p><script>window.sidebarCurrent = {name: 'Converter', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>dsp</a>::<wbr><a href='index.html'>rate</a>::<wbr><a class='struct' href=''>Converter</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-8690' class='srclink' href='../../sample/rate/struct.Converter.html?gotosrc=8690' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Converter&lt;I&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>, I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a></span> {
+    // some fields omitted
+}</pre><div class='docblock'><p>An iterator that converts the rate at which frames are yielded from some given frame Iterator
+via some given ratio.</p>
+
+<p>Other names for <code>sample::rate::Converter</code> might include:</p>
+
+<ul>
+<li>Sample rate converter</li>
+<li>{Up/Down}sampler</li>
+<li>Sample interpolater</li>
+<li>Sample decimator</li>
+</ul>
+
+<p>At the moment, <code>Converter</code> only supports basic linear amplitude interpolation between
+frames and is far from the most precise algorithm available. The current form of interpolation
+also requires that samples are either in <code>f64</code> format or can be converted to and from <code>f64</code>
+format. In terms of audio quality, it is not recommended for use in pro-audio applications or
+professional sound design. However if you are simply reading audio files and need to do a
+single conversion from their sample rate to your own domain for basic playback, <code>Converter</code>
+might be sufficient and fast at the very least.</p>
+
+<p>That said, the aim is to provide higher quality interpolation types soon and change
+<code>Converter</code>s interface to a generic API compatible with a range of interpolation types.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;I&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;I&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>, I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a></span></code></span><span class='out-of-band'></span></h3>
+<div class='impl-items'><h4 id='method.from_hz_to_hz' class='method'><code>fn <a href='#method.from_hz_to_hz' class='fnname'>from_hz_to_hz</a>(source_frames: I, source_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>, target_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;I&gt;</code></h4>
+<div class='docblock'><p>Construct a new <code>Converter</code> from the source frames and the source and target sample rates
+(in Hz).</p>
+</div><h4 id='method.scale_playback_hz' class='method'><code>fn <a href='#method.scale_playback_hz' class='fnname'>scale_playback_hz</a>(source_frames: I, scale: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;I&gt;</code></h4>
+<div class='docblock'><p>Construct a new <code>Converter</code> from the source frames and the amount by which the current
+<strong><em>playback</em></strong> <strong>rate</strong> (not sample rate) should be multiplied to reach the new playback
+rate.</p>
+
+<p>For example, if our <code>source_frames</code> is a sine wave oscillating at a frequency of 2hz and
+we wanted to convert it to a frequency of 3hz, the given <code>scale</code> should be <code>1.5</code>.</p>
+</div><h4 id='method.scale_sample_hz' class='method'><code>fn <a href='#method.scale_sample_hz' class='fnname'>scale_sample_hz</a>(source_frames: I, scale: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;I&gt;</code></h4>
+<div class='docblock'><p>Construct a new <code>Converter</code> from the source frames and the amount by which the current
+<strong><em>sample</em></strong> <strong>rate</strong> (not playback rate) should be multiplied to reach the new sample
+rate.</p>
+
+<p>If our <code>source_frames</code> are being sampled at a rate of 44_100hz and we want to
+convert to a sample rate of 96_000hz, the given <code>scale</code> should be <code>96_000.0 / 44_100.0</code>.</p>
+
+<p>This is the same as calling <code>Converter::scale_playback_hz(source_frames, 1.0 / scale)</code>.</p>
+</div><h4 id='method.set_hz_to_hz' class='method'><code>fn <a href='#method.set_hz_to_hz' class='fnname'>set_hz_to_hz</a>(&amp;mut self, source_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>, target_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>)</code></h4>
+<div class='docblock'><p>Update the <code>source_to_target_ratio</code> internally given the source and target hz.</p>
+
+<p>This method might be useful for changing the sample rate during playback.</p>
+</div><h4 id='method.set_playback_hz_scale' class='method'><code>fn <a href='#method.set_playback_hz_scale' class='fnname'>set_playback_hz_scale</a>(&amp;mut self, scale: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>)</code></h4>
+<div class='docblock'><p>Update the <code>source_to_target_ratio</code> internally given a new <strong>playback rate</strong> multiplier.</p>
+
+<p>This method is useful for dynamically changing rates.</p>
+</div><h4 id='method.set_sample_hz_scale' class='method'><code>fn <a href='#method.set_sample_hz_scale' class='fnname'>set_sample_hz_scale</a>(&amp;mut self, scale: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>)</code></h4>
+<div class='docblock'><p>Update the <code>source_to_target_ratio</code> internally given a new <strong>sample rate</strong> multiplier.</p>
+
+<p>This method is useful for dynamically changing rates.</p>
+</div><h4 id='method.source' class='method'><code>fn <a href='#method.source' class='fnname'>source</a>(&amp;self) -&gt; &amp;I</code></h4>
+<div class='docblock'><p>Borrow the <code>source_frames</code> Iterator from the <code>Converter</code>.</p>
+</div><h4 id='method.source_mut' class='method'><code>fn <a href='#method.source_mut' class='fnname'>source_mut</a>(&amp;mut self) -&gt; &amp;I</code></h4>
+<div class='docblock'><p>Mutably borrow the <code>source_frames</code> Iterator from the <code>Converter</code>.</p>
+</div><h4 id='method.into_source' class='method'><code>fn <a href='#method.into_source' class='fnname'>into_source</a>(self) -&gt; I</code></h4>
+<div class='docblock'><p>Drop <code>self</code> and return the internal <code>source_frames</code> Iterator.</p>
+</div><h4 id='method.next_frame' class='method'><code>fn <a href='#method.next_frame' class='fnname'>next_frame</a>(&amp;mut self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>&gt; <span class='where'>where I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>: <a class='trait' href='../../dsp/trait.DuplexSample.html' title='dsp::DuplexSample'>Duplex</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>&gt;</span></code></h4>
+<div class='docblock'><p>Yields the next interpolated target frame.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl&lt;I&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a> for <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;I&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>, I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>, I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>: <a class='trait' href='../../dsp/trait.DuplexSample.html' title='dsp::DuplexSample'>Duplex</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>&gt;</span></code></span><span class='out-of-band'></span></h3>
+<div class='impl-items'><h4 id='associatedtype.Item' class='type'><code>type <a href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html#associatedtype.Item' class='type'>Item</a> = I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a></code></h4>
+<h4 id='method.next' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html#tymethod.next' class='fnname'>next</a>(&amp;mut self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;I&gt;::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>&gt;</code></h4>
+<h4 id='method.size_hint' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html#method.size_hint' class='fnname'>size_hint</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><span class='in-band'><code>impl&lt;I&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;I&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>, I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>, I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a></span></code></span><span class='out-of-band'></span></h3>
+<div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;I&gt;</code></h4>
+<div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
+</div><h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></h4>
+<div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "dsp";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

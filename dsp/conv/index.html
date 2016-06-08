@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `conv` mod in crate `dsp`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, conv">
+
+    <title>dsp::conv - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>dsp</a></p><script>window.sidebarCurrent = {name: 'conv', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>dsp</a>::<wbr><a class='mod' href=''>conv</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-131' class='srclink' href='../../sample/conv/index.html?gotosrc=131' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Pure functions and traits for converting between i8, i16, I24, i32, I48, i64, u8, u16, U24,
+u32, U48, u64, f32 and f64.</p>
+
+<p>Each conversion function is performance focused, memory-sensitive and expects that the user has
+validated their input prior to the function call.</p>
+
+<p>No conversion function will ever cast to a type with a size in bytes larger than the largest
+between the source and target sample types.</p>
+
+<p>The conversion functions do <em>not</em> check the range of incoming values for floating point values
+or any of the custom <code>I24</code>, <code>U24</code>, <code>I48</code> and <code>U48</code> types.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='f32/index.html'
+                                  title='dsp::conv::f32'>f32</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='f64/index.html'
+                                  title='dsp::conv::f64'>f64</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='i16/index.html'
+                                  title='dsp::conv::i16'>i16</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='i24/index.html'
+                                  title='dsp::conv::i24'>i24</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='i32/index.html'
+                                  title='dsp::conv::i32'>i32</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='i48/index.html'
+                                  title='dsp::conv::i48'>i48</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='i64/index.html'
+                                  title='dsp::conv::i64'>i64</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='i8/index.html'
+                                  title='dsp::conv::i8'>i8</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='u16/index.html'
+                                  title='dsp::conv::u16'>u16</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='u24/index.html'
+                                  title='dsp::conv::u24'>u24</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='u32/index.html'
+                                  title='dsp::conv::u32'>u32</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='u48/index.html'
+                                  title='dsp::conv::u48'>u48</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='u64/index.html'
+                                  title='dsp::conv::u64'>u64</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='u8/index.html'
+                                  title='dsp::conv::u8'>u8</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.Duplex.html'
+                                  title='dsp::conv::Duplex'>Duplex</a></td>
+                           <td class='docblock short'>
+                                <p>Sample types which may be converted to and from some type <code>S</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexBoxedFrameSlice.html'
+                                  title='dsp::conv::DuplexBoxedFrameSlice'>DuplexBoxedFrameSlice</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexBoxedSampleSlice.html'
+                                  title='dsp::conv::DuplexBoxedSampleSlice'>DuplexBoxedSampleSlice</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexBoxedSlice.html'
+                                  title='dsp::conv::DuplexBoxedSlice'>DuplexBoxedSlice</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexFrameSlice.html'
+                                  title='dsp::conv::DuplexFrameSlice'>DuplexFrameSlice</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexFrameSliceMut.html'
+                                  title='dsp::conv::DuplexFrameSliceMut'>DuplexFrameSliceMut</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexSampleSlice.html'
+                                  title='dsp::conv::DuplexSampleSlice'>DuplexSampleSlice</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexSampleSliceMut.html'
+                                  title='dsp::conv::DuplexSampleSliceMut'>DuplexSampleSliceMut</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexSlice.html'
+                                  title='dsp::conv::DuplexSlice'>DuplexSlice</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.DuplexSliceMut.html'
+                                  title='dsp::conv::DuplexSliceMut'>DuplexSliceMut</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.FromBoxedFrameSlice.html'
+                                  title='dsp::conv::FromBoxedFrameSlice'>FromBoxedFrameSlice</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a boxed slice of <code>Frame</code>s to a boxed slice of <code>Sample</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.FromBoxedSampleSlice.html'
+                                  title='dsp::conv::FromBoxedSampleSlice'>FromBoxedSampleSlice</a></td>
+                           <td class='docblock short'>
+                                <p>For converting a boxed slice of <code>Sample</code>s to a boxed slice of <code>Frame</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.FromFrameSlice.html'
+                                  title='dsp::conv::FromFrameSlice'>FromFrameSlice</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a slice of <code>Frame</code>s to a slice of <code>Sample</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.FromFrameSliceMut.html'
+                                  title='dsp::conv::FromFrameSliceMut'>FromFrameSliceMut</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a slice of <code>Frame</code>s to a slice of <code>Sample</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.FromSample.html'
+                                  title='dsp::conv::FromSample'>FromSample</a></td>
+                           <td class='docblock short'>
+                                <p>Similar to the std <code>From</code> trait, but specifically for converting between sample types.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.FromSampleSlice.html'
+                                  title='dsp::conv::FromSampleSlice'>FromSampleSlice</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a slice of <code>Sample</code>s to a slice of <code>Frame</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.FromSampleSliceMut.html'
+                                  title='dsp::conv::FromSampleSliceMut'>FromSampleSliceMut</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a mutable slice of <code>Sample</code>s to a mutable slice of <code>Frame</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.ToBoxedFrameSlice.html'
+                                  title='dsp::conv::ToBoxedFrameSlice'>ToBoxedFrameSlice</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a boxed slice of <code>Sample</code>s to a boxed slice of <code>Frame</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.ToBoxedSampleSlice.html'
+                                  title='dsp::conv::ToBoxedSampleSlice'>ToBoxedSampleSlice</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a boxed slice of <code>Frame</code>s to a boxed slice of <code>Sample</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.ToFrameSlice.html'
+                                  title='dsp::conv::ToFrameSlice'>ToFrameSlice</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a slice of <code>Sample</code>s to a slice of <code>Frame</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.ToFrameSliceMut.html'
+                                  title='dsp::conv::ToFrameSliceMut'>ToFrameSliceMut</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a mutable slice of <code>Sample</code>s to a mutable slice of <code>Frame</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.ToSample.html'
+                                  title='dsp::conv::ToSample'>ToSample</a></td>
+                           <td class='docblock short'>
+                                <p>Similar to the std <code>Into</code> trait, but specifically for converting between sample types.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.ToSampleSlice.html'
+                                  title='dsp::conv::ToSampleSlice'>ToSampleSlice</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a slice of <code>Frame</code>s to a slice of <code>Sample</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.ToSampleSliceMut.html'
+                                  title='dsp::conv::ToSampleSliceMut'>ToSampleSliceMut</a></td>
+                           <td class='docblock short'>
+                                <p>For converting from a mutable slice of <code>Frame</code>s to a mutable slice of <code>Sample</code>s.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "dsp";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

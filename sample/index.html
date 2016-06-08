@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `sample` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, sample">
+
+    <title>sample - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'sample', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>sample</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/sample/lib.rs.html#1-420' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>A crate of fundamentals for audio PCM DSP.</p>
+
+<ul>
+<li>Use the <a href="./trait.Sample.html"><strong>Sample</strong> trait</a> to remain generic across bit-depth.</li>
+<li>Use the <a href="./frame/trait.Frame.html"><strong>Frame</strong> trait</a> to remain generic over channel layout.</li>
+<li>Use the <a href="./signal/trait.Signal.html"><strong>Signal</strong> trait</a> for working with <strong>Iterators</strong> that yield <strong>Frames</strong>.</li>
+<li>Use the <a href="./slice/index.html"><strong>slice</strong> module</a> for working with slices of <strong>Samples</strong> and <strong>Frames</strong>.</li>
+<li>See the <a href="./conv/index.html"><strong>conv</strong> module</a> for fast conversions between slices, frames and samples.</li>
+<li>See the <a href="./types/index.html"><strong>types</strong> module</a> for provided custom sample types.</li>
+<li>See the <a href="./rate/index.html"><strong>rate</strong> module</a> for sample rate conversion and scaling.</li>
+</ul>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+<table><tr><td><code>pub use conv::{<a class='trait' href='../sample/conv/trait.FromSample.html' title='sample::conv::FromSample'>FromSample</a>, <a class='trait' href='../sample/conv/trait.ToSample.html' title='sample::conv::ToSample'>ToSample</a>, <a class='trait' href='../sample/conv/trait.Duplex.html' title='sample::conv::Duplex'>Duplex</a>, <a class='trait' href='../sample/conv/trait.FromSampleSlice.html' title='sample::conv::FromSampleSlice'>FromSampleSlice</a>, <a class='trait' href='../sample/conv/trait.ToSampleSlice.html' title='sample::conv::ToSampleSlice'>ToSampleSlice</a>, <a class='trait' href='../sample/conv/trait.DuplexSampleSlice.html' title='sample::conv::DuplexSampleSlice'>DuplexSampleSlice</a>, <a class='trait' href='../sample/conv/trait.FromSampleSliceMut.html' title='sample::conv::FromSampleSliceMut'>FromSampleSliceMut</a>, <a class='trait' href='../sample/conv/trait.ToSampleSliceMut.html' title='sample::conv::ToSampleSliceMut'>ToSampleSliceMut</a>, <a class='trait' href='../sample/conv/trait.DuplexSampleSliceMut.html' title='sample::conv::DuplexSampleSliceMut'>DuplexSampleSliceMut</a>, <a class='trait' href='../sample/conv/trait.FromBoxedSampleSlice.html' title='sample::conv::FromBoxedSampleSlice'>FromBoxedSampleSlice</a>, <a class='trait' href='../sample/conv/trait.ToBoxedSampleSlice.html' title='sample::conv::ToBoxedSampleSlice'>ToBoxedSampleSlice</a>, <a class='trait' href='../sample/conv/trait.DuplexBoxedSampleSlice.html' title='sample::conv::DuplexBoxedSampleSlice'>DuplexBoxedSampleSlice</a>, <a class='trait' href='../sample/conv/trait.FromFrameSlice.html' title='sample::conv::FromFrameSlice'>FromFrameSlice</a>, <a class='trait' href='../sample/conv/trait.ToFrameSlice.html' title='sample::conv::ToFrameSlice'>ToFrameSlice</a>, <a class='trait' href='../sample/conv/trait.DuplexFrameSlice.html' title='sample::conv::DuplexFrameSlice'>DuplexFrameSlice</a>, <a class='trait' href='../sample/conv/trait.FromFrameSliceMut.html' title='sample::conv::FromFrameSliceMut'>FromFrameSliceMut</a>, <a class='trait' href='../sample/conv/trait.ToFrameSliceMut.html' title='sample::conv::ToFrameSliceMut'>ToFrameSliceMut</a>, <a class='trait' href='../sample/conv/trait.DuplexFrameSliceMut.html' title='sample::conv::DuplexFrameSliceMut'>DuplexFrameSliceMut</a>, <a class='trait' href='../sample/conv/trait.FromBoxedFrameSlice.html' title='sample::conv::FromBoxedFrameSlice'>FromBoxedFrameSlice</a>, <a class='trait' href='../sample/conv/trait.ToBoxedFrameSlice.html' title='sample::conv::ToBoxedFrameSlice'>ToBoxedFrameSlice</a>, <a class='trait' href='../sample/conv/trait.DuplexBoxedFrameSlice.html' title='sample::conv::DuplexBoxedFrameSlice'>DuplexBoxedFrameSlice</a>, <a class='trait' href='../sample/conv/trait.DuplexSlice.html' title='sample::conv::DuplexSlice'>DuplexSlice</a>, <a class='trait' href='../sample/conv/trait.DuplexSliceMut.html' title='sample::conv::DuplexSliceMut'>DuplexSliceMut</a>, <a class='trait' href='../sample/conv/trait.DuplexBoxedSlice.html' title='sample::conv::DuplexBoxedSlice'>DuplexBoxedSlice</a>};</code></td></tr><tr><td><code>pub use frame::<a class='trait' href='../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>;</code></td></tr><tr><td><code>pub use signal::<a class='trait' href='../sample/signal/trait.Signal.html' title='sample::signal::Signal'>Signal</a>;</code></td></tr><tr><td><code>pub use types::{<a class='struct' href='../sample/types/i24/struct.I24.html' title='sample::types::i24::I24'>I24</a>, <a class='struct' href='../sample/types/u24/struct.U24.html' title='sample::types::u24::U24'>U24</a>, <a class='struct' href='../sample/types/i48/struct.I48.html' title='sample::types::i48::I48'>I48</a>, <a class='struct' href='../sample/types/u48/struct.U48.html' title='sample::types::u48::U48'>U48</a>};</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='conv/index.html'
+                                  title='sample::conv'>conv</a></td>
+                           <td class='docblock short'>
+                                <p>Pure functions and traits for converting between i8, i16, I24, i32, I48, i64, u8, u16, U24,
+u32, U48, u64, f32 and f64.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='frame/index.html'
+                                  title='sample::frame'>frame</a></td>
+                           <td class='docblock short'>
+                                <p>Use the <a href="./trait.Frame.html"><strong>Frame</strong></a> trait to remain generic over the number of channels at
+a single discrete moment in time.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='rate/index.html'
+                                  title='sample::rate'>rate</a></td>
+                           <td class='docblock short'>
+                                <p>The <strong>rate</strong> module provides a <a href="./struct.Converter.html"><strong>Converter</strong> type</a>, for converting
+and interpolating the rate of <strong>Signal</strong>s. This can be useful for both sample rate conversion
+and playback rate multiplication.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='signal/index.html'
+                                  title='sample::signal'>signal</a></td>
+                           <td class='docblock short'>
+                                <p>Use the <a href="./trait.Signal.html"><strong>Signal</strong> trait</a> for working with <strong>Iterator</strong>s that yield
+<strong>Frame</strong>s. To complement the <strong>Iterator</strong> trait, <strong>Signal</strong> provides methods for adding,
+scaling, offsetting, multiplying, clipping and generating frame iterators and more.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='slice/index.html'
+                                  title='sample::slice'>slice</a></td>
+                           <td class='docblock short'>
+                                <p>This module provides various helper functions for performing operations on slices of frames.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='types/index.html'
+                                  title='sample::types'>types</a></td>
+                           <td class='docblock short'>
+                                <p>A collection of custom, non-std <strong>Sample</strong> types.</p>
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.FloatSample.html'
+                                  title='sample::FloatSample'>FloatSample</a></td>
+                           <td class='docblock short'>
+                                <p>Sample format types represented as floating point numbers.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.Sample.html'
+                                  title='sample::Sample'>Sample</a></td>
+                           <td class='docblock short'>
+                                <p>A trait for working generically across different <strong>Sample</strong> format types.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.SignedSample.html'
+                                  title='sample::SignedSample'>SignedSample</a></td>
+                           <td class='docblock short'>
+                                <p>Integral and floating-point <strong>Sample</strong> format types whose equilibrium is at 0.</p>
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Box.html'
+                                  title='sample::Box'>Box</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "sample";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

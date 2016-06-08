@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Signal` trait in crate `dsp`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Signal">
+
+    <title>dsp::signal::Signal - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>dsp</a>::<wbr><a href='index.html'>signal</a></p><script>window.sidebarCurrent = {name: 'Signal', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>dsp</a>::<wbr><a href='index.html'>signal</a>::<wbr><a class='trait' href=''>Signal</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-7973' class='srclink' href='../../sample/signal/trait.Signal.html?gotosrc=7973' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Signal: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a> <span class='where'>where Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a></span> {
+    fn <a href='#method.add_amp' class='fnname'>add_amp</a>&lt;S&gt;(self, other: S) -&gt; <a class='struct' href='../../dsp/signal/struct.AddAmp.html' title='dsp::signal::AddAmp'>AddAmp</a>&lt;Self,&nbsp;S&gt; <span class='where'>where S: <a class='trait' href='../../dsp/trait.Signal.html' title='dsp::Signal'>Signal</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a> == Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Signed</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a> == Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a></span> { ... }
+    fn <a href='#method.mul_amp' class='fnname'>mul_amp</a>&lt;S&gt;(self, other: S) -&gt; <a class='struct' href='../../dsp/signal/struct.MulAmp.html' title='dsp::signal::MulAmp'>MulAmp</a>&lt;Self,&nbsp;S&gt; <span class='where'>where S: <a class='trait' href='../../dsp/trait.Signal.html' title='dsp::Signal'>Signal</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a> == Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Float</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a> == Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a></span> { ... }
+    fn <a href='#method.offset_amp' class='fnname'>offset_amp</a>(self, offset: Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Signed</a>) -&gt; <a class='struct' href='../../dsp/signal/struct.OffsetAmp.html' title='dsp::signal::OffsetAmp'>OffsetAmp</a>&lt;Self&gt; { ... }
+    fn <a href='#method.scale_amp' class='fnname'>scale_amp</a>(self, amp: Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Float</a>) -&gt; <a class='struct' href='../../dsp/signal/struct.ScaleAmp.html' title='dsp::signal::ScaleAmp'>ScaleAmp</a>&lt;Self&gt; { ... }
+    fn <a href='#method.offset_amp_per_channel' class='fnname'>offset_amp_per_channel</a>&lt;F&gt;(self, amp_frame: F) -&gt; <a class='struct' href='../../dsp/signal/struct.OffsetAmpPerChannel.html' title='dsp::signal::OffsetAmpPerChannel'>OffsetAmpPerChannel</a>&lt;Self,&nbsp;F&gt; <span class='where'>where F: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Signed</a>,&nbsp;NumChannels=Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a>&gt;</span> { ... }
+    fn <a href='#method.scale_amp_per_channel' class='fnname'>scale_amp_per_channel</a>&lt;F&gt;(self, amp_frame: F) -&gt; <a class='struct' href='../../dsp/signal/struct.ScaleAmpPerChannel.html' title='dsp::signal::ScaleAmpPerChannel'>ScaleAmpPerChannel</a>&lt;Self,&nbsp;F&gt; <span class='where'>where F: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Float</a>,&nbsp;NumChannels=Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a>&gt;</span> { ... }
+    fn <a href='#method.mul_hz' class='fnname'>mul_hz</a>&lt;I&gt;(self, mul_per_frame: I) -&gt; <a class='struct' href='../../dsp/signal/struct.MulHz.html' title='dsp::signal::MulHz'>MulHz</a>&lt;Self,&nbsp;I&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>&lt;Item=<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>&gt;</span> { ... }
+    fn <a href='#method.from_hz_to_hz' class='fnname'>from_hz_to_hz</a>(self, source_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>, target_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;Self&gt; { ... }
+    fn <a href='#method.scale_hz' class='fnname'>scale_hz</a>(self, multi: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;Self&gt; { ... }
+    fn <a href='#method.delay' class='fnname'>delay</a>(self, n_frames: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../dsp/signal/struct.Delay.html' title='dsp::signal::Delay'>Delay</a>&lt;Self&gt; { ... }
+    fn <a href='#method.to_samples' class='fnname'>to_samples</a>(self) -&gt; <a class='struct' href='../../dsp/signal/struct.ToSamples.html' title='dsp::signal::ToSamples'>ToSamples</a>&lt;Self&gt; { ... }
+    fn <a href='#method.clip_amp' class='fnname'>clip_amp</a>(self, thresh: Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Signed</a>) -&gt; <a class='struct' href='../../dsp/signal/struct.ClipAmp.html' title='dsp::signal::ClipAmp'>ClipAmp</a>&lt;Self&gt; { ... }
+    fn <a href='#method.bus' class='fnname'>bus</a>(self) -&gt; <a class='struct' href='../../dsp/signal/struct.Bus.html' title='dsp::signal::Bus'>Bus</a>&lt;Self&gt; { ... }
+}</pre><div class='docblock'><p>A trait that allows us to treat <code>Iterator</code>s that yield <code>Frame</code>s as a multi-channel PCM signal.</p>
+
+<p>For example, <code>Signal</code> allows us to add two signals, modulate a signal&#39;s amplitude by another
+signal, scale a signals amplitude and much more.</p>
+
+<p><code>Signal</code> has a blanket implementation for all <code>Iterator</code>s whose <code>Item</code> associated types
+implement <code>Frame</code>.</p>
+</div>
+            <h2 id='provided-methods'>Provided Methods</h2>
+            <div class='methods'>
+        <h3 id='method.add_amp' class='method stab '><code>fn <a href='#method.add_amp' class='fnname'>add_amp</a>&lt;S&gt;(self, other: S) -&gt; <a class='struct' href='../../dsp/signal/struct.AddAmp.html' title='dsp::signal::AddAmp'>AddAmp</a>&lt;Self,&nbsp;S&gt; <span class='where'>where S: <a class='trait' href='../../dsp/trait.Signal.html' title='dsp::Signal'>Signal</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a> == Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Signed</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a> == Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a></span></code></h3><div class='docblock'><p>Provides an iterator that yields the sum of the frames yielded by both <code>other</code> and <code>self</code>
+in lock-step.</p>
+
+<h1 id='example' class='section-header'><a href='#example'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>a</span> <span class='op'>=</span> [[<span class='number'>0.2</span>], [<span class='op'>-</span><span class='number'>0.6</span>], [<span class='number'>0.5</span>]];
+    <span class='kw'>let</span> <span class='ident'>b</span> <span class='op'>=</span> [[<span class='number'>0.2</span>], [<span class='number'>0.1</span>], [<span class='op'>-</span><span class='number'>0.8</span>]];
+    <span class='kw'>let</span> <span class='ident'>a_signal</span> <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>();
+    <span class='kw'>let</span> <span class='ident'>b_signal</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>();
+    <span class='kw'>let</span> <span class='ident'>added</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>[<span class='ident'>f32</span>; <span class='number'>1</span>]<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>a_signal</span>.<span class='ident'>add_amp</span>(<span class='ident'>b_signal</span>).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>added</span>, <span class='macro'>vec</span><span class='macro'>!</span>[[<span class='number'>0.4</span>], [<span class='op'>-</span><span class='number'>0.5</span>], [<span class='op'>-</span><span class='number'>0.3</span>]]);
+}</pre>
+</div><h3 id='method.mul_amp' class='method stab '><code>fn <a href='#method.mul_amp' class='fnname'>mul_amp</a>&lt;S&gt;(self, other: S) -&gt; <a class='struct' href='../../dsp/signal/struct.MulAmp.html' title='dsp::signal::MulAmp'>MulAmp</a>&lt;Self,&nbsp;S&gt; <span class='where'>where S: <a class='trait' href='../../dsp/trait.Signal.html' title='dsp::Signal'>Signal</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a> == Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Float</a>, S::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a> == Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a></span></code></h3><div class='docblock'><p>Provides an iterator that yields the product of the frames yielded by both <code>other</code> and
+<code>self</code> in lock-step.</p>
+
+<h1 id='example-1' class='section-header'><a href='#example-1'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>a</span> <span class='op'>=</span> [[<span class='number'>0.25</span>], [<span class='op'>-</span><span class='number'>0.8</span>], [<span class='op'>-</span><span class='number'>0.5</span>]];
+    <span class='kw'>let</span> <span class='ident'>b</span> <span class='op'>=</span> [[<span class='number'>0.2</span>], [<span class='number'>0.5</span>], [<span class='number'>0.8</span>]];
+    <span class='kw'>let</span> <span class='ident'>a_signal</span> <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>();
+    <span class='kw'>let</span> <span class='ident'>b_signal</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>();
+    <span class='kw'>let</span> <span class='ident'>added</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>a_signal</span>.<span class='ident'>mul_amp</span>(<span class='ident'>b_signal</span>).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>added</span>, <span class='macro'>vec</span><span class='macro'>!</span>[[<span class='number'>0.05</span>], [<span class='op'>-</span><span class='number'>0.4</span>], [<span class='op'>-</span><span class='number'>0.4</span>]]);
+}</pre>
+</div><h3 id='method.offset_amp' class='method stab '><code>fn <a href='#method.offset_amp' class='fnname'>offset_amp</a>(self, offset: Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Signed</a>) -&gt; <a class='struct' href='../../dsp/signal/struct.OffsetAmp.html' title='dsp::signal::OffsetAmp'>OffsetAmp</a>&lt;Self&gt;</code></h3><div class='docblock'><p>Provides an iterator that offsets the amplitude of every channel in each frame of the
+signal by some sample value and yields the resulting frames.</p>
+
+<h1 id='example-2' class='section-header'><a href='#example-2'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>frames</span> <span class='op'>=</span> [[<span class='number'>0.25</span>, <span class='number'>0.4</span>], [<span class='op'>-</span><span class='number'>0.2</span>, <span class='op'>-</span><span class='number'>0.5</span>]];
+    <span class='kw'>let</span> <span class='ident'>signal</span> <span class='op'>=</span> <span class='ident'>frames</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>();
+    <span class='kw'>let</span> <span class='ident'>offset</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>[<span class='ident'>f32</span>; <span class='number'>2</span>]<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>signal</span>.<span class='ident'>offset_amp</span>(<span class='number'>0.5</span>).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>offset</span>, <span class='macro'>vec</span><span class='macro'>!</span>[[<span class='number'>0.75</span>, <span class='number'>0.9</span>], [<span class='number'>0.3</span>, <span class='number'>0.0</span>]]);
+}</pre>
+</div><h3 id='method.scale_amp' class='method stab '><code>fn <a href='#method.scale_amp' class='fnname'>scale_amp</a>(self, amp: Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Float</a>) -&gt; <a class='struct' href='../../dsp/signal/struct.ScaleAmp.html' title='dsp::signal::ScaleAmp'>ScaleAmp</a>&lt;Self&gt;</code></h3><div class='docblock'><p>Produces an <code>Iterator</code> that scales the amplitude of the sample of each channel in every
+<code>Frame</code> yielded by <code>self</code> by the given amplitude.</p>
+
+<h1 id='example-3' class='section-header'><a href='#example-3'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>frames</span> <span class='op'>=</span> [[<span class='number'>0.2</span>], [<span class='op'>-</span><span class='number'>0.5</span>], [<span class='op'>-</span><span class='number'>0.4</span>], [<span class='number'>0.3</span>]];
+    <span class='kw'>let</span> <span class='ident'>signal</span> <span class='op'>=</span> <span class='ident'>frames</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>();
+    <span class='kw'>let</span> <span class='ident'>scaled</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>[<span class='ident'>f32</span>; <span class='number'>1</span>]<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>signal</span>.<span class='ident'>scale_amp</span>(<span class='number'>2.0</span>).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>scaled</span>, <span class='macro'>vec</span><span class='macro'>!</span>[[<span class='number'>0.4</span>], [<span class='op'>-</span><span class='number'>1.0</span>], [<span class='op'>-</span><span class='number'>0.8</span>], [<span class='number'>0.6</span>]]);
+}</pre>
+</div><h3 id='method.offset_amp_per_channel' class='method stab '><code>fn <a href='#method.offset_amp_per_channel' class='fnname'>offset_amp_per_channel</a>&lt;F&gt;(self, amp_frame: F) -&gt; <a class='struct' href='../../dsp/signal/struct.OffsetAmpPerChannel.html' title='dsp::signal::OffsetAmpPerChannel'>OffsetAmpPerChannel</a>&lt;Self,&nbsp;F&gt; <span class='where'>where F: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Signed</a>,&nbsp;NumChannels=Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a>&gt;</span></code></h3><div class='docblock'><p>Produces an <code>Iterator</code> that offsets the amplitude of every <code>Frame</code> in <code>self</code> by the
+respective amplitudes in each channel of the given <code>amp_frame</code>.</p>
+
+<h1 id='example-4' class='section-header'><a href='#example-4'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>frames</span> <span class='op'>=</span> [[<span class='number'>0.5</span>, <span class='number'>0.3</span>], [<span class='op'>-</span><span class='number'>0.25</span>, <span class='number'>0.9</span>]];
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>signal</span> <span class='op'>=</span> <span class='ident'>frames</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>offset_amp_per_channel</span>([<span class='number'>0.25</span>, <span class='op'>-</span><span class='number'>0.5</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>signal</span>.<span class='ident'>next</span>().<span class='ident'>unwrap</span>(), [<span class='number'>0.75</span>, <span class='op'>-</span><span class='number'>0.2</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>signal</span>.<span class='ident'>next</span>().<span class='ident'>unwrap</span>(), [<span class='number'>0.0</span>, <span class='number'>0.4</span>]);
+}</pre>
+</div><h3 id='method.scale_amp_per_channel' class='method stab '><code>fn <a href='#method.scale_amp_per_channel' class='fnname'>scale_amp_per_channel</a>&lt;F&gt;(self, amp_frame: F) -&gt; <a class='struct' href='../../dsp/signal/struct.ScaleAmpPerChannel.html' title='dsp::signal::ScaleAmpPerChannel'>ScaleAmpPerChannel</a>&lt;Self,&nbsp;F&gt; <span class='where'>where F: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Float</a>,&nbsp;NumChannels=Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>NumChannels</a>&gt;</span></code></h3><div class='docblock'><p>Produces an <code>Iterator</code> that scales the amplitude of every <code>Frame</code> in <code>self</code> by the
+respective amplitudes in each channel of the given <code>amp_frame</code>.</p>
+
+<h1 id='example-5' class='section-header'><a href='#example-5'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>frames</span> <span class='op'>=</span> [[<span class='number'>0.2</span>, <span class='op'>-</span><span class='number'>0.5</span>], [<span class='op'>-</span><span class='number'>0.4</span>, <span class='number'>0.3</span>]];
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>signal</span> <span class='op'>=</span> <span class='ident'>frames</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>scale_amp_per_channel</span>([<span class='number'>0.5</span>, <span class='number'>2.0</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>signal</span>.<span class='ident'>next</span>().<span class='ident'>unwrap</span>(), [<span class='number'>0.1</span>, <span class='op'>-</span><span class='number'>1.0</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>signal</span>.<span class='ident'>next</span>().<span class='ident'>unwrap</span>(), [<span class='op'>-</span><span class='number'>0.2</span>, <span class='number'>0.6</span>]);
+}</pre>
+</div><h3 id='method.mul_hz' class='method stab '><code>fn <a href='#method.mul_hz' class='fnname'>mul_hz</a>&lt;I&gt;(self, mul_per_frame: I) -&gt; <a class='struct' href='../../dsp/signal/struct.MulHz.html' title='dsp::signal::MulHz'>MulHz</a>&lt;Self,&nbsp;I&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>&lt;Item=<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>&gt;</span></code></h3><div class='docblock'><p>Multiplies the rate at which frames of <code>self</code> are yielded by the given <code>signal</code>.</p>
+
+<p>This happens by wrapping <code>self</code> in a <code>rate::Converter</code> and calling <code>set_playback_hz_scale</code>
+with the value yielded by <code>signal</code></p>
+
+<h1 id='example-6' class='section-header'><a href='#example-6'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> [[<span class='number'>0.0</span>], [<span class='number'>1.0</span>], [<span class='number'>0.0</span>], [<span class='op'>-</span><span class='number'>1.0</span>]];
+    <span class='kw'>let</span> <span class='ident'>mul</span> <span class='op'>=</span> [<span class='number'>1.0</span>, <span class='number'>1.0</span>, <span class='number'>0.5</span>, <span class='number'>0.5</span>, <span class='number'>0.5</span>, <span class='number'>0.5</span>];
+    <span class='kw'>let</span> <span class='ident'>frames</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>foo</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>mul_hz</span>(<span class='ident'>mul</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>()).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>frames</span>[..], <span class='kw-2'>&amp;</span>[[<span class='number'>0.0</span>], [<span class='number'>1.0</span>], [<span class='number'>0.0</span>], [<span class='op'>-</span><span class='number'>0.5</span>], [<span class='op'>-</span><span class='number'>1.0</span>]][..]);
+}</pre>
+</div><h3 id='method.from_hz_to_hz' class='method stab '><code>fn <a href='#method.from_hz_to_hz' class='fnname'>from_hz_to_hz</a>(self, source_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>, target_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;Self&gt;</code></h3><div class='docblock'><p>Converts the rate at which frames of the <code>Signal</code> are yielded using interpolation.</p>
+
+<h1 id='example-7' class='section-header'><a href='#example-7'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> [[<span class='number'>0.0</span>], [<span class='number'>1.0</span>], [<span class='number'>0.0</span>], [<span class='op'>-</span><span class='number'>1.0</span>]];
+    <span class='kw'>let</span> <span class='ident'>frames</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>foo</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>from_hz_to_hz</span>(<span class='number'>1.0</span>, <span class='number'>2.0</span>).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>frames</span>[..], <span class='kw-2'>&amp;</span>[[<span class='number'>0.0</span>], [<span class='number'>0.5</span>], [<span class='number'>1.0</span>], [<span class='number'>0.5</span>], [<span class='number'>0.0</span>], [<span class='op'>-</span><span class='number'>0.5</span>], [<span class='op'>-</span><span class='number'>1.0</span>]][..]);
+}</pre>
+</div><h3 id='method.scale_hz' class='method stab '><code>fn <a href='#method.scale_hz' class='fnname'>scale_hz</a>(self, multi: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='struct' href='../../dsp/rate/struct.Converter.html' title='dsp::rate::Converter'>Converter</a>&lt;Self&gt;</code></h3><div class='docblock'><p>Multiplies the rate at which frames of the <code>Signal</code> are yielded by the given value.</p>
+
+<h1 id='example-8' class='section-header'><a href='#example-8'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> [[<span class='number'>0.0</span>], [<span class='number'>1.0</span>], [<span class='number'>0.0</span>], [<span class='op'>-</span><span class='number'>1.0</span>]];
+    <span class='kw'>let</span> <span class='ident'>frames</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>foo</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>scale_hz</span>(<span class='number'>0.5</span>).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>frames</span>[..], <span class='kw-2'>&amp;</span>[[<span class='number'>0.0</span>], [<span class='number'>0.5</span>], [<span class='number'>1.0</span>], [<span class='number'>0.5</span>], [<span class='number'>0.0</span>], [<span class='op'>-</span><span class='number'>0.5</span>], [<span class='op'>-</span><span class='number'>1.0</span>]][..]);
+}</pre>
+</div><h3 id='method.delay' class='method stab '><code>fn <a href='#method.delay' class='fnname'>delay</a>(self, n_frames: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../dsp/signal/struct.Delay.html' title='dsp::signal::Delay'>Delay</a>&lt;Self&gt;</code></h3><div class='docblock'><p>Delays the <code>Signal</code> by the given number of frames.</p>
+
+<p>The delay is performed by yielding <code>Frame::equilibrium()</code> <code>n_frames</code> times before
+continuing to yield frames from <code>signal</code>.</p>
+
+<h1 id='example-9' class='section-header'><a href='#example-9'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>frames</span> <span class='op'>=</span> [[<span class='number'>0.2</span>], [<span class='number'>0.4</span>]];
+    <span class='kw'>let</span> <span class='ident'>delayed</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>frames</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>delay</span>(<span class='number'>2</span>).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>delayed</span>, <span class='macro'>vec</span><span class='macro'>!</span>[[<span class='number'>0.0</span>], [<span class='number'>0.0</span>], [<span class='number'>0.2</span>], [<span class='number'>0.4</span>]]);
+}</pre>
+</div><h3 id='method.to_samples' class='method stab '><code>fn <a href='#method.to_samples' class='fnname'>to_samples</a>(self) -&gt; <a class='struct' href='../../dsp/signal/struct.ToSamples.html' title='dsp::signal::ToSamples'>ToSamples</a>&lt;Self&gt;</code></h3><div class='docblock'><p>Converts a <code>Iterator</code> yielding <code>Frame</code>s into an <code>Iterator</code> yielding <code>Sample</code>s.</p>
+
+<h1 id='example-10' class='section-header'><a href='#example-10'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>frames</span> <span class='op'>=</span> [[<span class='number'>0.1</span>, <span class='number'>0.2</span>], [<span class='number'>0.3</span>, <span class='number'>0.4</span>]];
+    <span class='kw'>let</span> <span class='ident'>samples</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>frames</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>to_samples</span>().<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>samples</span>, <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.1</span>, <span class='number'>0.2</span>, <span class='number'>0.3</span>, <span class='number'>0.4</span>]);
+}</pre>
+</div><h3 id='method.clip_amp' class='method stab '><code>fn <a href='#method.clip_amp' class='fnname'>clip_amp</a>(self, thresh: Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>::<a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Sample</a>::<a class='trait' href='../../dsp/trait.Sample.html' title='dsp::Sample'>Signed</a>) -&gt; <a class='struct' href='../../dsp/signal/struct.ClipAmp.html' title='dsp::signal::ClipAmp'>ClipAmp</a>&lt;Self&gt;</code></h3><div class='docblock'><p>Clips the amplitude of each channel in each <code>Frame</code> yielded by <code>self</code> to the given
+threshold amplitude.</p>
+
+<h1 id='example-11' class='section-header'><a href='#example-11'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>frames</span> <span class='op'>=</span> [[<span class='number'>1.2</span>, <span class='number'>0.8</span>], [<span class='op'>-</span><span class='number'>0.7</span>, <span class='op'>-</span><span class='number'>1.4</span>]];
+    <span class='kw'>let</span> <span class='ident'>clipped</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>frames</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>clip_amp</span>(<span class='number'>0.9</span>).<span class='ident'>collect</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>clipped</span>, <span class='macro'>vec</span><span class='macro'>!</span>[[<span class='number'>0.9</span>, <span class='number'>0.8</span>], [<span class='op'>-</span><span class='number'>0.7</span>, <span class='op'>-</span><span class='number'>0.9</span>]]);
+}</pre>
+</div><h3 id='method.bus' class='method stab '><code>fn <a href='#method.bus' class='fnname'>bus</a>(self) -&gt; <a class='struct' href='../../dsp/signal/struct.Bus.html' title='dsp::signal::Bus'>Bus</a>&lt;Self&gt;</code></h3><div class='docblock'><p>Moves the <code>Signal</code> into a <code>Bus</code> from which its output may be divided into multiple other
+<code>Signal</code>s in the form of <code>Output</code>s.</p>
+
+<p>This method allows to create more complex directed acyclic graph structures that
+incorporate concepts like sends, side-chaining, etc, rather than being restricted to tree
+structures where signals can only ever be joined but never divided.</p>
+
+<p>Note: When using multiple <code>Output</code>s in this fashion, you will need to be sure to pull the
+frames from each <code>Output</code> in sync (whether per frame or per buffer). This is because when
+output A requests <code>Frame</code>s before output B, those frames mjust remain available for output
+B and in turn must be stored in an intermediary ring buffer.</p>
+
+<h1 id='example-12' class='section-header'><a href='#example-12'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Signal</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>frames</span> <span class='op'>=</span> [[<span class='number'>0.1</span>], [<span class='number'>0.2</span>], [<span class='number'>0.3</span>]];
+    <span class='kw'>let</span> <span class='ident'>bus</span> <span class='op'>=</span> <span class='ident'>frames</span>.<span class='ident'>iter</span>().<span class='ident'>cloned</span>().<span class='ident'>bus</span>();
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='ident'>bus</span>.<span class='ident'>send</span>();
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>bus</span>.<span class='ident'>send</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>a</span>.<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>(), <span class='macro'>vec</span><span class='macro'>!</span>[[<span class='number'>0.1</span>], [<span class='number'>0.2</span>], [<span class='number'>0.3</span>]]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>b</span>.<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>(), <span class='macro'>vec</span><span class='macro'>!</span>[[<span class='number'>0.1</span>], [<span class='number'>0.2</span>], [<span class='number'>0.3</span>]]);
+}</pre>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl&lt;I&gt; Signal for I <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>, I::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Item</a>: <a class='trait' href='../../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a></span></code></li>
+</ul><script type="text/javascript" async
+                         src="../../implementors/sample/signal/trait.Signal.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "dsp";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

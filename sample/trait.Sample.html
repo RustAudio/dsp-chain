@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Sample` trait in crate `sample`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Sample">
+
+    <title>sample::Sample - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>sample</a></p><script>window.sidebarCurrent = {name: 'Sample', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='index.html'>sample</a>::<wbr><a class='trait' href=''>Sample</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-10048' class='srclink' href='../src/sample/lib.rs.html#123-339' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Sample: <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html' title='core::cmp::PartialOrd'>PartialOrd</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> {
+    type <a href='#associatedtype.Signed' class='type'>Signed</a>: <a class='trait' href='../sample/trait.SignedSample.html' title='sample::SignedSample'>SignedSample</a> + <a class='trait' href='../sample/conv/trait.Duplex.html' title='sample::conv::Duplex'>Duplex</a>&lt;Self&gt;;
+    type <a href='#associatedtype.Float' class='type'>Float</a>: <a class='trait' href='../sample/trait.FloatSample.html' title='sample::FloatSample'>FloatSample</a> + <a class='trait' href='../sample/conv/trait.Duplex.html' title='sample::conv::Duplex'>Duplex</a>&lt;Self&gt;;
+    fn <a href='#tymethod.equilibrium' class='fnname'>equilibrium</a>() -&gt; Self;
+
+    fn <a href='#method.identity' class='fnname'>identity</a>() -&gt; Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Float</a> { ... }
+    fn <a href='#method.to_sample' class='fnname'>to_sample</a>&lt;S&gt;(self) -&gt; S <span class='where'>where Self: <a class='trait' href='../sample/conv/trait.ToSample.html' title='sample::conv::ToSample'>ToSample</a>&lt;S&gt;</span> { ... }
+    fn <a href='#method.from_sample' class='fnname'>from_sample</a>&lt;S&gt;(s: S) -&gt; Self <span class='where'>where Self: <a class='trait' href='../sample/conv/trait.FromSample.html' title='sample::conv::FromSample'>FromSample</a>&lt;S&gt;</span> { ... }
+    fn <a href='#method.to_signed_sample' class='fnname'>to_signed_sample</a>(self) -&gt; Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Signed</a> { ... }
+    fn <a href='#method.to_float_sample' class='fnname'>to_float_sample</a>(self) -&gt; Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Float</a> { ... }
+    fn <a href='#method.add_amp' class='fnname'>add_amp</a>(self, amp: Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Signed</a>) -&gt; Self { ... }
+    fn <a href='#method.mul_amp' class='fnname'>mul_amp</a>(self, amp: Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Float</a>) -&gt; Self { ... }
+}</pre><div class='docblock'><p>A trait for working generically across different <strong>Sample</strong> format types.</p>
+
+<p>Provides methods for converting to and from any type that implements the
+<a href="./trait.FromSample.html"><code>FromSample</code></a> trait and provides methods for performing signal
+amplitude addition and multiplication.</p>
+
+<h1 id='example' class='section-header'><a href='#example'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::{<span class='ident'>I24</span>, <span class='ident'>Sample</span>};
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>((<span class='op'>-</span><span class='number'>1.0</span>).<span class='ident'>to_sample</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>(), <span class='number'>0</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.0</span>.<span class='ident'>to_sample</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>(), <span class='number'>128</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0i32</span>.<span class='ident'>to_sample</span>::<span class='op'>&lt;</span><span class='ident'>u32</span><span class='op'>&gt;</span>(), <span class='number'>2_147_483_648</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>I24</span>::<span class='ident'>new</span>(<span class='number'>0</span>).<span class='ident'>unwrap</span>(), <span class='ident'>Sample</span>::<span class='ident'>from_sample</span>(<span class='number'>0.0</span>));
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.0</span>, <span class='ident'>Sample</span>::<span class='ident'>equilibrium</span>());
+}</pre>
+</div>
+            <h2 id='associated-types'>Associated Types</h2>
+            <div class='methods'>
+        <h3 id='associatedtype.Signed' class='method stab '><code>type <a href='#associatedtype.Signed' class='type'>Signed</a>: <a class='trait' href='../sample/trait.SignedSample.html' title='sample::SignedSample'>SignedSample</a> + <a class='trait' href='../sample/conv/trait.Duplex.html' title='sample::conv::Duplex'>Duplex</a>&lt;Self&gt;</code></h3><div class='docblock'><p>When summing two samples of a signal together, it is necessary for both samples to be
+represented in some signed format. This associated <code>Addition</code> type represents the format to
+which <code>Self</code> should be converted for optimal <code>Addition</code> performance.</p>
+
+<p>For example, u32&#39;s optimal <code>Addition</code> type would be i32, u8&#39;s would be i8, f32&#39;s would be
+f32, etc.</p>
+
+<p>Specifying this as an associated type allows us to automatically determine the optimal,
+lossless Addition format type for summing any two unique <code>Sample</code> types together.</p>
+
+<p>As a user of the <code>sample</code> crate, you will never need to be concerned with this type unless
+you are defining your own unique <code>Sample</code> type(s).</p>
+</div><h3 id='associatedtype.Float' class='method stab '><code>type <a href='#associatedtype.Float' class='type'>Float</a>: <a class='trait' href='../sample/trait.FloatSample.html' title='sample::FloatSample'>FloatSample</a> + <a class='trait' href='../sample/conv/trait.Duplex.html' title='sample::conv::Duplex'>Duplex</a>&lt;Self&gt;</code></h3><div class='docblock'><p>When multiplying two samples of a signal together, it is necessary for both samples to be
+represented in some signed, floating-point format. This associated <code>Multiplication</code> type
+represents the format to which <code>Self</code> should be converted for optimal <code>Multiplication</code>
+performance.</p>
+
+<p>For example, u32&#39;s optimal <code>Multiplication</code> type would be f32, u64&#39;s would be f64, i8&#39;s
+would be f32, etc.</p>
+
+<p>Specifying this as an associated type allows us to automatically determine the optimal,
+lossless Multiplication format type for multiplying any two unique <code>Sample</code> types together.</p>
+
+<p>As a user of the <code>sample</code> crate, you will never need to be concerned with this type unless
+you are defining your own unique <code>Sample</code> type(s).</p>
+</div></div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.equilibrium' class='method stab '><code>fn <a href='#tymethod.equilibrium' class='fnname'>equilibrium</a>() -&gt; Self</code></h3><div class='docblock'><p>The equilibrium value for the wave that this <code>Sample</code> type represents. This is normally the
+value that is equal distance from both the min and max ranges of the sample.</p>
+
+<h1 id='example-1' class='section-header'><a href='#example-1'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Sample</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.0</span>, <span class='ident'>f32</span>::<span class='ident'>equilibrium</span>());
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='ident'>i32</span>::<span class='ident'>equilibrium</span>());
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>128</span>, <span class='ident'>u8</span>::<span class='ident'>equilibrium</span>());
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>32_768_u16</span>, <span class='ident'>Sample</span>::<span class='ident'>equilibrium</span>());
+}</pre>
+
+<p><strong>Note:</strong> This will likely be changed to an &quot;associated const&quot; if the feature lands.</p>
+</div></div>
+            <h2 id='provided-methods'>Provided Methods</h2>
+            <div class='methods'>
+        <h3 id='method.identity' class='method stab '><code>fn <a href='#method.identity' class='fnname'>identity</a>() -&gt; Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Float</a></code></h3><div class='docblock'><p>The multiplicative identity of the signal.</p>
+
+<p>In other words: A value which when used to scale/multiply the amplitude or frequency of a
+signal, returns the same signal.</p>
+
+<p>This is useful as a default, non-affecting amplitude or frequency multiplier.</p>
+
+<h1 id='example-2' class='section-header'><a href='#example-2'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::{<span class='ident'>Sample</span>, <span class='ident'>U48</span>};
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1.0</span>, <span class='ident'>f32</span>::<span class='ident'>identity</span>());
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1.0</span>, <span class='ident'>i8</span>::<span class='ident'>identity</span>());
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1.0</span>, <span class='ident'>u8</span>::<span class='ident'>identity</span>());
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1.0</span>, <span class='ident'>U48</span>::<span class='ident'>identity</span>());
+}</pre>
+</div><h3 id='method.to_sample' class='method stab '><code>fn <a href='#method.to_sample' class='fnname'>to_sample</a>&lt;S&gt;(self) -&gt; S <span class='where'>where Self: <a class='trait' href='../sample/conv/trait.ToSample.html' title='sample::conv::ToSample'>ToSample</a>&lt;S&gt;</span></code></h3><div class='docblock'><p>Convert <code>self</code> to any type that implements <code>FromSample&lt;Self&gt;</code>.</p>
+
+<h1 id='example-3' class='section-header'><a href='#example-3'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Sample</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.0</span>.<span class='ident'>to_sample</span>::<span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;</span>(), <span class='number'>0</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.0</span>.<span class='ident'>to_sample</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>(), <span class='number'>128</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>((<span class='op'>-</span><span class='number'>1.0</span>).<span class='ident'>to_sample</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>(), <span class='number'>0</span>);
+}</pre>
+</div><h3 id='method.from_sample' class='method stab '><code>fn <a href='#method.from_sample' class='fnname'>from_sample</a>&lt;S&gt;(s: S) -&gt; Self <span class='where'>where Self: <a class='trait' href='../sample/conv/trait.FromSample.html' title='sample::conv::FromSample'>FromSample</a>&lt;S&gt;</span></code></h3><div class='docblock'><p>Create a <code>Self</code> from any type that implements <code>ToSample&lt;Self&gt;</code>.</p>
+
+<h1 id='example-4' class='section-header'><a href='#example-4'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::{<span class='ident'>Sample</span>, <span class='ident'>I24</span>};
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>f32</span>::<span class='ident'>from_sample</span>(<span class='number'>128_u8</span>), <span class='number'>0.0</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i8</span>::<span class='ident'>from_sample</span>(<span class='op'>-</span><span class='number'>1.0</span>), <span class='op'>-</span><span class='number'>128</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>I24</span>::<span class='ident'>from_sample</span>(<span class='number'>0.0</span>), <span class='ident'>I24</span>::<span class='ident'>new</span>(<span class='number'>0</span>).<span class='ident'>unwrap</span>());
+}</pre>
+</div><h3 id='method.to_signed_sample' class='method stab '><code>fn <a href='#method.to_signed_sample' class='fnname'>to_signed_sample</a>(self) -&gt; Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Signed</a></code></h3><div class='docblock'><p>Converts <code>self</code> to the equivalent <code>Sample</code> in the associated <code>Signed</code> format.</p>
+
+<p>This is a simple wrapper around <code>Sample::to_sample</code> which may provide extra convenience in
+some cases, particularly for assisting type inference.</p>
+
+<h1 id='example-5' class='section-header'><a href='#example-5'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Sample</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>128_u8</span>.<span class='ident'>to_signed_sample</span>(), <span class='number'>0i8</span>);
+}</pre>
+</div><h3 id='method.to_float_sample' class='method stab '><code>fn <a href='#method.to_float_sample' class='fnname'>to_float_sample</a>(self) -&gt; Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Float</a></code></h3><div class='docblock'><p>Converts <code>self</code> to the equivalent <code>Sample</code> in the associated <code>Float</code> format.</p>
+
+<p>This is a simple wrapper around <code>Sample::to_sample</code> which may provide extra convenience in
+some cases, particularly for assisting type inference.</p>
+
+<h1 id='example-6' class='section-header'><a href='#example-6'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Sample</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>128_u8</span>.<span class='ident'>to_float_sample</span>(), <span class='number'>0.0</span>);
+}</pre>
+</div><h3 id='method.add_amp' class='method stab '><code>fn <a href='#method.add_amp' class='fnname'>add_amp</a>(self, amp: Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Signed</a>) -&gt; Self</code></h3><div class='docblock'><p>Adds (or &quot;offsets&quot;) the amplitude of the <code>Sample</code> by the given signed amplitude.</p>
+
+<p><code>Self</code> will be converted to <code>Self::Signed</code>, the addition will occur and then the result
+will be converted back to <code>Self</code>. These conversions allow us to correctly handle the
+addition of unsigned signal formats.</p>
+
+<h1 id='example-7' class='section-header'><a href='#example-7'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Sample</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.25</span>.<span class='ident'>add_amp</span>(<span class='number'>0.5</span>), <span class='number'>0.75</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>192u8</span>.<span class='ident'>add_amp</span>(<span class='op'>-</span><span class='number'>128</span>), <span class='number'>64</span>);
+}</pre>
+</div><h3 id='method.mul_amp' class='method stab '><code>fn <a href='#method.mul_amp' class='fnname'>mul_amp</a>(self, amp: Self::<a class='trait' href='../sample/trait.Sample.html' title='sample::Sample'>Float</a>) -&gt; Self</code></h3><div class='docblock'><p>Multiplies (or &quot;scales&quot;) the amplitude of the <code>Sample</code> by the given float amplitude.</p>
+
+<ul>
+<li><code>amp</code> &gt; 1.0 amplifies the sample.</li>
+<li><code>amp</code> &lt; 1.0 attenuates the sample.</li>
+<li><code>amp</code> == 1.0 yields the same sample.</li>
+<li><code>amp</code> == 0.0 yields the <code>Sample::equilibrium</code>.</li>
+</ul>
+
+<p><code>Self</code> will be converted to <code>Self::Float</code>, the multiplication will occur and then the
+result will be converted back to <code>Self</code>. These conversions allow us to correctly handle the
+multiplication of integral signal formats.</p>
+
+<h1 id='example-8' class='section-header'><a href='#example-8'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Sample</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>64_i8</span>.<span class='ident'>mul_amp</span>(<span class='number'>0.5</span>), <span class='number'>32</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.5</span>.<span class='ident'>mul_amp</span>(<span class='op'>-</span><span class='number'>2.0</span>), <span class='op'>-</span><span class='number'>1.0</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>64_u8</span>.<span class='ident'>mul_amp</span>(<span class='number'>0.0</span>), <span class='number'>128</span>);
+}</pre>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i8.html'>i8</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a></code></li>
+<li><code>impl Sample for <a class='struct' href='../sample/types/i24/struct.I24.html' title='sample::types::i24::I24'>I24</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a></code></li>
+<li><code>impl Sample for <a class='struct' href='../sample/types/i48/struct.I48.html' title='sample::types::i48::I48'>I48</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a></code></li>
+<li><code>impl Sample for <a class='struct' href='../sample/types/u24/struct.U24.html' title='sample::types::u24::U24'>U24</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a></code></li>
+<li><code>impl Sample for <a class='struct' href='../sample/types/u48/struct.U48.html' title='sample::types::u48::U48'>U48</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></li>
+<li><code>impl Sample for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a></code></li>
+</ul><script type="text/javascript" async
+                         src="../implementors/sample/trait.Sample.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "sample";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

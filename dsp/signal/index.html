@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `signal` mod in crate `dsp`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, signal">
+
+    <title>dsp::signal - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>dsp</a></p><script>window.sidebarCurrent = {name: 'signal', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>dsp</a>::<wbr><a class='mod' href=''>signal</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-7966' class='srclink' href='../../sample/signal/index.html?gotosrc=7966' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Use the <a href="./trait.Signal.html"><strong>Signal</strong> trait</a> for working with <strong>Iterator</strong>s that yield
+<strong>Frame</strong>s. To complement the <strong>Iterator</strong> trait, <strong>Signal</strong> provides methods for adding,
+scaling, offsetting, multiplying, clipping and generating frame iterators and more.</p>
+
+<p>You may also find a series of <strong>Signal</strong> source functions, including:</p>
+
+<ul>
+<li><a href="./fn.equilibrium.html">equilibrium</a> for generating &quot;silent&quot; frames.</li>
+<li><a href="./fn.phase.html">phase</a> for a stepping phase, useful for oscillators.</li>
+<li><a href="./fn.sine.html">sine</a> for generating a sine waveform.</li>
+<li><a href="./fn.saw.html">saw</a> for generating a sawtooth waveform.</li>
+<li><a href="./fn.square.html">square</a> for generating a square waveform.</li>
+<li><a href="./fn.noise.html">noise</a> for generating a noise waveform.</li>
+<li><a href="./fn.noise_simplex.html">noise_simplex</a> for generating a 1D simplex noise waveform.</li>
+<li><a href="./fn.gen.html">gen</a> for generating frames of type F from some <code>Fn() -&gt; F</code>.</li>
+<li><a href="./fn.gen_mut.html">gen_mut</a> for generating frames of type F from some <code>FnMut() -&gt; F</code>.</li>
+<li><a href="./fn.from_interleaved_samples.html">from_interleaved_samples</a> for converting an iterator yielding samples to an
+iterator yielding frames.</li>
+</ul>
+
+<p>Working with <strong>Signal</strong>s allows for easy, readable creation of rich and complex DSP graphs with
+a simple and familiar API.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.AddAmp.html'
+                                  title='dsp::signal::AddAmp'>AddAmp</a></td>
+                           <td class='docblock short'>
+                                <p>An iterator that yields the sum of the frames yielded by both <code>other</code> and <code>self</code> in lock-step.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Bus.html'
+                                  title='dsp::signal::Bus'>Bus</a></td>
+                           <td class='docblock short'>
+                                <p>A type which allows for <code>send</code>ing a single <code>Signal</code> to multiple outputs.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.ClipAmp.html'
+                                  title='dsp::signal::ClipAmp'>ClipAmp</a></td>
+                           <td class='docblock short'>
+                                <p>Clips samples in each frame yielded by <code>signal</code> to the given threshhold amplitude.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.ConstHz.html'
+                                  title='dsp::signal::ConstHz'>ConstHz</a></td>
+                           <td class='docblock short'>
+                                <p>A constant phase step size.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Delay.html'
+                                  title='dsp::signal::Delay'>Delay</a></td>
+                           <td class='docblock short'>
+                                <p>Delays the <code>signal</code> by the given number of frames.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Equilibrium.html'
+                                  title='dsp::signal::Equilibrium'>Equilibrium</a></td>
+                           <td class='docblock short'>
+                                <p>An iterator that endlessly yields <code>Frame</code>s of type <code>F</code> at equilibrium.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.FromInterleavedSamples.html'
+                                  title='dsp::signal::FromInterleavedSamples'>FromInterleavedSamples</a></td>
+                           <td class='docblock short'>
+                                <p>An iterator that converts an iterator of <code>Sample</code>s to an iterator of <code>Frame</code>s.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Gen.html'
+                                  title='dsp::signal::Gen'>Gen</a></td>
+                           <td class='docblock short'>
+                                <p>A signal that generates frames using the given function.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.GenMut.html'
+                                  title='dsp::signal::GenMut'>GenMut</a></td>
+                           <td class='docblock short'>
+                                <p>A signal that generates frames using the given function which may mutate some state.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Hz.html'
+                                  title='dsp::signal::Hz'>Hz</a></td>
+                           <td class='docblock short'>
+                                <p>An iterator that yields the step size for a phase.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.MulAmp.html'
+                                  title='dsp::signal::MulAmp'>MulAmp</a></td>
+                           <td class='docblock short'>
+                                <p>An iterator that yields the product of the frames yielded by both <code>other</code> and <code>self</code> in
+lock-step.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.MulHz.html'
+                                  title='dsp::signal::MulHz'>MulHz</a></td>
+                           <td class='docblock short'>
+                                <p>Multiplies the rate at which frames of <code>self</code> are yielded by the given <code>signal</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Noise.html'
+                                  title='dsp::signal::Noise'>Noise</a></td>
+                           <td class='docblock short'>
+                                <p>A noise signal generator.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.NoiseSimplex.html'
+                                  title='dsp::signal::NoiseSimplex'>NoiseSimplex</a></td>
+                           <td class='docblock short'>
+                                <p>A 1D simplex-noise generator.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OffsetAmp.html'
+                                  title='dsp::signal::OffsetAmp'>OffsetAmp</a></td>
+                           <td class='docblock short'>
+                                <p>Provides an iterator that offsets the amplitude of every channel in each frame of the
+signal by some sample value and yields the resulting frames.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OffsetAmpPerChannel.html'
+                                  title='dsp::signal::OffsetAmpPerChannel'>OffsetAmpPerChannel</a></td>
+                           <td class='docblock short'>
+                                <p>An <code>Iterator</code> that scales the amplitude of every <code>Frame</code> in <code>self</code> by the respective amplitudes
+in each channel of the given <code>amp</code> <code>Frame</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Output.html'
+                                  title='dsp::signal::Output'>Output</a></td>
+                           <td class='docblock short'>
+                                <p>An output node to which some signal <code>S</code> is <code>Output</code>ing its frames.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Phase.html'
+                                  title='dsp::signal::Phase'>Phase</a></td>
+                           <td class='docblock short'>
+                                <p>An iterator that yields a phase, useful for waveforms like Sine or Saw.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Rate.html'
+                                  title='dsp::signal::Rate'>Rate</a></td>
+                           <td class='docblock short'>
+                                <p>The rate at which phrase a <strong>Signal</strong> is sampled.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Saw.html'
+                                  title='dsp::signal::Saw'>Saw</a></td>
+                           <td class='docblock short'>
+                                <p>A saw wave signal generator.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.ScaleAmp.html'
+                                  title='dsp::signal::ScaleAmp'>ScaleAmp</a></td>
+                           <td class='docblock short'>
+                                <p>An <code>Iterator</code> that scales the amplitude of the sample of each channel in every <code>Frame</code> yielded
+by <code>self</code> by the given amplitude.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.ScaleAmpPerChannel.html'
+                                  title='dsp::signal::ScaleAmpPerChannel'>ScaleAmpPerChannel</a></td>
+                           <td class='docblock short'>
+                                <p>An <code>Iterator</code> that scales the amplitude of every <code>Frame</code> in <code>self</code> by the respective amplitudes
+in each channel of the given <code>amp</code> <code>Frame</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Sine.html'
+                                  title='dsp::signal::Sine'>Sine</a></td>
+                           <td class='docblock short'>
+                                <p>A sine wave signal generator.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Square.html'
+                                  title='dsp::signal::Square'>Square</a></td>
+                           <td class='docblock short'>
+                                <p>A square wave signal generator.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.ToSamples.html'
+                                  title='dsp::signal::ToSamples'>ToSamples</a></td>
+                           <td class='docblock short'>
+                                <p>Converts a <code>Signal</code> to an <code>Iterator</code> yielding <code>Sample</code>s of the signal.</p>
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.Signal.html'
+                                  title='dsp::signal::Signal'>Signal</a></td>
+                           <td class='docblock short'>
+                                <p>A trait that allows us to treat <code>Iterator</code>s that yield <code>Frame</code>s as a multi-channel PCM signal.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.Step.html'
+                                  title='dsp::signal::Step'>Step</a></td>
+                           <td class='docblock short'>
+                                <p>Types that may be used to give a phase step size based on some <code>hz / sample rate</code>.</p>
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.equilibrium.html'
+                                  title='dsp::signal::equilibrium'>equilibrium</a></td>
+                           <td class='docblock short'>
+                                <p>Provides an iterator that endlessly yields <code>Frame</code>s of type <code>F</code> at equilibrium.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.from_interleaved_samples.html'
+                                  title='dsp::signal::from_interleaved_samples'>from_interleaved_samples</a></td>
+                           <td class='docblock short'>
+                                <p>An iterator that converts the given <code>Iterator</code> yielding <code>Sample</code>s to a <code>Signal</code> yielding frames
+of type <code>F</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.gen.html'
+                                  title='dsp::signal::gen'>gen</a></td>
+                           <td class='docblock short'>
+                                <p>A signal that generates frames using the given function.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.gen_mut.html'
+                                  title='dsp::signal::gen_mut'>gen_mut</a></td>
+                           <td class='docblock short'>
+                                <p>A signal that generates frames using the given function which may mutate some state.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.noise.html'
+                                  title='dsp::signal::noise'>noise</a></td>
+                           <td class='docblock short'>
+                                <p>Produces a <code>Signal</code> that yields random values between -1.0..1.0.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.noise_simplex.html'
+                                  title='dsp::signal::noise_simplex'>noise_simplex</a></td>
+                           <td class='docblock short'>
+                                <p>Produces a 1-dimensional simplex noise <code>Signal</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.phase.html'
+                                  title='dsp::signal::phase'>phase</a></td>
+                           <td class='docblock short'>
+                                <p>Creates a <code>Phase</code> that continuously steps forward by the given <code>step</code> size yielder.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.rate.html'
+                                  title='dsp::signal::rate'>rate</a></td>
+                           <td class='docblock short'>
+                                <p>Creates a frame <code>Rate</code> (aka sample rate) representing the rate at which a signal may be
+sampled.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.saw.html'
+                                  title='dsp::signal::saw'>saw</a></td>
+                           <td class='docblock short'>
+                                <p>Produces a <code>Signal</code> that yields a saw wave oscillating at the given hz.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.sine.html'
+                                  title='dsp::signal::sine'>sine</a></td>
+                           <td class='docblock short'>
+                                <p>Produces a <code>Signal</code> that yields a sine wave oscillating at the given hz.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.square.html'
+                                  title='dsp::signal::square'>square</a></td>
+                           <td class='docblock short'>
+                                <p>Produces a <code>Signal</code> that yields a square wave oscillating at the given hz.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "dsp";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

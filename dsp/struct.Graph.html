@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Graph` struct in crate `dsp`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Graph">
+
+    <title>dsp::Graph - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>dsp</a></p><script>window.sidebarCurrent = {name: 'Graph', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>dsp</a>::<wbr><a class='struct' href=''>Graph</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-33' class='srclink' href='../src/dsp/src/graph.rs.html#79-87' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Graph&lt;F,&nbsp;N&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>A directed, acyclic DSP graph.</p>
+
+<p>Designed for easily and safely setting up high performance audio signal generating, processing
+and mixing. Useful for both simple and highly complex signal graphs.</p>
+
+<p>There are a variety of use cases for <code>Graph</code>:</p>
+
+<ul>
+<li>Designing effects.</li>
+<li>Creating an audio mixer.</li>
+<li>Making a sampler.</li>
+<li>Writing a DSP backend for a DAW.</li>
+<li>Any kind of modular audio synthesis or processing.</li>
+</ul>
+
+<p><code>Graph</code> is a wrapper around <a href="http://mitchmindtree.github.io/daggy/daggy/">daggy</a>&#39;s
+<a href="http://mitchmindtree.github.io/daggy/daggy/struct.Dag.html"><code>Dag</code></a> type - an abstraction for
+working with directed acyclic graph&#39;s where high performance node adding and accessing is
+required.</p>
+
+<p>An input -&gt; output connection in this <code>Graph</code> is represented as a parent -&gt; child connection
+within the internal <code>Dag</code>. The following terms are all equivalent:</p>
+
+<ul>
+<li><em>input -&gt; output</em></li>
+<li><em>src -&gt; dest</em></li>
+<li><em>parent -&gt; child</em></li>
+</ul>
+
+<p>Audio can be requested from any node in the <strong>Graph</strong> using the
+<a href="./struct.Graph.html#method.audio_requested_from"><code>audio_requested_from</code></a> method.</p>
+
+<p>When <a href="../node/trait.Node.html#method.audio_requested"><code>audio_requested</code></a> is called on the
+<strong>Graph</strong>, audio will be requested from the node specified by the index at <code>maybe_master</code>. If
+<code>maybe_master</code> is <code>None</code>, audio will be requested from the first, input-only node found - that
+is, the first node that is found with only input connections and no outputs.</p>
+
+<p><strong>NodeIndex</strong> is a type that acts as a reference to a node, while <strong>EdgeIndex</strong> is a type that
+acts as a reference to an edge (which in this case describes a <em>src -&gt; dest</em> <strong>Connection</strong>
+between two nodes). It should be noted that these are only stable across certain operations.
+<strong>Removing indices may shift other indices of the same type!</strong> Adding nodes or edges to the
+<strong>Graph</strong> keeps all indices stable, but removing a node or edge will force the last node/edge
+to shift its index to take its place.</p>
+
+<p><strong>Graph</strong> also offers methods for accessing its underlying <strong>Dag</strong> or <strong>PetGraph</strong>.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;F,&nbsp;N&gt; <a class='struct' href='../dsp/struct.Graph.html' title='dsp::Graph'>Graph</a>&lt;F,&nbsp;N&gt; <span class='where'>where F: <a class='trait' href='../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>, N: <a class='trait' href='../dsp/trait.Node.html' title='dsp::Node'>Node</a>&lt;F&gt;</span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-98' class='srclink' href='../src/dsp/src/graph.rs.html#129-613' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; Self</code></h4>
+<div class='docblock'><p>Constructor for a new dsp Graph.</p>
+
+<p><a href="./struct.Graph.html#method.with_capacity"><code>with_capacity</code></a> is recommended if you have a
+rough idea of the number of nodes, connections and frames per buffer upon the <strong>Graph</strong>&#39;s
+instantiation.</p>
+</div><h4 id='method.with_capacity' class='method'><code>fn <a href='#method.with_capacity' class='fnname'>with_capacity</a>(nodes: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, connections: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, frames_per_buffer: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self</code></h4>
+<div class='docblock'><p>Constructor for a new dsp Graph with some minimum capacity.</p>
+
+<ul>
+<li><strong>nodes</strong> is the capacity for the underlying <strong>Dag</strong>&#39;s node <code>Vec</code>.</li>
+<li><strong>connections</strong> is the capacity for the underlying <strong>Dag</strong>&#39;s edge <code>Vec</code>.</li>
+<li><strong>frames_per_buffer</strong> is the capacity for the <strong>Graph</strong>&#39;s <code>dry_buffer</code>, which is used
+for mixing the dry and wet signals when <code>Node::audio_requested</code> is called.</li>
+</ul>
+</div><h4 id='method.dag' class='method'><code>fn <a href='#method.dag' class='fnname'>dag</a>(&amp;self) -&gt; &amp;<a class='type' href='../dsp/type.Dag.html' title='dsp::Dag'>Dag</a>&lt;F,&nbsp;N&gt;</code></h4>
+<div class='docblock'><p>A reference to the underlying <strong>Dag</strong>.</p>
+</div><h4 id='method.into_dag' class='method'><code>fn <a href='#method.into_dag' class='fnname'>into_dag</a>(self) -&gt; <a class='type' href='../dsp/type.Dag.html' title='dsp::Dag'>Dag</a>&lt;F,&nbsp;N&gt;</code></h4>
+<div class='docblock'><p>Takes ownership of the <strong>Graph</strong> and returns the underlying <strong>Dag</strong>.</p>
+</div><h4 id='method.pet_graph' class='method'><code>fn <a href='#method.pet_graph' class='fnname'>pet_graph</a>(&amp;self) -&gt; &amp;<a class='type' href='../dsp/type.PetGraph.html' title='dsp::PetGraph'>PetGraph</a>&lt;F,&nbsp;N&gt;</code></h4>
+<div class='docblock'><p>A reference to the internal <strong>Dag</strong>&#39;s underlying <strong>PetGraph</strong>.</p>
+</div><h4 id='method.into_pet_graph' class='method'><code>fn <a href='#method.into_pet_graph' class='fnname'>into_pet_graph</a>(self) -&gt; <a class='type' href='../dsp/type.PetGraph.html' title='dsp::PetGraph'>PetGraph</a>&lt;F,&nbsp;N&gt;</code></h4>
+<div class='docblock'><p>Takes ownership of the <strong>Graph</strong> and returns the internal <strong>Dag</strong>&#39;s underlying <strong>PetGraph</strong>.</p>
+</div><h4 id='method.node_count' class='method'><code>fn <a href='#method.node_count' class='fnname'>node_count</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>The total number of nodes in the <strong>Graph</strong>.</p>
+</div><h4 id='method.connection_count' class='method'><code>fn <a href='#method.connection_count' class='fnname'>connection_count</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>The total number of connections in the <strong>Graph</strong>.</p>
+</div><h4 id='method.master_index' class='method'><code>fn <a href='#method.master_index' class='fnname'>master_index</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>&gt;</code></h4>
+<div class='docblock'><p>Return the <strong>Graph</strong>&#39;s master index if there is one.</p>
+
+<p><strong>Graph</strong>&#39;s <strong>Node</strong> implementation will request audio from the node at <code>maybe_master</code>
+when the <code>Node::audio_requested</code> method is called.</p>
+</div><h4 id='method.set_master' class='method'><code>fn <a href='#method.set_master' class='fnname'>set_master</a>(&amp;mut self, maybe_index: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>&gt;)</code></h4>
+<div class='docblock'><p>Set the master node for the <strong>Graph</strong>.</p>
+
+<p><strong>Graph</strong> will check to see if a node exists for the given index before assigning.</p>
+
+<p><strong>Graph</strong>&#39;s <strong>Node</strong> implementation will request audio from the node at <code>maybe_master</code>
+when the <code>Node::audio_requested</code> method is called.</p>
+</div><h4 id='method.add_node' class='method'><code>fn <a href='#method.add_node' class='fnname'>add_node</a>(&amp;mut self, node: N) -&gt; <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a></code></h4>
+<div class='docblock'><p>Add a node to the dsp graph.</p>
+
+<p>This computes in <strong>O(1)</strong> time.</p>
+</div><h4 id='method.node' class='method'><code>fn <a href='#method.node' class='fnname'>node</a>(&amp;self, node: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;N&gt;</code></h4>
+<div class='docblock'><p>A reference to the node at the given index (or <code>None</code> if it doesn&#39;t exist).</p>
+</div><h4 id='method.node_mut' class='method'><code>fn <a href='#method.node_mut' class='fnname'>node_mut</a>(&amp;mut self, node: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;mut N&gt;</code></h4>
+<div class='docblock'><p>A mutable reference to the node at the given index (or <code>None</code> if it doesn&#39;t exist).</p>
+</div><h4 id='method.raw_nodes' class='method'><code>fn <a href='#method.raw_nodes' class='fnname'>raw_nodes</a>(&amp;self) -&gt; <a class='type' href='../dsp/type.RawNodes.html' title='dsp::RawNodes'>RawNodes</a>&lt;N&gt;</code></h4>
+<div class='docblock'><p>Read only access to the internal node array.</p>
+</div><h4 id='method.nodes_mut' class='method'><code>fn <a href='#method.nodes_mut' class='fnname'>nodes_mut</a>(&amp;mut self) -&gt; <a class='type' href='../dsp/type.NodesMut.html' title='dsp::NodesMut'>NodesMut</a>&lt;N&gt;</code></h4>
+<div class='docblock'><p>An iterator yielding mutable access to all nodes.</p>
+
+<p>The order in which nodes are yielded matches the order of their indices.</p>
+</div><h4 id='method.connection' class='method'><code>fn <a href='#method.connection' class='fnname'>connection</a>(&amp;self, edge: <a class='type' href='../dsp/type.EdgeIndex.html' title='dsp::EdgeIndex'>EdgeIndex</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='struct' href='../dsp/struct.Connection.html' title='dsp::Connection'>Connection</a>&lt;F&gt;&gt;</code></h4>
+<div class='docblock'><p>A reference to the connection at the given index (or <code>None</code> if it doesn&#39;t exist).</p>
+</div><h4 id='method.raw_edges' class='method'><code>fn <a href='#method.raw_edges' class='fnname'>raw_edges</a>(&amp;self) -&gt; <a class='type' href='../dsp/type.RawEdges.html' title='dsp::RawEdges'>RawEdges</a>&lt;F&gt;</code></h4>
+<div class='docblock'><p>Read only access to the internal edge array.</p>
+</div><h4 id='method.index_twice_mut' class='method'><code>fn <a href='#method.index_twice_mut' class='fnname'>index_twice_mut</a>(&amp;mut self, a: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>, b: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a>&amp;mut N, &amp;mut N<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+<div class='docblock'><p>Index the <strong>Graph</strong> by two <code>NodeIndex</code>s at once.</p>
+
+<p><strong>Panics</strong> if the indices are equal or if they are out of bounds.</p>
+</div><h4 id='method.remove_node' class='method'><code>fn <a href='#method.remove_node' class='fnname'>remove_node</a>(&amp;mut self, idx: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;N&gt;</code></h4>
+<div class='docblock'><p>Remove a node from the dsp graph.</p>
+
+<p>Resets the master to None if the index matches the current master index.</p>
+
+<p><strong>Note:</strong> This method may shift (and in turn invalidate) previously returned node indices!</p>
+
+<p><strong>Graph</strong> will re-prepare its visit order if some node was removed.</p>
+</div><h4 id='method.add_connection' class='method'><code>fn <a href='#method.add_connection' class='fnname'>add_connection</a>(&amp;mut self, src: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>, dest: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='type' href='../dsp/type.EdgeIndex.html' title='dsp::EdgeIndex'>EdgeIndex</a>,&nbsp;<a class='struct' href='../dsp/struct.WouldCycle.html' title='dsp::WouldCycle'>WouldCycle</a>&gt;</code></h4>
+<div class='docblock'><p>Adds an edge from <code>src</code> to <code>dest</code>. That is, <code>src</code> is now an input to <code>dest</code>.</p>
+
+<p>Returns an error instead if the input would create a cycle in the graph.</p>
+
+<p><strong>Graph</strong> will re-prepare its visit order if some connection was successfully added.</p>
+
+<p>If you&#39;re using <code>add_node</code> followed by this method, consider using
+<a href="./struct.Graph.html#method.add_input"><code>add_input</code></a> or
+<a href="./struct.Graph.html#method.add_output"><code>add_output</code></a> instead for greater performance.
+This is because when adding a new node and edge simultaneously, we don&#39;t have to check
+whether adding the edge would create a cycle.</p>
+
+<p><strong>Panics</strong> if there is no node for either <code>src</code> or <code>dest</code>.</p>
+
+<p><strong>Panics</strong> if the Graph is at the maximum number of edges for its index.</p>
+</div><h4 id='method.add_connections' class='method'><code>fn <a href='#method.add_connections' class='fnname'>add_connections</a>&lt;I&gt;(&amp;mut self, connections: I) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;EdgeIndices,&nbsp;<a class='struct' href='../dsp/struct.WouldCycle.html' title='dsp::WouldCycle'>WouldCycle</a>&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/traits/trait.IntoIterator.html' title='core::iter::traits::IntoIterator'>IntoIterator</a>&lt;Item=<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>, <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>&gt;</span></code></h4>
+<div class='docblock'><p>The same as <a href="./struct.Graph.html#method.add_connection"><code>add_connection</code></a> but adds
+multiple connections to the <strong>Graph</strong>. Rather than checking for introduced cycles and
+re-preparing the visit order after adding each edge, we only do so after <strong>all</strong> edges are
+added. Thus, this is a far more efficient alternative to repeatedly calling the
+<code>add_connection</code> method.</p>
+
+<p>Returns an error instead if any of the connections would create a cycle in the graph.</p>
+
+<p><strong>Graph</strong> will re-prepare its visit order if the connections were successfully added.</p>
+
+<p>If you&#39;re using <code>add_node</code> followed by this method, consider using
+<a href="./struct.Graph.html#method.add_input"><code>add_input</code></a> or
+<a href="./struct.Graph.html#method.add_output"><code>add_output</code></a> instead for greater performance.
+This is because when adding a new node and edge simultaneously, we don&#39;t have to check
+whether adding the edge would create a cycle.</p>
+
+<p><strong>Panics</strong> if there is no node for either <code>src</code> or <code>dest</code>.</p>
+
+<p><strong>Panics</strong> if the Graph is at the maximum number of edges for its index.</p>
+</div><h4 id='method.find_connection' class='method'><code>fn <a href='#method.find_connection' class='fnname'>find_connection</a>(&amp;self, src: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>, dest: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='type' href='../dsp/type.EdgeIndex.html' title='dsp::EdgeIndex'>EdgeIndex</a>&gt;</code></h4>
+<div class='docblock'><p>Find and return the index to the edge that describes the connection where <code>src</code> is an input
+to <code>dest</code>.</p>
+
+<p>Computes in <strong>O(e&#39;)</strong> time, where <strong>e&#39;</strong> is the number of edges connected to the nodes <code>a</code>
+and <code>b</code>.</p>
+</div><h4 id='method.remove_edge' class='method'><code>fn <a href='#method.remove_edge' class='fnname'>remove_edge</a>(&amp;mut self, edge: <a class='type' href='../dsp/type.EdgeIndex.html' title='dsp::EdgeIndex'>EdgeIndex</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Remove the connection described by the edge at the given index.</p>
+
+<p>Returns true if an edge was removed, returns false if there was no edge at the given index.</p>
+
+<p>Re-prepares the visit order if some edge was removed.</p>
+</div><h4 id='method.remove_connection' class='method'><code>fn <a href='#method.remove_connection' class='fnname'>remove_connection</a>(&amp;mut self, a: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>, b: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Find and remove any connection between a and b if there is one, whether it is <em>a -&gt; b</em> or
+<em>b -&gt; a</em>. We know that their may only be one edge as our API does not allow for creating a
+cyclic graph.</p>
+
+<p>Returns true if an edge was removed, returns false if there was no edge at the given index.</p>
+
+<p>Graph will re-prepare its visit order if some edge was removed.</p>
+
+<p>Note: If you have an index to the edge you want to remove,
+<a href="./struct.Graph.html#method.remove_edge"><code>remove_edge</code></a> is a more performant option.</p>
+</div><h4 id='method.add_input' class='method'><code>fn <a href='#method.add_input' class='fnname'>add_input</a>(&amp;mut self, src: N, dest: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='type' href='../dsp/type.EdgeIndex.html' title='dsp::EdgeIndex'>EdgeIndex</a>, <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+<div class='docblock'><p>Add a new node weight to the graph as an input to the wait at the given <code>dest</code> node index.</p>
+
+<p><em>src -&gt; new edge -&gt; dest</em></p>
+
+<p>Returns an index to both the new <code>src</code> node and the edge that represents the new connection
+between it and the node at <code>dest</code>.</p>
+
+<p>Computes in <strong>O(n)</strong> time where n is the number of nodes. This is because must update the
+visit order after adding the new connection.</p>
+
+<p><strong>Panics</strong> if there is no node for the given <code>dest</code> index.</p>
+
+<p><strong>Panics</strong> if the Graph is at the maximum number of edges for its index.</p>
+</div><h4 id='method.add_output' class='method'><code>fn <a href='#method.add_output' class='fnname'>add_output</a>(&amp;mut self, src: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>, dest: N) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='type' href='../dsp/type.EdgeIndex.html' title='dsp::EdgeIndex'>EdgeIndex</a>, <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+<div class='docblock'><p>Add a new node weight to the graph as an output to the wait at the given <code>src</code> node index.</p>
+
+<p><em>src -&gt; new edge -&gt; dest</em></p>
+
+<p>Returns an index to both the new <code>dest</code> node and the edge that represents the new connection
+between it and the node at <code>src</code>.</p>
+
+<p>Computes in <strong>O(n)</strong> time where n is the number of nodes. This is because must update the
+visit order after adding the new connection.</p>
+
+<p><strong>Panics</strong> if there is no node for the given <code>dest</code> index.</p>
+
+<p><strong>Panics</strong> if the Graph is at the maximum number of edges for its index.</p>
+</div><h4 id='method.inputs' class='method'><code>fn <a href='#method.inputs' class='fnname'>inputs</a>(&amp;self, idx: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='struct' href='../dsp/struct.Inputs.html' title='dsp::Inputs'>Inputs</a>&lt;F,&nbsp;N&gt;</code></h4>
+<div class='docblock'><p>A &quot;walker&quot; object that may be used to step through the inputs of the given node.</p>
+
+<p>Unlike the <code>Inputs</code> type, <code>WalkInputs</code> does not borrow the <code>Graph</code>.</p>
+
+<p>Can be converted to an iterator using <code>.iter()</code>.</p>
+</div><h4 id='method.outputs' class='method'><code>fn <a href='#method.outputs' class='fnname'>outputs</a>(&amp;self, idx: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='struct' href='../dsp/struct.Outputs.html' title='dsp::Outputs'>Outputs</a>&lt;F,&nbsp;N&gt;</code></h4>
+<div class='docblock'><p>A &quot;walker&quot; object that may be used to step through the outputs of the given node.</p>
+
+<p>Unlike the <code>Outputs</code> type, <code>WalkOutputs</code> does not borrow the <strong>Graph</strong>.</p>
+
+<p>Can be converted to an iterator using <code>.iter()</code>.</p>
+</div><h4 id='method.visit_order' class='method'><code>fn <a href='#method.visit_order' class='fnname'>visit_order</a>(&amp;self) -&gt; <a class='struct' href='../dsp/struct.VisitOrder.html' title='dsp::VisitOrder'>VisitOrder</a></code></h4>
+<div class='docblock'><p>A &quot;walker&quot; type that may be used to step through all node indices in the order in which
+they will be visited when audio is requested from the <strong>Graph</strong>.</p>
+</div><h4 id='method.visit_order_rev' class='method'><code>fn <a href='#method.visit_order_rev' class='fnname'>visit_order_rev</a>(&amp;self) -&gt; <a class='struct' href='../dsp/struct.VisitOrderReverse.html' title='dsp::VisitOrderReverse'>VisitOrderReverse</a></code></h4>
+<div class='docblock'><p>A &quot;walker&quot; type that may be used to step through all node indices in the order in which
+they will be visited when audio is requested from the <strong>Graph</strong>.</p>
+
+<p>Unlike the VisitOrder type, VisitOrder does not borrow the <strong>Graph</strong>.</p>
+</div><h4 id='method.remove_all_input_connections' class='method'><code>fn <a href='#method.remove_all_input_connections' class='fnname'>remove_all_input_connections</a>(&amp;mut self, idx: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Remove all incoming connections to the node at the given index.</p>
+
+<p>Return the number of connections removed.</p>
+</div><h4 id='method.remove_all_output_connections' class='method'><code>fn <a href='#method.remove_all_output_connections' class='fnname'>remove_all_output_connections</a>(&amp;mut self, idx: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Remove all outgoing connections from the node at the given index.</p>
+
+<p>Return the number of connections removed.</p>
+</div><h4 id='method.clear_disconnected' class='method'><code>fn <a href='#method.clear_disconnected' class='fnname'>clear_disconnected</a>(&amp;mut self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Clear all dsp nodes that have no inputs or outputs.</p>
+
+<p>Returns the number of nodes removed.</p>
+
+<p>Note: this may shift (and in turn invalidate) previously returned node and edge indices!</p>
+</div><h4 id='method.clear' class='method'><code>fn <a href='#method.clear' class='fnname'>clear</a>(&amp;mut self)</code></h4>
+<div class='docblock'><p>Clear all dsp nodes.</p>
+</div><h4 id='method.prepare_buffers' class='method'><code>fn <a href='#method.prepare_buffers' class='fnname'>prepare_buffers</a>(&amp;mut self, buffer_size: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>)</code></h4>
+<div class='docblock'><p>Prepare the buffers for all nodes within the Graph.</p>
+</div><h4 id='method.audio_requested_from' class='method'><code>fn <a href='#method.audio_requested_from' class='fnname'>audio_requested_from</a>(&amp;mut self, out_node: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>, output: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;mut [</a>F<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>, sample_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>)</code></h4>
+<div class='docblock'><p>Request audio from the node at the given index.</p>
+
+<p><strong>Panics</strong> if there is no node for the given index.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl&lt;F,&nbsp;N&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>&gt; for <a class='struct' href='../dsp/struct.Graph.html' title='dsp::Graph'>Graph</a>&lt;F,&nbsp;N&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a id='src-273' class='srclink' href='../src/dsp/src/graph.rs.html#616-622' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='associatedtype.Output' class='type'><code>type <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Index.html#associatedtype.Output' class='type'>Output</a> = N</code></h4>
+<div class='docblock'><p>The returned type after indexing</p>
+</div><h4 id='method.index' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Index.html#tymethod.index' class='fnname'>index</a>&lt;'a&gt;(&amp;'a self, index: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; &amp;'a N</code></h4>
+<div class='docblock'><p>The method for the indexing (<code>Foo[Bar]</code>) operation</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl&lt;F,&nbsp;N&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.IndexMut.html' title='core::ops::IndexMut'>IndexMut</a>&lt;<a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>&gt; for <a class='struct' href='../dsp/struct.Graph.html' title='dsp::Graph'>Graph</a>&lt;F,&nbsp;N&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a id='src-281' class='srclink' href='../src/dsp/src/graph.rs.html#624-629' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.index_mut' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.IndexMut.html#tymethod.index_mut' class='fnname'>index_mut</a>(&amp;mut self, index: <a class='type' href='../dsp/type.NodeIndex.html' title='dsp::NodeIndex'>NodeIndex</a>) -&gt; &amp;mut N</code></h4>
+<div class='docblock'><p>The method for the indexing (<code>Foo[Bar]</code>) operation</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl&lt;F,&nbsp;N&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='type' href='../dsp/type.EdgeIndex.html' title='dsp::EdgeIndex'>EdgeIndex</a>&gt; for <a class='struct' href='../dsp/struct.Graph.html' title='dsp::Graph'>Graph</a>&lt;F,&nbsp;N&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a id='src-287' class='srclink' href='../src/dsp/src/graph.rs.html#631-637' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='associatedtype.Output-1' class='type'><code>type <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Index.html#associatedtype.Output' class='type'>Output</a> = <a class='struct' href='../dsp/struct.Connection.html' title='dsp::Connection'>Connection</a>&lt;F&gt;</code></h4>
+<div class='docblock'><p>The returned type after indexing</p>
+</div><h4 id='method.index-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Index.html#tymethod.index' class='fnname'>index</a>&lt;'a&gt;(&amp;'a self, index: <a class='type' href='../dsp/type.EdgeIndex.html' title='dsp::EdgeIndex'>EdgeIndex</a>) -&gt; &amp;'a <a class='struct' href='../dsp/struct.Connection.html' title='dsp::Connection'>Connection</a>&lt;F&gt;</code></h4>
+<div class='docblock'><p>The method for the indexing (<code>Foo[Bar]</code>) operation</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl&lt;F,&nbsp;N&gt; <a class='trait' href='../dsp/trait.Node.html' title='dsp::Node'>Node</a>&lt;F&gt; for <a class='struct' href='../dsp/struct.Graph.html' title='dsp::Graph'>Graph</a>&lt;F,&nbsp;N&gt; <span class='where'>where F: <a class='trait' href='../dsp/trait.Frame.html' title='dsp::Frame'>Frame</a>, N: <a class='trait' href='../dsp/trait.Node.html' title='dsp::Node'>Node</a>&lt;F&gt;</span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-295' class='srclink' href='../src/dsp/src/graph.rs.html#640-660' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.audio_requested' class='method'><code>fn <a href='../dsp/trait.Node.html#tymethod.audio_requested' class='fnname'>audio_requested</a>(&amp;mut self, output: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;mut [</a>F<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>, sample_hz: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>)</code></h4>
+<div class='docblock'><p>Request audio from the <strong>Node</strong> given some <code>sample_hz</code> (aka sample rate in hertz). If the <strong>Node</strong> has no inputs, the <code>buffer</code> will be zeroed. If the <strong>Node</strong> has some inputs, the <code>buffer</code> will consist of the inputs summed together. <a href="../dsp/trait.Node.html#tymethod.audio_requested">Read more</a></p>
+</div><h4 id='method.dry' class='method'><code>fn <a href='../dsp/trait.Node.html#method.dry' class='fnname'>dry</a>(&amp;self) -&gt; F::Sample::Float</code></h4>
+<div class='docblock'><p>Following the call to the <code>Node</code>&#39;s <code>audio_requested</code> method, the <code>Graph</code> will sum together some of the original (dry) signal with some of the processed (wet) signal. <a href="../dsp/trait.Node.html#method.dry">Read more</a></p>
+</div><h4 id='method.wet' class='method'><code>fn <a href='../dsp/trait.Node.html#method.wet' class='fnname'>wet</a>(&amp;self) -&gt; F::Sample::Float</code></h4>
+<div class='docblock'><p>Following the call to the <code>Node</code>&#39;s <code>audio_requested</code> method, the <code>Graph</code> will sum together some of the original (dry) signal with some of the processed (wet) signal. <a href="../dsp/trait.Node.html#method.wet">Read more</a></p>
+</div></div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><span class='in-band'><code>impl&lt;F:&nbsp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>,&nbsp;N:&nbsp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../dsp/struct.Graph.html' title='dsp::Graph'>Graph</a>&lt;F,&nbsp;N&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a id='src-40' class='srclink' href='../src/dsp/src/graph.rs.html#78' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl&lt;F:&nbsp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>,&nbsp;N:&nbsp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../dsp/struct.Graph.html' title='dsp::Graph'>Graph</a>&lt;F,&nbsp;N&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a id='src-51' class='srclink' href='../src/dsp/src/graph.rs.html#78' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../dsp/struct.Graph.html' title='dsp::Graph'>Graph</a>&lt;F,&nbsp;N&gt;</code></h4>
+<div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
+</div><h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></h4>
+<div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "dsp";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

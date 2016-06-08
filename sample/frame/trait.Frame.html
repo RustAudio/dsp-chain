@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Frame` trait in crate `sample`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Frame">
+
+    <title>sample::frame::Frame - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>sample</a>::<wbr><a href='index.html'>frame</a></p><script>window.sidebarCurrent = {name: 'Frame', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>sample</a>::<wbr><a href='index.html'>frame</a>::<wbr><a class='trait' href=''>Frame</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-4878' class='srclink' href='../../src/sample/frame.rs.html#15-237' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Frame: <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> {
+    type <a href='#associatedtype.Sample' class='type'>Sample</a>: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a>;
+    type <a href='#associatedtype.NumChannels' class='type'>NumChannels</a>: <a class='trait' href='../../sample/frame/trait.NumChannels.html' title='sample::frame::NumChannels'>NumChannels</a>;
+    type <a href='#associatedtype.Channels' class='type'>Channels</a>: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>&lt;Item=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>&gt;;
+    type <a href='#associatedtype.Signed' class='type'>Signed</a>: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Signed,&nbsp;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;;
+    type <a href='#associatedtype.Float' class='type'>Float</a>: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Float,&nbsp;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;;
+    fn <a href='#tymethod.equilibrium' class='fnname'>equilibrium</a>() -&gt; Self;
+    fn <a href='#tymethod.from_fn' class='fnname'>from_fn</a>&lt;F&gt;(from: F) -&gt; Self <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a></span>;
+    fn <a href='#tymethod.from_samples' class='fnname'>from_samples</a>&lt;I&gt;(samples: &amp;mut I) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;Self&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>&lt;Item=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>&gt;</span>;
+    fn <a href='#tymethod.n_channels' class='fnname'>n_channels</a>() -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>;
+    fn <a href='#tymethod.channels' class='fnname'>channels</a>(self) -&gt; Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Channels</a>;
+    fn <a href='#tymethod.channel' class='fnname'>channel</a>(&amp;self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>&gt;;
+    unsafe fn <a href='#tymethod.channel_unchecked' class='fnname'>channel_unchecked</a>(&amp;self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>;
+    fn <a href='#tymethod.map' class='fnname'>map</a>&lt;F,&nbsp;M&gt;(self, map: M) -&gt; F <span class='where'>where F: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;, M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>) -&gt; F::Sample</span>;
+    fn <a href='#tymethod.zip_map' class='fnname'>zip_map</a>&lt;O,&nbsp;F,&nbsp;M&gt;(self, other: O, zip_map: M) -&gt; F <span class='where'>where O: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;, F: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;, M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>, O::Sample) -&gt; F::Sample</span>;
+    fn <a href='#tymethod.to_signed_frame' class='fnname'>to_signed_frame</a>(self) -&gt; Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Signed</a>;
+    fn <a href='#tymethod.to_float_frame' class='fnname'>to_float_frame</a>(self) -&gt; Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Float</a>;
+
+    fn <a href='#method.offset_amp' class='fnname'>offset_amp</a>(self, offset: Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Signed) -&gt; Self { ... }
+    fn <a href='#method.scale_amp' class='fnname'>scale_amp</a>(self, amp: Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Float) -&gt; Self { ... }
+    fn <a href='#method.add_amp' class='fnname'>add_amp</a>&lt;F&gt;(self, other: F) -&gt; Self <span class='where'>where F: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Signed,&nbsp;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;</span> { ... }
+    fn <a href='#method.mul_amp' class='fnname'>mul_amp</a>&lt;F&gt;(self, other: F) -&gt; Self <span class='where'>where F: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Float,&nbsp;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;</span> { ... }
+}</pre><div class='docblock'><p>Represents one sample from each channel at a single discrete instance in time within a
+PCM signal.</p>
+
+<p>We provide implementations for <code>Frame</code> for all fixed-size arrays up to a length of 32 elements.</p>
+</div>
+            <h2 id='associated-types'>Associated Types</h2>
+            <div class='methods'>
+        <h3 id='associatedtype.Sample' class='method stab '><code>type <a href='#associatedtype.Sample' class='type'>Sample</a>: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></code></h3><div class='docblock'><p>The type of PCM sample stored at each channel within the frame.</p>
+</div><h3 id='associatedtype.NumChannels' class='method stab '><code>type <a href='#associatedtype.NumChannels' class='type'>NumChannels</a>: <a class='trait' href='../../sample/frame/trait.NumChannels.html' title='sample::frame::NumChannels'>NumChannels</a></code></h3><div class='docblock'><p>A typified version of a number of channels in the <code>Frame</code>, used for safely mapping frames
+of the same length to other <code>Frame</code>s, perhaps with a different <code>Sample</code> associated type.</p>
+</div><h3 id='associatedtype.Channels' class='method stab '><code>type <a href='#associatedtype.Channels' class='type'>Channels</a>: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>&lt;Item=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>&gt;</code></h3><div class='docblock'><p>An iterator yielding the sample in each channel, starting from left (channel 0) and ending
+at the right (channel NumChannels-1).</p>
+</div><h3 id='associatedtype.Signed' class='method stab '><code>type <a href='#associatedtype.Signed' class='type'>Signed</a>: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Signed,&nbsp;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;</code></h3><div class='docblock'><p>A frame type with equilavent number of channels using the associated <code>Sample::Signed</code> format.</p>
+</div><h3 id='associatedtype.Float' class='method stab '><code>type <a href='#associatedtype.Float' class='type'>Float</a>: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Float,&nbsp;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;</code></h3><div class='docblock'><p>A frame type with equilavent number of channels using the associated <code>Sample::Float</code> format.</p>
+</div></div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.equilibrium' class='method stab '><code>fn <a href='#tymethod.equilibrium' class='fnname'>equilibrium</a>() -&gt; Self</code></h3><div class='docblock'><p>The equilibrium value for the wave that this <code>Sample</code> type represents. This is normally the
+value that is equal distance from both the min and max ranges of the sample.</p>
+
+<p><strong>NOTE:</strong> This will likely be changed to an &quot;associated const&quot; if the feature lands.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Frame</span>;
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>frame</span>::{<span class='ident'>Mono</span>, <span class='ident'>Stereo</span>};
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Mono</span>::<span class='op'>&lt;</span><span class='ident'>f32</span><span class='op'>&gt;</span>::<span class='ident'>equilibrium</span>(), [<span class='number'>0.0</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Stereo</span>::<span class='op'>&lt;</span><span class='ident'>f32</span><span class='op'>&gt;</span>::<span class='ident'>equilibrium</span>(), [<span class='number'>0.0</span>, <span class='number'>0.0</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='op'>&lt;</span>[<span class='ident'>f32</span>; <span class='number'>3</span>]<span class='op'>&gt;</span>::<span class='ident'>equilibrium</span>(), [<span class='number'>0.0</span>, <span class='number'>0.0</span>, <span class='number'>0.0</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='op'>&lt;</span>[<span class='ident'>u8</span>; <span class='number'>2</span>]<span class='op'>&gt;</span>::<span class='ident'>equilibrium</span>(), [<span class='number'>128u8</span>, <span class='number'>128</span>]);
+}</pre>
+</div><h3 id='tymethod.from_fn' class='method stab '><code>fn <a href='#tymethod.from_fn' class='fnname'>from_fn</a>&lt;F&gt;(from: F) -&gt; Self <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a></span></code></h3><div class='docblock'><p>Create a new <code>Frame</code> where the <code>Sample</code> for each channel is produced by the given function.</p>
+
+<p>The given function should map each channel index to its respective sample.</p>
+</div><h3 id='tymethod.from_samples' class='method stab '><code>fn <a href='#tymethod.from_samples' class='fnname'>from_samples</a>&lt;I&gt;(samples: &amp;mut I) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;Self&gt; <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>&lt;Item=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>&gt;</span></code></h3><div class='docblock'><p>Create a new <code>Frame</code> from a borrowed <code>Iterator</code> yielding samples for each channel.</p>
+
+<p>Returns <code>None</code> if the given <code>Iterator</code> does not yield enough <code>Sample</code>s.</p>
+
+<p>This is necessary for the <code>signal::FromSamples</code> <code>Iterator</code>, that converts some <code>Iterator</code>
+yielding <code>Sample</code>s to an <code>Iterator</code> yielding <code>Frame</code>s.</p>
+</div><h3 id='tymethod.n_channels' class='method stab '><code>fn <a href='#tymethod.n_channels' class='fnname'>n_channels</a>() -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h3><div class='docblock'><p>The total number of channels (and in turn samples) stored within the frame.</p>
+</div><h3 id='tymethod.channels' class='method stab '><code>fn <a href='#tymethod.channels' class='fnname'>channels</a>(self) -&gt; Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Channels</a></code></h3><div class='docblock'><p>Converts the frame into an iterator yielding the sample for each channel in the frame.</p>
+</div><h3 id='tymethod.channel' class='method stab '><code>fn <a href='#tymethod.channel' class='fnname'>channel</a>(&amp;self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>&gt;</code></h3><div class='docblock'><p>Yields a reference to the <code>Sample</code> of the channel at the given index if there is one.</p>
+</div><h3 id='tymethod.channel_unchecked' class='method stab '><code>unsafe fn <a href='#tymethod.channel_unchecked' class='fnname'>channel_unchecked</a>(&amp;self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a></code></h3><div class='docblock'><p>Returns a pointer to the sample of the channel at the given index, without doing bounds
+checking.</p>
+
+<p>Note: This is primarily a necessity for efficient <code>Frame::map</code> and <code>Frame::zip_map</code>
+methods, as for those methods we can guarantee lengths of different <code>Frame</code>s to be the same
+at <em>compile-time</em>.</p>
+</div><h3 id='tymethod.map' class='method stab '><code>fn <a href='#tymethod.map' class='fnname'>map</a>&lt;F,&nbsp;M&gt;(self, map: M) -&gt; F <span class='where'>where F: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;, M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>) -&gt; F::Sample</span></code></h3><div class='docblock'><p>Applies the given function to each sample in the <code>Frame</code> in channel order and returns the
+result as a new <code>Frame</code>.</p>
+
+<h1 id='example' class='section-header'><a href='#example'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::{<span class='ident'>Frame</span>, <span class='ident'>Sample</span>};
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> [<span class='number'>0i16</span>, <span class='number'>0</span>];
+    <span class='kw'>let</span> <span class='ident'>bar</span>: [<span class='ident'>u8</span>; <span class='number'>2</span>] <span class='op'>=</span> <span class='ident'>foo</span>.<span class='ident'>map</span>(<span class='ident'>Sample</span>::<span class='ident'>to_sample</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>bar</span>, [<span class='number'>128u8</span>, <span class='number'>128</span>]);
+}</pre>
+</div><h3 id='tymethod.zip_map' class='method stab '><code>fn <a href='#tymethod.zip_map' class='fnname'>zip_map</a>&lt;O,&nbsp;F,&nbsp;M&gt;(self, other: O, zip_map: M) -&gt; F <span class='where'>where O: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;, F: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;, M: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>, O::Sample) -&gt; F::Sample</span></code></h3><div class='docblock'><p>Calls the given function with the pair of elements at every index and returns the
+resulting Frame.</p>
+
+<p>On a <code>Vec</code> this would be akin to <code>.into_iter().zip(other).map(|(a, b)| ...).collect()</code>, though
+much quicker and tailored to fixed-size arrays of samples.</p>
+</div><h3 id='tymethod.to_signed_frame' class='method stab '><code>fn <a href='#tymethod.to_signed_frame' class='fnname'>to_signed_frame</a>(self) -&gt; Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Signed</a></code></h3><div class='docblock'><p>Converts the frame type to the equivalent signal in its associated <code>Float</code>ing point format.</p>
+
+<h1 id='example-1' class='section-header'><a href='#example-1'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Frame</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> [<span class='number'>128u8</span>; <span class='number'>2</span>];
+    <span class='kw'>let</span> <span class='ident'>signed</span> <span class='op'>=</span> <span class='ident'>foo</span>.<span class='ident'>to_signed_frame</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>signed</span>, [<span class='number'>0i8</span>; <span class='number'>2</span>]);
+}</pre>
+</div><h3 id='tymethod.to_float_frame' class='method stab '><code>fn <a href='#tymethod.to_float_frame' class='fnname'>to_float_frame</a>(self) -&gt; Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Float</a></code></h3><div class='docblock'><p>Converts the frame type to the equivalent signal in its associated <code>Signed</code> format.</p>
+
+<h1 id='example-2' class='section-header'><a href='#example-2'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Frame</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> [<span class='number'>128u8</span>; <span class='number'>2</span>];
+    <span class='kw'>let</span> <span class='ident'>float</span> <span class='op'>=</span> <span class='ident'>foo</span>.<span class='ident'>to_float_frame</span>();
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>float</span>, [<span class='number'>0.0</span>; <span class='number'>2</span>]);
+}</pre>
+</div></div>
+            <h2 id='provided-methods'>Provided Methods</h2>
+            <div class='methods'>
+        <h3 id='method.offset_amp' class='method stab '><code>fn <a href='#method.offset_amp' class='fnname'>offset_amp</a>(self, offset: Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Signed) -&gt; Self</code></h3><div class='docblock'><p>Offsets the amplitude of every channel in the frame by the given <code>offset</code> and yields the
+resulting frame.</p>
+
+<h1 id='example-3' class='section-header'><a href='#example-3'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Frame</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>([<span class='number'>0.25</span>, <span class='op'>-</span><span class='number'>0.5</span>].<span class='ident'>offset_amp</span>(<span class='number'>0.5</span>), [<span class='number'>0.75</span>, <span class='number'>0.0</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>([<span class='number'>0.5</span>, <span class='op'>-</span><span class='number'>0.25</span>].<span class='ident'>offset_amp</span>(<span class='op'>-</span><span class='number'>0.25</span>), [<span class='number'>0.25</span>, <span class='op'>-</span><span class='number'>0.5</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>([<span class='number'>128u8</span>, <span class='number'>192</span>].<span class='ident'>offset_amp</span>(<span class='op'>-</span><span class='number'>64</span>), [<span class='number'>64</span>, <span class='number'>128</span>]);
+}</pre>
+</div><h3 id='method.scale_amp' class='method stab '><code>fn <a href='#method.scale_amp' class='fnname'>scale_amp</a>(self, amp: Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Float) -&gt; Self</code></h3><div class='docblock'><p>Multiplies each <code>Sample</code> in the <code>Frame</code> by the given amplitude and returns the resulting
+<code>Frame</code>.</p>
+
+<ul>
+<li>A &gt; 1.0 amplifies the sample.</li>
+<li>A &lt; 1.0 attenuates the sample.</li>
+<li>A == 1.0 yields the same sample.</li>
+<li>A == 0.0 yields the <code>Sample::equilibrium</code>.</li>
+</ul>
+
+<h1 id='example-4' class='section-header'><a href='#example-4'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Frame</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>([<span class='number'>0.1</span>, <span class='number'>0.2</span>, <span class='op'>-</span><span class='number'>0.1</span>, <span class='op'>-</span><span class='number'>0.2</span>].<span class='ident'>scale_amp</span>(<span class='number'>2.0</span>), [<span class='number'>0.2</span>, <span class='number'>0.4</span>, <span class='op'>-</span><span class='number'>0.2</span>, <span class='op'>-</span><span class='number'>0.4</span>]);
+}</pre>
+</div><h3 id='method.add_amp' class='method stab '><code>fn <a href='#method.add_amp' class='fnname'>add_amp</a>&lt;F&gt;(self, other: F) -&gt; Self <span class='where'>where F: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Signed,&nbsp;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;</span></code></h3><div class='docblock'><p>Sums each channel in <code>other</code> with each channel in <code>self</code> and returns the resulting <code>Frame</code>.</p>
+
+<h1 id='example-5' class='section-header'><a href='#example-5'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Frame</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> [<span class='number'>0.25</span>, <span class='number'>0.5</span>].<span class='ident'>add_amp</span>([<span class='op'>-</span><span class='number'>0.75</span>, <span class='number'>0.25</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>, [<span class='op'>-</span><span class='number'>0.5</span>, <span class='number'>0.75</span>]);
+}</pre>
+</div><h3 id='method.mul_amp' class='method stab '><code>fn <a href='#method.mul_amp' class='fnname'>mul_amp</a>&lt;F&gt;(self, other: F) -&gt; Self <span class='where'>where F: <a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Frame</a>&lt;Sample=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>Sample</a>::Float,&nbsp;NumChannels=Self::<a class='trait' href='../../sample/frame/trait.Frame.html' title='sample::frame::Frame'>NumChannels</a>&gt;</span></code></h3><div class='docblock'><p>Multiplies <code>other</code> with <code>self</code> and returns the resulting <code>Frame</code>.</p>
+
+<h1 id='example-6' class='section-header'><a href='#example-6'>Example</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sample</span>;
+
+<span class='kw'>use</span> <span class='ident'>sample</span>::<span class='ident'>Frame</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> [<span class='number'>0.25</span>, <span class='number'>0.4</span>].<span class='ident'>mul_amp</span>([<span class='number'>0.2</span>, <span class='number'>0.5</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>, [<span class='number'>0.05</span>, <span class='number'>0.2</span>]);
+
+    <span class='kw'>let</span> <span class='ident'>bar</span> <span class='op'>=</span> [<span class='number'>192u8</span>, <span class='number'>64</span>].<span class='ident'>mul_amp</span>([<span class='number'>0.0</span>, <span class='op'>-</span><span class='number'>2.0</span>]);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>bar</span>, [<span class='number'>128</span>, <span class='number'>0</span>]);
+}</pre>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 1]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 2]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 3]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 4]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 5]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 6]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 7]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 8]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 9]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 10]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 11]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 12]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 13]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 14]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 15]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 16]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 17]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 18]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 19]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 20]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 21]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 22]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 23]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 24]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 25]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 26]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 27]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 28]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 29]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 30]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 31]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+<li><code>impl&lt;S&gt; Frame for <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a>S<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; 32]</a> <span class='where'>where S: <a class='trait' href='../../sample/trait.Sample.html' title='sample::Sample'>Sample</a></span></code></li>
+</ul><script type="text/javascript" async
+                         src="../../implementors/sample/frame/trait.Frame.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "sample";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>
