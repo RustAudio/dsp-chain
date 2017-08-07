@@ -43,7 +43,10 @@ fn run() -> Result<(), pa::Error> {
 
     // If adding a connection between two nodes would create a cycle, Graph will return an Err.
     if let Err(err) = graph.add_connection(synth, oscillator_a) {
-        println!("Testing for cycle error: {:?}", ::std::error::Error::description(&err));
+        println!(
+            "Testing for cycle error: {:?}",
+            ::std::error::Error::description(&err)
+        );
     }
 
     // Set the synth as the master node for the graph.
@@ -76,12 +79,20 @@ fn run() -> Result<(), pa::Error> {
             }
         }
 
-        if timer >= 0.0 { pa::Continue } else { pa::Complete }
+        if timer >= 0.0 {
+            pa::Continue
+        } else {
+            pa::Complete
+        }
     };
 
     // Construct PortAudio and the stream.
     let pa = try!(pa::PortAudio::new());
-    let settings = try!(pa.default_output_stream_settings::<Output>(CHANNELS as i32, SAMPLE_HZ, FRAMES));
+    let settings = try!(pa.default_output_stream_settings::<Output>(
+        CHANNELS as i32,
+        SAMPLE_HZ,
+        FRAMES,
+    ));
     let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
     try!(stream.start());
 
@@ -114,14 +125,15 @@ impl Node<[Output; CHANNELS]> for DspNode {
                     *phase += frequency / sample_hz;
                     Frame::from_fn(|_| val)
                 });
-            },
+            }
         }
     }
 }
 
 /// Return a sine wave for the given phase.
 fn sine_wave<S: Sample>(phase: Phase, volume: Volume) -> S
-    where S: Sample + FromSample<f32>,
+where
+    S: Sample + FromSample<f32>,
 {
     use std::f64::consts::PI;
     ((phase * PI * 2.0).sin() as f32 * volume).to_sample::<S>()
