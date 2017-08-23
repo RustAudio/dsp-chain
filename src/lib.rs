@@ -1,4 +1,4 @@
-//! 
+//!
 //! A generic, fast, audio digital signal processing library.
 //!
 //! There are two primary points of interest:
@@ -16,35 +16,11 @@ pub extern crate daggy;
 pub extern crate sample;
 
 pub use daggy::Walker;
-pub use graph::{
-    Connection,
-    Dag,
-    EdgeIndex,
-    Graph,
-    Inputs,
-    NodeIndex,
-    NodesMut,
-    Outputs,
-    PetGraph,
-    RawEdges,
-    RawNodes,
-    VisitOrder,
-    VisitOrderReverse,
-    WouldCycle,
-};
+pub use graph::{Connection, Dag, EdgeIndex, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph,
+                RawEdges, RawNodes, VisitOrder, VisitOrderReverse, WouldCycle};
 pub use node::Node;
-pub use sample::{
-    conv,
-    rate,
-    slice,
-    signal,
-    Duplex as DuplexSample,
-    Frame,
-    FromSample,
-    ToSample,
-    Sample,
-    Signal,
-};
+pub use sample::{conv, rate, slice, signal, Duplex as DuplexSample, Frame, FromSample, ToSample,
+                 Sample, Signal};
 
 mod graph;
 mod node;

@@ -127,9 +127,10 @@ pub struct VisitOrderReverse {
 
 
 impl<F, N> Graph<F, N>
-    where F: Frame, N: Node<F>
+where
+    F: Frame,
+    N: Node<F>,
 {
-
     /// Constructor for a new dsp Graph.
     ///
     /// [`with_capacity`](./struct.Graph.html#method.with_capacity) is recommended if you have a
@@ -206,8 +207,10 @@ impl<F, N> Graph<F, N>
     /// **Graph**'s **Node** implementation will request audio from the node at `maybe_master`
     /// when the `Node::audio_requested` method is called.
     pub fn set_master(&mut self, maybe_index: Option<NodeIndex>) {
-        let maybe_index = maybe_index.and_then(|index| {
-            if self.dag.node_weight(index).is_some() { Some(index) } else { None }
+        let maybe_index = maybe_index.and_then(|index| if self.dag.node_weight(index).is_some() {
+            Some(index)
+        } else {
+            None
         });
         self.maybe_master = maybe_index;
         self.prepare_visit_order();
@@ -237,7 +240,7 @@ impl<F, N> Graph<F, N>
     }
 
     /// An iterator yielding mutable access to all nodes.
-    /// 
+    ///
     /// The order in which nodes are yielded matches the order of their indices.
     pub fn nodes_mut(&mut self) -> NodesMut<N> {
         self.dag.node_weights_mut()
@@ -292,11 +295,17 @@ impl<F, N> Graph<F, N>
     /// **Panics** if there is no node for either `src` or `dest`.
     ///
     /// **Panics** if the Graph is at the maximum number of edges for its index.
-    pub fn add_connection(&mut self, src: NodeIndex, dest: NodeIndex)
-        -> Result<EdgeIndex, WouldCycle>
-    {
-        self.dag.add_edge(src, dest, Connection { buffer: Vec::new() })
-            .map(|edge| { self.prepare_visit_order(); edge })
+    pub fn add_connection(
+        &mut self,
+        src: NodeIndex,
+        dest: NodeIndex,
+    ) -> Result<EdgeIndex, WouldCycle> {
+        self.dag
+            .add_edge(src, dest, Connection { buffer: Vec::new() })
+            .map(|edge| {
+                self.prepare_visit_order();
+                edge
+            })
             .map_err(|_| WouldCycle)
     }
 
@@ -319,12 +328,21 @@ impl<F, N> Graph<F, N>
     /// **Panics** if there is no node for either `src` or `dest`.
     ///
     /// **Panics** if the Graph is at the maximum number of edges for its index.
-    pub fn add_connections<I>(&mut self, connections: I) -> Result<EdgeIndices, WouldCycle> where
-        I: ::std::iter::IntoIterator<Item=(NodeIndex, NodeIndex)>,
+    pub fn add_connections<I>(&mut self, connections: I) -> Result<EdgeIndices, WouldCycle>
+    where
+        I: ::std::iter::IntoIterator<Item = (NodeIndex, NodeIndex)>,
     {
-        fn new_connection<F>() -> Connection<F> { Connection { buffer: Vec::new() } }
-        self.dag.add_edges(connections.into_iter().map(|(src, dest)| (src, dest, new_connection())))
-            .map(|edges| { self.prepare_visit_order(); edges })
+        fn new_connection<F>() -> Connection<F> {
+            Connection { buffer: Vec::new() }
+        }
+        self.dag
+            .add_edges(connections.into_iter().map(|(src, dest)| {
+                (src, dest, new_connection())
+            }))
+            .map(|edges| {
+                self.prepare_visit_order();
+                edges
+            })
             .map_err(|_| WouldCycle)
     }
 
@@ -362,7 +380,9 @@ impl<F, N> Graph<F, N>
     /// Note: If you have an index to the edge you want to remove,
     /// [`remove_edge`](./struct.Graph.html#method.remove_edge) is a more performant option.
     pub fn remove_connection(&mut self, a: NodeIndex, b: NodeIndex) -> bool {
-        match self.dag.find_edge(a, b).or_else(|| self.dag.find_edge(b, a)) {
+        match self.dag.find_edge(a, b).or_else(
+            || self.dag.find_edge(b, a),
+        ) {
             Some(edge) => self.remove_edge(edge),
             None => false,
         }
@@ -382,7 +402,11 @@ impl<F, N> Graph<F, N>
     ///
     /// **Panics** if the Graph is at the maximum number of edges for its index.
     pub fn add_input(&mut self, src: N, dest: NodeIndex) -> (EdgeIndex, NodeIndex) {
-        let indices = self.dag.add_parent(dest, Connection { buffer: Vec::new() }, src);
+        let indices = self.dag.add_parent(
+            dest,
+            Connection { buffer: Vec::new() },
+            src,
+        );
         self.prepare_visit_order();
         indices
     }
@@ -401,7 +425,11 @@ impl<F, N> Graph<F, N>
     ///
     /// **Panics** if the Graph is at the maximum number of edges for its index.
     pub fn add_output(&mut self, src: NodeIndex, dest: N) -> (EdgeIndex, NodeIndex) {
-        let indices = self.dag.add_child(src, Connection { buffer: Vec::new() }, dest);
+        let indices = self.dag.add_child(
+            src,
+            Connection { buffer: Vec::new() },
+            dest,
+        );
         self.prepare_visit_order();
         indices
     }
@@ -522,7 +550,7 @@ impl<F, N> Graph<F, N>
         }
 
         let mut visit_order = self.visit_order();
-        while let Some(node_idx) =  visit_order.next(self) {
+        while let Some(node_idx) = visit_order.next(self) {
 
             // Set the buffers to equilibrium, ready to sum the inputs of the current node.
             for i in 0..buffer_size {
@@ -540,13 +568,19 @@ impl<F, N> Graph<F, N>
                 // `output` buffer as all connections are visited from their input nodes
                 // (towards the end of the visit_order while loop) before being visited here
                 // by their output nodes.
-                sample::slice::zip_map_in_place(output, &connection.buffer, |out_frame, con_frame| {
-                    out_frame.zip_map(con_frame, |out_sample, con_sample| {
-                        let out_signed = out_sample.to_sample::<<F::Sample as Sample>::Signed>();
-                        let con_signed = con_sample.to_sample::<<F::Sample as Sample>::Signed>();
-                        (out_signed + con_signed).to_sample::<F::Sample>()
-                    })
-                });
+                sample::slice::zip_map_in_place(
+                    output,
+                    &connection.buffer,
+                    |out_frame, con_frame| {
+                        out_frame.zip_map(con_frame, |out_sample, con_sample| {
+                            let out_signed = out_sample
+                                .to_sample::<<F::Sample as Sample>::Signed>();
+                            let con_signed = con_sample
+                                .to_sample::<<F::Sample as Sample>::Signed>();
+                            (out_signed + con_signed).to_sample::<F::Sample>()
+                        })
+                    },
+                );
             }
 
             // Store the dry signal in the dry buffer for later summing.
@@ -566,13 +600,13 @@ impl<F, N> Graph<F, N>
             };
 
             // Combine the dry and wet signals.
-            sample::slice::zip_map_in_place(output, &self.dry_buffer,
-                |f_wet, f_dry| f_wet.zip_map(f_dry, |s_wet, s_dry| {
+            sample::slice::zip_map_in_place(output, &self.dry_buffer, |f_wet, f_dry| {
+                f_wet.zip_map(f_dry, |s_wet, s_dry| {
                     let wet = s_wet.mul_amp(wet);
                     let dry = s_dry.mul_amp(dry);
                     wet.add_amp(dry.to_sample())
                 })
-            );
+            });
 
             // If we've reached our output node, we're done!
             if node_idx == out_node {
@@ -609,7 +643,6 @@ impl<F, N> Graph<F, N>
     fn prepare_visit_order(&mut self) {
         self.visit_order = daggy::petgraph::algo::toposort(self.dag.graph());
     }
-
 }
 
 
@@ -637,7 +670,8 @@ impl<F, N> ::std::ops::Index<EdgeIndex> for Graph<F, N> {
 }
 
 
-impl<F, N> Node<F> for Graph<F, N> where
+impl<F, N> Node<F> for Graph<F, N>
+where
     F: Frame,
     N: Node<F>,
 {
@@ -654,7 +688,7 @@ impl<F, N> Node<F> for Graph<F, N> where
                         return;
                     }
                 }
-            },
+            }
         }
     }
 }
@@ -663,7 +697,7 @@ impl<F, N> Node<F> for Graph<F, N> where
 impl<F, N> Walker<Graph<F, N>> for Inputs<F, N> {
     type Index = usize;
 
-    /// The next (connection, node) input pair to some node in our walk for the given **Graph**. 
+    /// The next (connection, node) input pair to some node in our walk for the given **Graph**.
     #[inline]
     fn next(&mut self, graph: &Graph<F, N>) -> Option<(EdgeIndex, NodeIndex)> {
         self.parents.next(&graph.dag)
@@ -680,7 +714,6 @@ impl<F, N> Walker<Graph<F, N>> for Inputs<F, N> {
     fn next_node(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
         self.parents.next_node(&graph.dag)
     }
-
 }
 
 
@@ -704,7 +737,6 @@ impl<F, N> Walker<Graph<F, N>> for Outputs<F, N> {
     fn next_node(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
         self.children.next_node(&graph.dag)
     }
-
 }
 
 
@@ -713,10 +745,12 @@ impl VisitOrder {
     /// given **Graph**'s visit order.
     #[inline]
     pub fn next<F, N>(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
-        graph.visit_order.get(self.current_visit_order_idx).map(|&idx| {
-            self.current_visit_order_idx += 1;
-            idx
-        })
+        graph.visit_order.get(self.current_visit_order_idx).map(
+            |&idx| {
+                self.current_visit_order_idx += 1;
+                idx
+            },
+        )
     }
 }
 
@@ -727,7 +761,11 @@ impl VisitOrderReverse {
     pub fn next<F, N>(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
         if self.current_visit_order_idx > 0 {
             self.current_visit_order_idx -= 1;
-            graph.visit_order.get(self.current_visit_order_idx).map(|&idx| idx)
+            graph.visit_order.get(self.current_visit_order_idx).map(
+                |&idx| {
+                    idx
+                },
+            )
         } else {
             None
         }
@@ -738,7 +776,8 @@ impl VisitOrderReverse {
 
 /// Resize the given buffer to the given target length.
 fn resize_buffer_to<F>(buffer: &mut Vec<F>, target_len: usize)
-    where F: Frame,
+where
+    F: Frame,
 {
     let len = buffer.len();
     if len < target_len {
@@ -759,4 +798,3 @@ impl ::std::error::Error for WouldCycle {
         "Adding this input would have caused the graph to cycle!"
     }
 }
-

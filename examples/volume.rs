@@ -55,12 +55,20 @@ fn run() -> Result<(), pa::Error> {
         let dt = time.current - last_time;
         timer += dt;
         prev_time = Some(time.current);
-        if timer <= 5.0 { pa::Continue } else { pa::Complete }
+        if timer <= 5.0 {
+            pa::Continue
+        } else {
+            pa::Complete
+        }
     };
 
     // Construct PortAudio and the stream.
     let pa = try!(pa::PortAudio::new());
-    let settings = try!(pa.default_output_stream_settings::<f32>(CHANNELS as i32, SAMPLE_HZ, FRAMES));
+    let settings = try!(pa.default_output_stream_settings::<f32>(
+        CHANNELS as i32,
+        SAMPLE_HZ,
+        FRAMES,
+    ));
     let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
     try!(stream.start());
 
@@ -83,12 +91,14 @@ enum DspNode {
 impl Node<[f32; CHANNELS]> for DspNode {
     fn audio_requested(&mut self, buffer: &mut [[f32; CHANNELS]], sample_hz: f64) {
         match *self {
-            DspNode::Synth(ref mut phase) => dsp::slice::map_in_place(buffer, |_| {
-                let val = sine_wave(*phase);
-                const SYNTH_HZ: f64 = 110.0;
-                *phase += SYNTH_HZ / sample_hz;
-                Frame::from_fn(|_| val)
-            }),
+            DspNode::Synth(ref mut phase) => {
+                dsp::slice::map_in_place(buffer, |_| {
+                    let val = sine_wave(*phase);
+                    const SYNTH_HZ: f64 = 110.0;
+                    *phase += SYNTH_HZ / sample_hz;
+                    Frame::from_fn(|_| val)
+                })
+            }
             DspNode::Volume(vol) => dsp::slice::map_in_place(buffer, |f| f.map(|s| s.mul_amp(vol))),
         }
     }
@@ -96,7 +106,8 @@ impl Node<[f32; CHANNELS]> for DspNode {
 
 /// Return a sine wave for the given phase.
 fn sine_wave<S: Sample>(phase: f64) -> S
-    where S: Sample + FromSample<f32>,
+where
+    S: Sample + FromSample<f32>,
 {
     use std::f64::consts::PI;
     ((phase * PI * 2.0).sin() as f32).to_sample::<S>()
