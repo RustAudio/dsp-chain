@@ -97,6 +97,7 @@ pub struct Connection<F> {
     /// After `Graph::audio_requested_from` is called, this buffer will contain the audio rendered
     /// by the **Connection**'s input node.
     pub buffer: Vec<F>,
+    in_port: usize,
 }
 
 /// The error returned when adding an edge that would create a cycle.
@@ -301,7 +302,24 @@ where
         dest: NodeIndex,
     ) -> Result<EdgeIndex, WouldCycle> {
         self.dag
-            .add_edge(src, dest, Connection { buffer: Vec::new() })
+            .add_edge(src, dest, Connection { buffer: Vec::new(), in_port: 0})
+            .map(|edge| {
+                self.prepare_visit_order();
+                edge
+            })
+            .map_err(|_| WouldCycle)
+    }
+
+    /// The same as[`add_connection`](./struct.Graph.html#method.add_connection) but
+    /// has additional arguments for an input port and output port.
+    pub fn add_connection_by_id(
+        &mut self,
+        src: NodeIndex,
+        src_id: usize,
+        dest: NodeIndex,
+    ) -> Result<EdgeIndex, WouldCycle> {
+        self.dag
+            .add_edge(src, dest, Connection { buffer: Vec::new(), in_port: src_id})
             .map(|edge| {
                 self.prepare_visit_order();
                 edge
@@ -333,7 +351,7 @@ where
         I: ::std::iter::IntoIterator<Item = (NodeIndex, NodeIndex)>,
     {
         fn new_connection<F>() -> Connection<F> {
-            Connection { buffer: Vec::new() }
+            Connection { buffer: Vec::new(), in_port: 0}
         }
         self.dag
             .add_edges(connections.into_iter().map(|(src, dest)| {
@@ -404,7 +422,7 @@ where
     pub fn add_input(&mut self, src: N, dest: NodeIndex) -> (EdgeIndex, NodeIndex) {
         let indices = self.dag.add_parent(
             dest,
-            Connection { buffer: Vec::new() },
+            Connection { buffer: Vec::new(), in_port: 0},
             src,
         );
         self.prepare_visit_order();
@@ -427,7 +445,7 @@ where
     pub fn add_output(&mut self, src: NodeIndex, dest: N) -> (EdgeIndex, NodeIndex) {
         let indices = self.dag.add_child(
             src,
-            Connection { buffer: Vec::new() },
+            Connection { buffer: Vec::new(), in_port: 0},
             dest,
         );
         self.prepare_visit_order();
@@ -561,7 +579,7 @@ where
             // Walk over each of the input connections to sum their buffers to the output.
             let mut inputs = self.inputs(node_idx);
             while let Some(connection_idx) = inputs.next_edge(self) {
-                let connection = &self[connection_idx];
+
                 // Sum the connection's buffer onto the output.
                 //
                 // We can be certain that `connection`'s buffer is the same size as the
