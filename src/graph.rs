@@ -10,6 +10,7 @@
 use daggy::{self, Walker};
 use node::Node;
 use sample::{self, Frame, Sample};
+use std::collections::HashMap;
 
 
 /// An alias for our Graph's Node Index.
@@ -568,6 +569,7 @@ where
         }
 
         let mut visit_order = self.visit_order();
+        let mut other_inputs: HashMap<usize, Vec<F>> = HashMap::new();
         while let Some(node_idx) = visit_order.next(self) {
 
             // Set the buffers to equilibrium, ready to sum the inputs of the current node.
@@ -580,26 +582,48 @@ where
             let mut inputs = self.inputs(node_idx);
             while let Some(connection_idx) = inputs.next_edge(self) {
                 let connection = &self[connection_idx];
+                if connection.in_port == 0 {
 
-                // Sum the connection's buffer onto the output.
-                //
-                // We can be certain that `connection`'s buffer is the same size as the
-                // `output` buffer as all connections are visited from their input nodes
-                // (towards the end of the visit_order while loop) before being visited here
-                // by their output nodes.
-                sample::slice::zip_map_in_place(
-                    output,
-                    &connection.buffer,
-                    |out_frame, con_frame| {
-                        out_frame.zip_map(con_frame, |out_sample, con_sample| {
-                            let out_signed = out_sample
-                                .to_sample::<<F::Sample as Sample>::Signed>();
-                            let con_signed = con_sample
-                                .to_sample::<<F::Sample as Sample>::Signed>();
-                            (out_signed + con_signed).to_sample::<F::Sample>()
-                        })
-                    },
-                );
+                    // Sum the connection's buffer onto the output.
+                    //
+                    // We can be certain that `connection`'s buffer is the same size as the
+                    // `output` buffer as all connections are visited from their input nodes
+                    // (towards the end of the visit_order while loop) before being visited here
+                    // by their output nodes.
+                    sample::slice::zip_map_in_place(
+                        output,
+                        &connection.buffer,
+                        |out_frame, con_frame| {
+                            out_frame.zip_map(con_frame, |out_sample, con_sample| {
+                                let out_signed = out_sample
+                                    .to_sample::<<F::Sample as Sample>::Signed>();
+                                let con_signed = con_sample
+                                    .to_sample::<<F::Sample as Sample>::Signed>();
+                                (out_signed + con_signed).to_sample::<F::Sample>()
+                            })
+                        },
+                    );
+                } else {
+                    let in_port = connection.in_port;
+                    if !other_inputs.contains_key(&in_port) {
+                        other_inputs.insert(in_port, connection.buffer.clone());
+                    } else {
+                        let entry = other_inputs.entry(in_port);
+                        sample::slice::zip_map_in_place(
+                            entry.or_insert(vec![F::equilibrium(); buffer_size]),
+                            &connection.buffer,
+                            |out_frame, con_frame| {
+                                out_frame.zip_map(con_frame, |out_sample, con_sample| {
+                                    let out_signed = out_sample
+                                        .to_sample::<<F::Sample as Sample>::Signed>();
+                                    let con_signed = con_sample
+                                        .to_sample::<<F::Sample as Sample>::Signed>();
+                                    (out_signed + con_signed).to_sample::<F::Sample>()
+                                })
+                            },
+                        );
+                    }
+                }
             }
 
             // Store the dry signal in the dry buffer for later summing.
