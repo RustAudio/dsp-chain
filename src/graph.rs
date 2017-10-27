@@ -579,6 +579,7 @@ where
             // Walk over each of the input connections to sum their buffers to the output.
             let mut inputs = self.inputs(node_idx);
             while let Some(connection_idx) = inputs.next_edge(self) {
+                let connection = &self[connection_idx];
 
                 // Sum the connection's buffer onto the output.
                 //
