@@ -19,21 +19,24 @@ where
     /// additional argument `other_inputs`.
     /// This are additional inputs that can be used if the Node accepts those.
     /// There is a default implementation that can be overriden.
-    fn audio_requested_by_id(&mut self, buffer: &mut [F], other_inputs: HashMap<usize, Box<[F]>>, sample_hz: f64) {
+    fn audio_requested_by_id(
+        &mut self,
+        buffer: &mut [F],
+        other_inputs: HashMap<usize, Box<[F]>>,
+        sample_hz: f64,
+    ) {
         if other_inputs.len() > 0 {
             for input in other_inputs {
                 if input.0 == 0 {
-                sample::slice::zip_map_in_place(
-                    buffer,
-                    &input.1,
-                    |this_frame, other_frame| {
+                    sample::slice::zip_map_in_place(buffer, &input.1, |this_frame, other_frame| {
                         this_frame.zip_map(other_frame, |this_sample, other_sample| {
-                            let this_signed = this_sample.to_sample::<<F::Sample as Sample>::Signed>();
-                            let other_signed = other_sample.to_sample::<<F::Sample as Sample>::Signed>();
+                            let this_signed = this_sample
+                                .to_sample::<<F::Sample as Sample>::Signed>();
+                            let other_signed = other_sample
+                                .to_sample::<<F::Sample as Sample>::Signed>();
                             (this_signed + other_signed).to_sample::<F::Sample>()
                         })
-                    },
-                );
+                    });
                 }
             }
         }

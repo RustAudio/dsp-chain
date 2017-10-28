@@ -303,7 +303,14 @@ where
         dest: NodeIndex,
     ) -> Result<EdgeIndex, WouldCycle> {
         self.dag
-            .add_edge(src, dest, Connection { buffer: Vec::new(), in_port: 0})
+            .add_edge(
+                src,
+                dest,
+                Connection {
+                    buffer: Vec::new(),
+                    in_port: 0,
+                },
+            )
             .map(|edge| {
                 self.prepare_visit_order();
                 edge
@@ -320,7 +327,14 @@ where
         dest: NodeIndex,
     ) -> Result<EdgeIndex, WouldCycle> {
         self.dag
-            .add_edge(src, dest, Connection { buffer: Vec::new(), in_port: src_id})
+            .add_edge(
+                src,
+                dest,
+                Connection {
+                    buffer: Vec::new(),
+                    in_port: src_id,
+                },
+            )
             .map(|edge| {
                 self.prepare_visit_order();
                 edge
@@ -352,7 +366,10 @@ where
         I: ::std::iter::IntoIterator<Item = (NodeIndex, NodeIndex)>,
     {
         fn new_connection<F>() -> Connection<F> {
-            Connection { buffer: Vec::new(), in_port: 0}
+            Connection {
+                buffer: Vec::new(),
+                in_port: 0,
+            }
         }
         self.dag
             .add_edges(connections.into_iter().map(|(src, dest)| {
@@ -423,7 +440,10 @@ where
     pub fn add_input(&mut self, src: N, dest: NodeIndex) -> (EdgeIndex, NodeIndex) {
         let indices = self.dag.add_parent(
             dest,
-            Connection { buffer: Vec::new(), in_port: 0},
+            Connection {
+                buffer: Vec::new(),
+                in_port: 0,
+            },
             src,
         );
         self.prepare_visit_order();
@@ -446,7 +466,10 @@ where
     pub fn add_output(&mut self, src: NodeIndex, dest: N) -> (EdgeIndex, NodeIndex) {
         let indices = self.dag.add_child(
             src,
-            Connection { buffer: Vec::new(), in_port: 0},
+            Connection {
+                buffer: Vec::new(),
+                in_port: 0,
+            },
             dest,
         );
         self.prepare_visit_order();
