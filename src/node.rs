@@ -1,5 +1,6 @@
 use {Frame, Sample};
 use sample;
+use std::collections::HashMap;
 
 /// Types to be used as a **Node** within the DSP **Graph**.
 pub trait Node<F>
@@ -18,7 +19,7 @@ where
     /// additional argument `other_inputs`.
     /// This are additional inputs that can be used if the Node accepts those.
     /// There is a default implementation that can be overriden.
-    fn audio_requested_by_id(&mut self, buffer: &mut [F], other_inputs: &[(usize, Box<[F]>)], sample_hz: f64) {
+    fn audio_requested_by_id(&mut self, buffer: &mut [F], other_inputs: HashMap<usize, Box<[F]>>, sample_hz: f64) {
         if other_inputs.len() > 0 {
             for input in other_inputs {
                 if input.0 == 0 {

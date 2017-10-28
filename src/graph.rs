@@ -569,7 +569,7 @@ where
         }
 
         let mut visit_order = self.visit_order();
-        let mut other_inputs: HashMap<usize, Vec<F>> = HashMap::new();
+        let mut other_inputs: HashMap<usize, Box<[F]>> = HashMap::new();
         while let Some(node_idx) = visit_order.next(self) {
 
             // Set the buffers to equilibrium, ready to sum the inputs of the current node.
@@ -605,12 +605,12 @@ where
                     );
                 } else {
                     let in_port = connection.in_port;
-                    if !other_inputs.contains_key(&in_port) {
-                        other_inputs.insert(in_port, connection.buffer.clone());
+                    if !(&other_inputs).contains_key(&in_port) {
+                        other_inputs.insert(in_port, connection.buffer.clone().into_boxed_slice());
                     } else {
                         let entry = other_inputs.entry(in_port);
                         sample::slice::zip_map_in_place(
-                            entry.or_insert(vec![F::equilibrium(); buffer_size]),
+                            entry.or_insert(vec![F::equilibrium(); buffer_size].into_boxed_slice()),
                             &connection.buffer,
                             |out_frame, con_frame| {
                                 out_frame.zip_map(con_frame, |out_sample, con_sample| {
@@ -635,7 +635,7 @@ where
 
                 // Render our `output` buffer with the current node.
                 // The `output` buffer is now representative of a fully wet signal.
-                node.audio_requested(output, sample_hz);
+                node.audio_requested_by_id(output, other_inputs.clone(), sample_hz);
 
                 let dry = node.dry();
                 let wet = node.wet();
