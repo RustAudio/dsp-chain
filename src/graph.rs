@@ -10,6 +10,7 @@
 use daggy::{self, Walker};
 use node::Node;
 use sample::{self, Frame, Sample};
+use std::collections::HashMap;
 
 
 /// An alias for our Graph's Node Index.
@@ -97,6 +98,7 @@ pub struct Connection<F> {
     /// After `Graph::audio_requested_from` is called, this buffer will contain the audio rendered
     /// by the **Connection**'s input node.
     pub buffer: Vec<F>,
+    in_port: usize,
 }
 
 /// The error returned when adding an edge that would create a cycle.
@@ -301,7 +303,38 @@ where
         dest: NodeIndex,
     ) -> Result<EdgeIndex, WouldCycle> {
         self.dag
-            .add_edge(src, dest, Connection { buffer: Vec::new() })
+            .add_edge(
+                src,
+                dest,
+                Connection {
+                    buffer: Vec::new(),
+                    in_port: 0,
+                },
+            )
+            .map(|edge| {
+                self.prepare_visit_order();
+                edge
+            })
+            .map_err(|_| WouldCycle)
+    }
+
+    /// The same as[`add_connection`](./struct.Graph.html#method.add_connection) but
+    /// has additional arguments for an input port and output port.
+    pub fn add_connection_by_id(
+        &mut self,
+        src: NodeIndex,
+        src_id: usize,
+        dest: NodeIndex,
+    ) -> Result<EdgeIndex, WouldCycle> {
+        self.dag
+            .add_edge(
+                src,
+                dest,
+                Connection {
+                    buffer: Vec::new(),
+                    in_port: src_id,
+                },
+            )
             .map(|edge| {
                 self.prepare_visit_order();
                 edge
@@ -333,7 +366,10 @@ where
         I: ::std::iter::IntoIterator<Item = (NodeIndex, NodeIndex)>,
     {
         fn new_connection<F>() -> Connection<F> {
-            Connection { buffer: Vec::new() }
+            Connection {
+                buffer: Vec::new(),
+                in_port: 0,
+            }
         }
         self.dag
             .add_edges(connections.into_iter().map(|(src, dest)| {
@@ -404,7 +440,10 @@ where
     pub fn add_input(&mut self, src: N, dest: NodeIndex) -> (EdgeIndex, NodeIndex) {
         let indices = self.dag.add_parent(
             dest,
-            Connection { buffer: Vec::new() },
+            Connection {
+                buffer: Vec::new(),
+                in_port: 0,
+            },
             src,
         );
         self.prepare_visit_order();
@@ -427,7 +466,10 @@ where
     pub fn add_output(&mut self, src: NodeIndex, dest: N) -> (EdgeIndex, NodeIndex) {
         let indices = self.dag.add_child(
             src,
-            Connection { buffer: Vec::new() },
+            Connection {
+                buffer: Vec::new(),
+                in_port: 0,
+            },
             dest,
         );
         self.prepare_visit_order();
@@ -550,6 +592,7 @@ where
         }
 
         let mut visit_order = self.visit_order();
+        let mut other_inputs: HashMap<usize, Box<[F]>> = HashMap::new();
         while let Some(node_idx) = visit_order.next(self) {
 
             // Set the buffers to equilibrium, ready to sum the inputs of the current node.
@@ -562,25 +605,48 @@ where
             let mut inputs = self.inputs(node_idx);
             while let Some(connection_idx) = inputs.next_edge(self) {
                 let connection = &self[connection_idx];
-                // Sum the connection's buffer onto the output.
-                //
-                // We can be certain that `connection`'s buffer is the same size as the
-                // `output` buffer as all connections are visited from their input nodes
-                // (towards the end of the visit_order while loop) before being visited here
-                // by their output nodes.
-                sample::slice::zip_map_in_place(
-                    output,
-                    &connection.buffer,
-                    |out_frame, con_frame| {
-                        out_frame.zip_map(con_frame, |out_sample, con_sample| {
-                            let out_signed = out_sample
-                                .to_sample::<<F::Sample as Sample>::Signed>();
-                            let con_signed = con_sample
-                                .to_sample::<<F::Sample as Sample>::Signed>();
-                            (out_signed + con_signed).to_sample::<F::Sample>()
-                        })
-                    },
-                );
+                if connection.in_port == 0 {
+
+                    // Sum the connection's buffer onto the output.
+                    //
+                    // We can be certain that `connection`'s buffer is the same size as the
+                    // `output` buffer as all connections are visited from their input nodes
+                    // (towards the end of the visit_order while loop) before being visited here
+                    // by their output nodes.
+                    sample::slice::zip_map_in_place(
+                        output,
+                        &connection.buffer,
+                        |out_frame, con_frame| {
+                            out_frame.zip_map(con_frame, |out_sample, con_sample| {
+                                let out_signed = out_sample
+                                    .to_sample::<<F::Sample as Sample>::Signed>();
+                                let con_signed = con_sample
+                                    .to_sample::<<F::Sample as Sample>::Signed>();
+                                (out_signed + con_signed).to_sample::<F::Sample>()
+                            })
+                        },
+                    );
+                } else {
+                    let in_port = connection.in_port;
+                    if !(&other_inputs).contains_key(&in_port) {
+                        other_inputs.insert(in_port, connection.buffer.clone().into_boxed_slice());
+                    } else {
+                        let entry = other_inputs.entry(in_port);
+                        sample::slice::zip_map_in_place(
+                            entry.or_insert(vec![F::equilibrium(); buffer_size].into_boxed_slice()),
+                            &connection.buffer,
+                            |out_frame, con_frame| {
+                                out_frame.zip_map(con_frame, |out_sample, con_sample| {
+                                    let out_signed = out_sample
+                                        .to_sample::<<F::Sample as Sample>::Signed>();
+                                    let con_signed = con_sample
+                                        .to_sample::<<F::Sample as Sample>::Signed>();
+                                    (out_signed + con_signed).to_sample::<F::Sample>()
+                                })
+                            },
+                        );
+                    }
+                }
             }
 
             // Store the dry signal in the dry buffer for later summing.
@@ -592,7 +658,7 @@ where
 
                 // Render our `output` buffer with the current node.
                 // The `output` buffer is now representative of a fully wet signal.
-                node.audio_requested(output, sample_hz);
+                node.audio_requested_by_id(output, other_inputs.clone(), sample_hz);
 
                 let dry = node.dry();
                 let wet = node.wet();

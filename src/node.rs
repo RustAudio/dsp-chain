@@ -1,4 +1,6 @@
 use {Frame, Sample};
+use sample;
+use std::collections::HashMap;
 
 /// Types to be used as a **Node** within the DSP **Graph**.
 pub trait Node<F>
@@ -12,6 +14,34 @@ where
     /// Any source/generator type nodes should simply render straight to the buffer.
     /// Any effects/processor type nodes should mutate the buffer directly.
     fn audio_requested(&mut self, buffer: &mut [F], sample_hz: f64);
+
+    /// Requests audio from the **Node** like the `audio_requested` method but it has one
+    /// additional argument `other_inputs`.
+    /// This are additional inputs that can be used if the Node accepts those.
+    /// There is a default implementation that can be overriden.
+    fn audio_requested_by_id(
+        &mut self,
+        buffer: &mut [F],
+        other_inputs: HashMap<usize, Box<[F]>>,
+        sample_hz: f64,
+    ) {
+        if other_inputs.len() > 0 {
+            for input in other_inputs {
+                if input.0 == 0 {
+                    sample::slice::zip_map_in_place(buffer, &input.1, |this_frame, other_frame| {
+                        this_frame.zip_map(other_frame, |this_sample, other_sample| {
+                            let this_signed = this_sample
+                                .to_sample::<<F::Sample as Sample>::Signed>();
+                            let other_signed = other_sample
+                                .to_sample::<<F::Sample as Sample>::Signed>();
+                            (this_signed + other_signed).to_sample::<F::Sample>()
+                        })
+                    });
+                }
+            }
+        }
+        self.audio_requested(buffer, sample_hz);
+    }
 
     /// Following the call to the `Node`'s `audio_requested` method, the `Graph` will sum together
     /// some of the original (dry) signal with some of the processed (wet) signal.
