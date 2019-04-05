@@ -18,7 +18,6 @@ pub use graph::{
     RawNodes, VisitOrder, VisitOrderReverse, WouldCycle,
 };
 pub use node::Node;
-pub use sample;
 pub use sample::{
     conv, rate, signal, slice, Duplex as DuplexSample, Frame, FromSample, Sample, Signal, ToSample,
 };

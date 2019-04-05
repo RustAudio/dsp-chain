@@ -1,6 +1,6 @@
 //! An example of a simple volume node oscillating the amplitude of a synth node.
 
-use dsp::sample::ToFrameSliceMut;
+use sample::ToFrameSliceMut;
 use dsp::{Frame, FromSample, Graph, Node, Sample};
 use portaudio as pa;
 
