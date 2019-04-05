@@ -1,13 +1,9 @@
 //! An example of using dsp-chain's `Graph` type to create a simple Synthesiser with 3 sine wave
 //! oscillators.
 
-extern crate dsp;
-extern crate portaudio;
-
-use dsp::{Graph, Node, Frame, FromSample, Sample, Walker};
 use dsp::sample::ToFrameSliceMut;
+use dsp::{Frame, FromSample, Graph, Node, Sample, Walker};
 use portaudio as pa;
-
 
 /// SoundStream is currently generic over i8, i32 and f32. Feel free to change it!
 type Output = f32;
@@ -24,12 +20,7 @@ const A5_HZ: Frequency = 440.0;
 const D5_HZ: Frequency = 587.33;
 const F5_HZ: Frequency = 698.46;
 
-fn main() {
-    run().unwrap()
-}
-
-fn run() -> Result<(), pa::Error> {
-
+fn main() -> Result<(), pa::Error> {
     // Construct our dsp graph.
     let mut graph = Graph::new();
 
@@ -45,7 +36,7 @@ fn run() -> Result<(), pa::Error> {
     if let Err(err) = graph.add_connection(synth, oscillator_a) {
         println!(
             "Testing for cycle error: {:?}",
-            ::std::error::Error::description(&err)
+            std::error::Error::description(&err)
         );
     }
 
@@ -60,7 +51,6 @@ fn run() -> Result<(), pa::Error> {
 
     // The callback we'll use to pass to the Stream. It will request audio from our dsp_graph.
     let callback = move |pa::OutputStreamCallbackArgs { buffer, time, .. }| {
-
         let buffer: &mut [[Output; CHANNELS]] = buffer.to_frame_slice_mut().unwrap();
         dsp::slice::equilibrium(buffer);
         graph.audio_requested(buffer, SAMPLE_HZ);
@@ -87,18 +77,15 @@ fn run() -> Result<(), pa::Error> {
     };
 
     // Construct PortAudio and the stream.
-    let pa = try!(pa::PortAudio::new());
-    let settings = try!(pa.default_output_stream_settings::<Output>(
-        CHANNELS as i32,
-        SAMPLE_HZ,
-        FRAMES,
-    ));
-    let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
-    try!(stream.start());
+    let pa = pa::PortAudio::new()?;
+    let settings =
+        pa.default_output_stream_settings::<Output>(CHANNELS as i32, SAMPLE_HZ, FRAMES)?;
+    let mut stream = pa.open_non_blocking_stream(settings, callback)?;
+    stream.start()?;
 
     // Wait for our stream to finish.
-    while let true = try!(stream.is_active()) {
-        ::std::thread::sleep(::std::time::Duration::from_millis(16));
+    while let true = stream.is_active()? {
+        std::thread::sleep(::std::time::Duration::from_millis(16));
     }
 
     Ok(())

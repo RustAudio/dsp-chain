@@ -12,15 +12,16 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-pub extern crate daggy;
-pub extern crate sample;
-
 pub use daggy::Walker;
-pub use graph::{Connection, Dag, EdgeIndex, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph,
-                RawEdges, RawNodes, VisitOrder, VisitOrderReverse, WouldCycle};
+pub use graph::{
+    Connection, Dag, EdgeIndex, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph, RawEdges,
+    RawNodes, VisitOrder, VisitOrderReverse, WouldCycle,
+};
 pub use node::Node;
-pub use sample::{conv, rate, slice, signal, Duplex as DuplexSample, Frame, FromSample, ToSample,
-                 Sample, Signal};
+pub use sample;
+pub use sample::{
+    conv, rate, signal, slice, Duplex as DuplexSample, Frame, FromSample, Sample, Signal, ToSample,
+};
 
 mod graph;
 mod node;

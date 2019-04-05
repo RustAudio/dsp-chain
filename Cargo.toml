@@ -1,5 +1,4 @@
 [package]
-
 name = "dsp-chain"
 version = "0.13.1"
 authors = [
@@ -13,6 +12,7 @@ keywords = ["audio", "dsp", "io", "modular", "graph"]
 license = "MIT"
 repository = "https://github.com/RustAudio/dsp-chain.git"
 homepage = "https://github.com/RustAudio/dsp-chain"
+edition = "2018"
 
 [lib]
 name = "dsp"
