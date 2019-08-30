@@ -37,7 +37,7 @@ fn main() -> Result<(), pa::Error> {
         graph.audio_requested(buffer, SAMPLE_HZ);
 
         // Oscillate the volume.
-        if let &mut DspNode::Volume(ref mut vol) = &mut graph[volume] {
+        if let DspNode::Volume(ref mut vol) = &mut graph[volume] {
             *vol = (4.0 * timer as f32).sin() * 0.5;
         }
 
