@@ -12,16 +12,14 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-pub use daggy;
-pub use daggy::Walker;
+pub use daggy::{self, Walker};
 pub use graph::{
     Connection, Dag, EdgeIndex, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph, RawEdges,
     RawNodes, VisitOrder, VisitOrderReverse, WouldCycle,
 };
 pub use node::Node;
-pub use sample;
 pub use sample::{
-    conv, rate, signal, slice, Duplex as DuplexSample, Frame, FromSample, Sample, Signal, ToSample,
+    self, conv, rate, signal, slice, Duplex as DuplexSample, Frame, FromSample, Sample, Signal, ToSample,
 };
 
 mod graph;
