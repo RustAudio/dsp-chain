@@ -1,8 +1,7 @@
 //! An example of using dsp-chain's `Graph` type to create a simple Synthesiser with 3 sine wave
 //! oscillators.
 
-use sample::ToFrameSliceMut;
-use dsp::{Frame, FromSample, Graph, Node, Sample, Walker};
+use dsp::{sample::ToFrameSliceMut, Frame, FromSample, Graph, Node, Sample, Walker};
 use portaudio as pa;
 
 /// SoundStream is currently generic over i8, i32 and f32. Feel free to change it!
