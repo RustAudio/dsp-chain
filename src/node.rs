@@ -1,4 +1,4 @@
-use {Frame, Sample};
+use crate::{Frame, Sample};
 
 /// Types to be used as a **Node** within the DSP **Graph**.
 pub trait Node<F>

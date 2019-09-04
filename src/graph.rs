@@ -7,10 +7,9 @@
 //!
 //! The `Graph` type requires that its nodes implement the [`Node`](../node/trait.Node.html) trait.
 
+use crate::node::Node;
 use daggy::{self, Walker};
-use node::Node;
 use sample::{self, Frame, Sample};
-
 
 /// An alias for our Graph's Node Index.
 pub type NodeIndex = daggy::NodeIndex<usize>;
@@ -125,7 +124,6 @@ pub struct VisitOrderReverse {
     current_visit_order_idx: usize,
 }
 
-
 impl<F, N> Graph<F, N>
 where
     F: Frame,
@@ -207,10 +205,12 @@ where
     /// **Graph**'s **Node** implementation will request audio from the node at `maybe_master`
     /// when the `Node::audio_requested` method is called.
     pub fn set_master(&mut self, maybe_index: Option<NodeIndex>) {
-        let maybe_index = maybe_index.and_then(|index| if self.dag.node_weight(index).is_some() {
-            Some(index)
-        } else {
-            None
+        let maybe_index = maybe_index.and_then(|index| {
+            if self.dag.node_weight(index).is_some() {
+                Some(index)
+            } else {
+                None
+            }
         });
         self.maybe_master = maybe_index;
         self.prepare_visit_order();
@@ -336,9 +336,11 @@ where
             Connection { buffer: Vec::new() }
         }
         self.dag
-            .add_edges(connections.into_iter().map(|(src, dest)| {
-                (src, dest, new_connection())
-            }))
+            .add_edges(
+                connections
+                    .into_iter()
+                    .map(|(src, dest)| (src, dest, new_connection())),
+            )
             .map(|edges| {
                 self.prepare_visit_order();
                 edges
@@ -380,9 +382,11 @@ where
     /// Note: If you have an index to the edge you want to remove,
     /// [`remove_edge`](./struct.Graph.html#method.remove_edge) is a more performant option.
     pub fn remove_connection(&mut self, a: NodeIndex, b: NodeIndex) -> bool {
-        match self.dag.find_edge(a, b).or_else(
-            || self.dag.find_edge(b, a),
-        ) {
+        match self
+            .dag
+            .find_edge(a, b)
+            .or_else(|| self.dag.find_edge(b, a))
+        {
             Some(edge) => self.remove_edge(edge),
             None => false,
         }
@@ -402,11 +406,9 @@ where
     ///
     /// **Panics** if the Graph is at the maximum number of edges for its index.
     pub fn add_input(&mut self, src: N, dest: NodeIndex) -> (EdgeIndex, NodeIndex) {
-        let indices = self.dag.add_parent(
-            dest,
-            Connection { buffer: Vec::new() },
-            src,
-        );
+        let indices = self
+            .dag
+            .add_parent(dest, Connection { buffer: Vec::new() }, src);
         self.prepare_visit_order();
         indices
     }
@@ -425,11 +427,9 @@ where
     ///
     /// **Panics** if the Graph is at the maximum number of edges for its index.
     pub fn add_output(&mut self, src: NodeIndex, dest: N) -> (EdgeIndex, NodeIndex) {
-        let indices = self.dag.add_child(
-            src,
-            Connection { buffer: Vec::new() },
-            dest,
-        );
+        let indices = self
+            .dag
+            .add_child(src, Connection { buffer: Vec::new() }, dest);
         self.prepare_visit_order();
         indices
     }
@@ -440,7 +440,9 @@ where
     ///
     /// Can be converted to an iterator using `.iter()`.
     pub fn inputs(&self, idx: NodeIndex) -> Inputs<F, N> {
-        Inputs { parents: self.dag.parents(idx) }
+        Inputs {
+            parents: self.dag.parents(idx),
+        }
     }
 
     /// A "walker" object that may be used to step through the outputs of the given node.
@@ -449,13 +451,17 @@ where
     ///
     /// Can be converted to an iterator using `.iter()`.
     pub fn outputs(&self, idx: NodeIndex) -> Outputs<F, N> {
-        Outputs { children: self.dag.children(idx) }
+        Outputs {
+            children: self.dag.children(idx),
+        }
     }
 
     /// A "walker" type that may be used to step through all node indices in the order in which
     /// they will be visited when audio is requested from the **Graph**.
     pub fn visit_order(&self) -> VisitOrder {
-        VisitOrder { current_visit_order_idx: 0 }
+        VisitOrder {
+            current_visit_order_idx: 0,
+        }
     }
 
     /// A "walker" type that may be used to step through all node indices in the order in which
@@ -463,7 +469,9 @@ where
     ///
     /// Unlike the VisitOrder type, VisitOrder does not borrow the **Graph**.
     pub fn visit_order_rev(&self) -> VisitOrderReverse {
-        VisitOrderReverse { current_visit_order_idx: self.visit_order.len() }
+        VisitOrderReverse {
+            current_visit_order_idx: self.visit_order.len(),
+        }
     }
 
     /// Remove all incoming connections to the node at the given index.
@@ -523,7 +531,6 @@ where
 
     /// Prepare the buffers for all nodes within the Graph.
     pub fn prepare_buffers(&mut self, buffer_size: usize) {
-
         // Initialise the dry signal buffer.
         resize_buffer_to(&mut self.dry_buffer, buffer_size);
 
@@ -551,7 +558,6 @@ where
 
         let mut visit_order = self.visit_order();
         while let Some(node_idx) = visit_order.next(self) {
-
             // Set the buffers to equilibrium, ready to sum the inputs of the current node.
             for i in 0..buffer_size {
                 output[i] = F::equilibrium();
@@ -573,10 +579,10 @@ where
                     &connection.buffer,
                     |out_frame, con_frame| {
                         out_frame.zip_map(con_frame, |out_sample, con_sample| {
-                            let out_signed = out_sample
-                                .to_sample::<<F::Sample as Sample>::Signed>();
-                            let con_signed = con_sample
-                                .to_sample::<<F::Sample as Sample>::Signed>();
+                            let out_signed =
+                                out_sample.to_sample::<<F::Sample as Sample>::Signed>();
+                            let con_signed =
+                                con_sample.to_sample::<<F::Sample as Sample>::Signed>();
                             (out_signed + con_signed).to_sample::<F::Sample>()
                         })
                     },
@@ -627,7 +633,6 @@ where
                 sample::slice::write(&mut connection.buffer, output);
             }
         }
-
     }
 
     /// Prepare the visit order for the graph in its current state.
@@ -644,7 +649,6 @@ where
         self.visit_order = daggy::petgraph::algo::toposort(self.dag.graph());
     }
 }
-
 
 impl<F, N> ::std::ops::Index<NodeIndex> for Graph<F, N> {
     type Output = N;
@@ -669,7 +673,6 @@ impl<F, N> ::std::ops::Index<EdgeIndex> for Graph<F, N> {
     }
 }
 
-
 impl<F, N> Node<F> for Graph<F, N>
 where
     F: Frame,
@@ -693,7 +696,6 @@ where
     }
 }
 
-
 impl<F, N> Walker<Graph<F, N>> for Inputs<F, N> {
     type Index = usize;
 
@@ -715,7 +717,6 @@ impl<F, N> Walker<Graph<F, N>> for Inputs<F, N> {
         self.parents.next_node(&graph.dag)
     }
 }
-
 
 impl<F, N> Walker<Graph<F, N>> for Outputs<F, N> {
     type Index = usize;
@@ -739,18 +740,18 @@ impl<F, N> Walker<Graph<F, N>> for Outputs<F, N> {
     }
 }
 
-
 impl VisitOrder {
     /// The index of the next node that would be visited during audio requested in our walk of the
     /// given **Graph**'s visit order.
     #[inline]
     pub fn next<F, N>(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
-        graph.visit_order.get(self.current_visit_order_idx).map(
-            |&idx| {
+        graph
+            .visit_order
+            .get(self.current_visit_order_idx)
+            .map(|&idx| {
                 self.current_visit_order_idx += 1;
                 idx
-            },
-        )
+            })
     }
 }
 
@@ -761,18 +762,15 @@ impl VisitOrderReverse {
     pub fn next<F, N>(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
         if self.current_visit_order_idx > 0 {
             self.current_visit_order_idx -= 1;
-            graph.visit_order.get(self.current_visit_order_idx).map(
-                |&idx| {
-                    idx
-                },
-            )
+            graph
+                .visit_order
+                .get(self.current_visit_order_idx)
+                .map(|&idx| idx)
         } else {
             None
         }
     }
 }
-
-
 
 /// Resize the given buffer to the given target length.
 fn resize_buffer_to<F>(buffer: &mut Vec<F>, target_len: usize)

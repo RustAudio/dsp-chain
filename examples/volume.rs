@@ -1,22 +1,13 @@
 //! An example of a simple volume node oscillating the amplitude of a synth node.
 
-extern crate dsp;
-extern crate portaudio;
-
-use dsp::{Graph, Frame, Node, FromSample, Sample};
-use dsp::sample::ToFrameSliceMut;
+use dsp::{sample::ToFrameSliceMut, Frame, FromSample, Graph, Node, Sample};
 use portaudio as pa;
 
 const CHANNELS: usize = 2;
 const FRAMES: u32 = 64;
 const SAMPLE_HZ: f64 = 44_100.0;
 
-fn main() {
-    run().unwrap()
-}
-
-fn run() -> Result<(), pa::Error> {
-
+fn main() -> Result<(), pa::Error> {
     // Construct our dsp graph.
     let mut graph = Graph::new();
 
@@ -37,7 +28,6 @@ fn run() -> Result<(), pa::Error> {
 
     // The callback we'll use to pass to the Stream. It will request audio from our graph.
     let callback = move |pa::OutputStreamCallbackArgs { buffer, time, .. }| {
-
         let buffer: &mut [[f32; CHANNELS]] = buffer.to_frame_slice_mut().unwrap();
 
         // Zero the sample buffer.
@@ -47,7 +37,7 @@ fn run() -> Result<(), pa::Error> {
         graph.audio_requested(buffer, SAMPLE_HZ);
 
         // Oscillate the volume.
-        if let &mut DspNode::Volume(ref mut vol) = &mut graph[volume] {
+        if let DspNode::Volume(ref mut vol) = &mut graph[volume] {
             *vol = (4.0 * timer as f32).sin() * 0.5;
         }
 
@@ -63,23 +53,18 @@ fn run() -> Result<(), pa::Error> {
     };
 
     // Construct PortAudio and the stream.
-    let pa = try!(pa::PortAudio::new());
-    let settings = try!(pa.default_output_stream_settings::<f32>(
-        CHANNELS as i32,
-        SAMPLE_HZ,
-        FRAMES,
-    ));
-    let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
-    try!(stream.start());
+    let pa = pa::PortAudio::new()?;
+    let settings = pa.default_output_stream_settings::<f32>(CHANNELS as i32, SAMPLE_HZ, FRAMES)?;
+    let mut stream = pa.open_non_blocking_stream(settings, callback)?;
+    stream.start()?;
 
     // Wait for our stream to finish.
     while let Ok(true) = stream.is_active() {
-        ::std::thread::sleep(::std::time::Duration::from_millis(16));
+        std::thread::sleep(::std::time::Duration::from_millis(16));
     }
 
     Ok(())
 }
-
 
 /// Our Node to be used within the Graph.
 enum DspNode {
@@ -91,14 +76,12 @@ enum DspNode {
 impl Node<[f32; CHANNELS]> for DspNode {
     fn audio_requested(&mut self, buffer: &mut [[f32; CHANNELS]], sample_hz: f64) {
         match *self {
-            DspNode::Synth(ref mut phase) => {
-                dsp::slice::map_in_place(buffer, |_| {
-                    let val = sine_wave(*phase);
-                    const SYNTH_HZ: f64 = 110.0;
-                    *phase += SYNTH_HZ / sample_hz;
-                    Frame::from_fn(|_| val)
-                })
-            }
+            DspNode::Synth(ref mut phase) => dsp::slice::map_in_place(buffer, |_| {
+                let val = sine_wave(*phase);
+                const SYNTH_HZ: f64 = 110.0;
+                *phase += SYNTH_HZ / sample_hz;
+                Frame::from_fn(|_| val)
+            }),
             DspNode::Volume(vol) => dsp::slice::map_in_place(buffer, |f| f.map(|s| s.mul_amp(vol))),
         }
     }
