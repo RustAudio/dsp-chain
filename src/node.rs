@@ -48,7 +48,7 @@ where
     }
 }
 
-impl<F> Node<F> for Box<Node<F>>
+impl<F> Node<F> for Box<dyn Node<F>>
 where
     F: Frame,
 {
