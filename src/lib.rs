@@ -19,7 +19,7 @@ pub use graph::{
 };
 pub use node::Node;
 pub use sample::{
-    self, conv, rate, signal, slice, Duplex as DuplexSample, Frame, FromSample, Sample, Signal, ToSample,
+    self, conv, interpolate, signal, slice, Duplex as DuplexSample, Frame, FromSample, Sample, Signal, ToSample,
 };
 
 mod graph;
