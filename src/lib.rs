@@ -14,7 +14,7 @@
 
 pub use daggy::stabledag;
 pub use graph::{
-    Connection, Dag, EdgeIndex, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph,
+    Connection, Dag, EdgeIndex, EdgeRef, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph,
     VisitOrder, VisitOrderReverse, WouldCycle, Walker,
 };
 pub use node::Node;

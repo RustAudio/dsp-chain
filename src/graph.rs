@@ -8,11 +8,12 @@
 //! The `Graph` type requires that its nodes implement the [`Node`](../node/trait.Node.html) trait.
 
 use crate::node::Node;
-use daggy::{stabledag, petgraph::{self, visit::{IntoNodeReferences, IntoEdgeReferences, EdgeRef}}};
+use daggy::{stabledag, petgraph::{self, visit::{IntoNodeReferences, IntoEdgeReferences}}};
 use sample::{self, Frame, Sample};
 
 // Daggy/petgraph re-exports
 pub use stabledag::Walker;
+pub use petgraph::visit::EdgeRef;
 
 /// An alias for our Graph's Node Index.
 pub type NodeIndex = stabledag::NodeIndex<usize>;
