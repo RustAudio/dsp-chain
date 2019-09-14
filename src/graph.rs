@@ -8,30 +8,33 @@
 //! The `Graph` type requires that its nodes implement the [`Node`](../node/trait.Node.html) trait.
 
 use crate::node::Node;
-use daggy::{self, Walker};
+use daggy::{stabledag, petgraph::{self, visit::{IntoNodeReferences, IntoEdgeReferences, EdgeRef}}};
 use sample::{self, Frame, Sample};
 
+// Daggy/petgraph re-exports
+pub use stabledag::Walker;
+
 /// An alias for our Graph's Node Index.
-pub type NodeIndex = daggy::NodeIndex<usize>;
+pub type NodeIndex = stabledag::NodeIndex<usize>;
 /// An alias for our Graph's Edge Index.
-pub type EdgeIndex = daggy::EdgeIndex<usize>;
+pub type EdgeIndex = stabledag::EdgeIndex<usize>;
+
+/// An alias for our Graph's Node Indices.
+pub type NodeReferences<'a, N> = petgraph::stable_graph::NodeReferences<'a, N, usize>;
+/// An alias for our Graph's Edge Indices.
+pub type EdgeReferences<'a, N> = petgraph::stable_graph::EdgeReferences<'a, N, usize>;
 
 /// An alias for the iterator yielding mutable access to all node weights.
-pub type NodesMut<'a, N> = daggy::NodeWeightsMut<'a, N, usize>;
-
-/// Read only access to a **Graph**'s internal node array.
-pub type RawNodes<'a, N> = daggy::RawNodes<'a, N, usize>;
-/// Read only access to a **Graph**'s internal edge array.
-pub type RawEdges<'a, F> = daggy::RawEdges<'a, Connection<F>, usize>;
+pub type NodesMut<'a, N> = stabledag::NodeWeightsMut<'a, N, usize>;
 
 /// An iterator yielding indices to recently added connections.
-pub type EdgeIndices = daggy::EdgeIndices<usize>;
+pub type EdgeIndices = stabledag::EdgeIndices<usize>;
 
 /// An alias for the **Dag** used within our **Graph**.
-pub type Dag<F, N> = daggy::Dag<N, Connection<F>, usize>;
+pub type Dag<F, N> = stabledag::StableDag<N, Connection<F>, usize>;
 
 /// An alias for the **PetGraph** used by our **Graph**'s internal **Dag**.
-pub type PetGraph<F, N> = daggy::PetGraph<N, Connection<F>, usize>;
+pub type PetGraph<F, N> = petgraph::stable_graph::StableDiGraph<N, Connection<F>, usize>;
 
 /// A directed, acyclic DSP graph.
 ///
@@ -104,12 +107,12 @@ pub struct WouldCycle;
 
 /// A walker object for walking over nodes that are inputs to some node.
 pub struct Inputs<F, N> {
-    parents: daggy::Parents<N, Connection<F>, usize>,
+    parents: stabledag::Parents<N, Connection<F>, usize>,
 }
 
 /// A walker object for walking over nodes that are outputs to some node.
 pub struct Outputs<F, N> {
-    children: daggy::Children<N, Connection<F>, usize>,
+    children: stabledag::Children<N, Connection<F>, usize>,
 }
 
 /// A walker type for walking over a **Graph**'s nodes in the order in which they will visited when
@@ -135,7 +138,7 @@ where
     /// rough idea of the number of nodes, connections and frames per buffer upon the **Graph**'s
     /// instantiation.
     pub fn new() -> Self {
-        let dag = daggy::Dag::new();
+        let dag = Dag::new();
         Graph {
             dag: dag,
             visit_order: Vec::new(),
@@ -152,7 +155,7 @@ where
     /// for mixing the dry and wet signals when `Node::audio_requested` is called.
     pub fn with_capacity(nodes: usize, connections: usize, frames_per_buffer: usize) -> Self {
         Graph {
-            dag: daggy::Dag::with_capacity(nodes, connections),
+            dag: Dag::with_capacity(nodes, connections),
             visit_order: Vec::with_capacity(nodes),
             dry_buffer: Vec::with_capacity(frames_per_buffer),
             maybe_master: None,
@@ -234,16 +237,14 @@ where
         self.dag.node_weight_mut(node)
     }
 
-    /// Read only access to the internal node array.
-    pub fn raw_nodes(&self) -> RawNodes<N> {
-        self.dag.raw_nodes()
+    /// An iterator over the graph's nodes.
+    pub fn node_references(&self) -> NodeReferences<N> {
+        self.dag.node_references()
     }
 
-    /// An iterator yielding mutable access to all nodes.
-    ///
-    /// The order in which nodes are yielded matches the order of their indices.
-    pub fn nodes_mut(&mut self) -> NodesMut<N> {
-        self.dag.node_weights_mut()
+    /// An iterator over the graph's edges.
+    pub fn edge_references(&self) -> EdgeReferences<Connection<F>> {
+        self.dag.edge_references()
     }
 
     /// A reference to the connection at the given index (or `None` if it doesn't exist).
@@ -251,9 +252,9 @@ where
         self.dag.edge_weight(edge)
     }
 
-    /// Read only access to the internal edge array.
-    pub fn raw_edges(&self) -> RawEdges<F> {
-        self.dag.raw_edges()
+    /// A mutable reference to the connection at the given index (or `None` if it doesn't exist)
+    fn connection_mut(&mut self, edge: EdgeIndex) -> Option<&mut Connection<F>> {
+        self.dag.edge_weight_mut(edge)
     }
 
     /// Index the **Graph** by two `NodeIndex`s at once.
@@ -480,7 +481,7 @@ where
     pub fn remove_all_input_connections(&mut self, idx: NodeIndex) -> usize {
         let mut inputs = self.inputs(idx);
         let mut num = 0;
-        while let Some(connection) = inputs.next_edge(&self) {
+        while let Some((connection, _)) = inputs.walk_next(&self) {
             self.remove_edge(connection);
             num += 1;
         }
@@ -493,7 +494,7 @@ where
     pub fn remove_all_output_connections(&mut self, idx: NodeIndex) -> usize {
         let mut outputs = self.outputs(idx);
         let mut num = 0;
-        while let Some(connection) = outputs.next_edge(&self) {
+        while let Some((connection, _)) = outputs.walk_next(&self) {
             self.remove_edge(connection);
             num += 1;
         }
@@ -509,8 +510,8 @@ where
         let mut num_removed = 0;
         for i in 0..self.dag.node_count() {
             let idx = NodeIndex::new(i);
-            let num_inputs = self.inputs(idx).count(self);
-            let num_outputs = self.outputs(idx).count(self);
+            let num_inputs = self.inputs(idx).iter(self).count();
+            let num_outputs = self.outputs(idx).iter(self).count();
             if num_inputs == 0 && num_outputs == 0 {
                 if self.maybe_master == Some(idx) {
                     self.maybe_master = None;
@@ -535,7 +536,9 @@ where
         resize_buffer_to(&mut self.dry_buffer, buffer_size);
 
         // Initialise all connection buffers.
-        for connection in self.dag.edge_weights_mut() {
+        let edge_ids = self.edge_references().map(|e| e.id()).collect::<Vec<_>>();
+        for edge_id in edge_ids {
+            let connection = self.connection_mut(edge_id).unwrap();
             resize_buffer_to(&mut connection.buffer, buffer_size);
         }
     }
@@ -566,7 +569,7 @@ where
 
             // Walk over each of the input connections to sum their buffers to the output.
             let mut inputs = self.inputs(node_idx);
-            while let Some(connection_idx) = inputs.next_edge(self) {
+            while let Some((connection_idx, _)) = inputs.walk_next(self) {
                 let connection = &self[connection_idx];
                 // Sum the connection's buffer onto the output.
                 //
@@ -621,7 +624,7 @@ where
 
             // Walk over each of the outgoing connections and write the rendered output to them.
             let mut outputs = self.outputs(node_idx);
-            while let Some(connection_idx) = outputs.next_edge(self) {
+            while let Some((connection_idx, _)) = outputs.walk_next(self) {
                 let connection = &mut self.dag[connection_idx];
 
                 // Ensure the buffer matches the target length.
@@ -646,7 +649,8 @@ where
     ///
     /// The user should never have to worry about this, thus the method is private.
     fn prepare_visit_order(&mut self) {
-        self.visit_order = daggy::petgraph::algo::toposort(self.dag.graph());
+        self.visit_order = petgraph::algo::toposort(self.dag.graph(), None)
+            .expect("A cycle was found in the DAG while toposorting");
     }
 }
 
@@ -686,7 +690,7 @@ where
                 // use the first node that has no output connections.
                 let mut visit_order_rev = self.visit_order_rev();
                 while let Some(node) = visit_order_rev.next(self) {
-                    if self.inputs(node).count(self) == 0 {
+                    if self.inputs(node).iter(self).count() == 0 {
                         self.audio_requested_from(node, output, sample_hz);
                         return;
                     }
@@ -696,47 +700,23 @@ where
     }
 }
 
-impl<F, N> Walker<Graph<F, N>> for Inputs<F, N> {
-    type Index = usize;
+impl<F, N> Walker<&Graph<F, N>> for Inputs<F, N> {
+    type Item = (EdgeIndex, NodeIndex);
 
     /// The next (connection, node) input pair to some node in our walk for the given **Graph**.
     #[inline]
-    fn next(&mut self, graph: &Graph<F, N>) -> Option<(EdgeIndex, NodeIndex)> {
-        self.parents.next(&graph.dag)
-    }
-
-    /// The next input connection to some node in our walk for the given **Graph**.
-    #[inline]
-    fn next_edge(&mut self, graph: &Graph<F, N>) -> Option<EdgeIndex> {
-        self.parents.next_edge(&graph.dag)
-    }
-
-    /// The next input node to some node in our walk for the given **Graph**.
-    #[inline]
-    fn next_node(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
-        self.parents.next_node(&graph.dag)
+    fn walk_next(&mut self, graph: &Graph<F, N>) -> Option<(EdgeIndex, NodeIndex)> {
+        self.parents.walk_next(&graph.dag)
     }
 }
 
-impl<F, N> Walker<Graph<F, N>> for Outputs<F, N> {
-    type Index = usize;
+impl<F, N> Walker<&Graph<F, N>> for Outputs<F, N> {
+    type Item = (EdgeIndex, NodeIndex);
 
     /// The next (connection, node) output pair from some node in our walk for the given **Graph**.
     #[inline]
-    fn next(&mut self, graph: &Graph<F, N>) -> Option<(EdgeIndex, NodeIndex)> {
-        self.children.next(&graph.dag)
-    }
-
-    /// The next output connection from some node in our walk for the given **Graph**.
-    #[inline]
-    fn next_edge(&mut self, graph: &Graph<F, N>) -> Option<EdgeIndex> {
-        self.children.next_edge(&graph.dag)
-    }
-
-    /// The next output node from some node in our walk for the given **Graph**.
-    #[inline]
-    fn next_node(&mut self, graph: &Graph<F, N>) -> Option<NodeIndex> {
-        self.children.next_node(&graph.dag)
+    fn walk_next(&mut self, graph: &Graph<F, N>) -> Option<(EdgeIndex, NodeIndex)> {
+        self.children.walk_next(&graph.dag)
     }
 }
 

@@ -19,7 +19,7 @@ name = "dsp"
 path = "./src/lib.rs"
 
 [dependencies]
-daggy = "0.4.0"
+daggy = { git = "https://github.com/mitchmindtree/daggy", rev = "bcb36c7b", features = ["stable_dag"] }
 sample = "0.10.0"
 
 [dev-dependencies]

@@ -12,10 +12,10 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-pub use daggy::{self, Walker};
+pub use daggy::stabledag;
 pub use graph::{
-    Connection, Dag, EdgeIndex, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph, RawEdges,
-    RawNodes, VisitOrder, VisitOrderReverse, WouldCycle,
+    Connection, Dag, EdgeIndex, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph,
+    VisitOrder, VisitOrderReverse, WouldCycle, Walker,
 };
 pub use node::Node;
 pub use sample::{
