@@ -27,7 +27,7 @@ where
     /// Note: overriding this method will be more efficient than implementing your own dry/wet
     /// summing in audio_requested, as `Graph` reserves a single buffer especially for this.
     fn dry(&self) -> <F::Sample as Sample>::Float {
-        Sample::equilibrium()
+        Sample::EQUILIBRIUM
     }
 
     /// Following the call to the `Node`'s `audio_requested` method, the `Graph` will sum together
@@ -44,7 +44,7 @@ where
     /// Note: overriding this method will be more efficient than implementing your own dry/wet
     /// summing in audio_requested, as `Graph` reserves a single buffer especially for this.
     fn wet(&self) -> <F::Sample as Sample>::Float {
-        <F::Sample as Sample>::identity()
+        <F::Sample as Sample>::IDENTITY
     }
 }
 

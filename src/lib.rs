@@ -13,14 +13,16 @@
 #![deny(missing_docs)]
 
 pub use daggy::{self, Walker};
+pub use dasp::{
+    self, interpolate,
+    sample::{conv, Duplex as DuplexSample, FromSample, Sample, ToSample},
+    signal, slice, Frame, Signal,
+};
 pub use graph::{
     Connection, Dag, EdgeIndex, Graph, Inputs, NodeIndex, NodesMut, Outputs, PetGraph, RawEdges,
     RawNodes, VisitOrder, VisitOrderReverse, WouldCycle,
 };
 pub use node::Node;
-pub use sample::{
-    self, conv, interpolate, signal, slice, Duplex as DuplexSample, Frame, FromSample, Sample, Signal, ToSample,
-};
 
 mod graph;
 mod node;

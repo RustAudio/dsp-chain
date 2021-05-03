@@ -9,7 +9,7 @@
 
 use crate::node::Node;
 use daggy::{self, Walker};
-use sample::{self, Frame, Sample};
+use dasp::{self, Frame, Sample};
 
 /// An alias for our Graph's Node Index.
 pub type NodeIndex = daggy::NodeIndex<usize>;
@@ -560,8 +560,8 @@ where
         while let Some(node_idx) = visit_order.next(self) {
             // Set the buffers to equilibrium, ready to sum the inputs of the current node.
             for i in 0..buffer_size {
-                output[i] = F::equilibrium();
-                self.dry_buffer[i] = F::equilibrium();
+                output[i] = F::EQUILIBRIUM;
+                self.dry_buffer[i] = F::EQUILIBRIUM;
             }
 
             // Walk over each of the input connections to sum their buffers to the output.
@@ -574,7 +574,7 @@ where
                 // `output` buffer as all connections are visited from their input nodes
                 // (towards the end of the visit_order while loop) before being visited here
                 // by their output nodes.
-                sample::slice::zip_map_in_place(
+                dasp::slice::zip_map_in_place(
                     output,
                     &connection.buffer,
                     |out_frame, con_frame| {
@@ -590,7 +590,7 @@ where
             }
 
             // Store the dry signal in the dry buffer for later summing.
-            sample::slice::write(&mut self.dry_buffer, output);
+            dasp::slice::write(&mut self.dry_buffer, output);
 
             // Render the audio with the current node and sum the dry and wet signals.
             let (dry, wet) = {
@@ -606,7 +606,7 @@ where
             };
 
             // Combine the dry and wet signals.
-            sample::slice::zip_map_in_place(output, &self.dry_buffer, |f_wet, f_dry| {
+            dasp::slice::zip_map_in_place(output, &self.dry_buffer, |f_wet, f_dry| {
                 f_wet.zip_map(f_dry, |s_wet, s_dry| {
                     let wet = s_wet.mul_amp(wet);
                     let dry = s_dry.mul_amp(dry);
@@ -630,7 +630,7 @@ where
                 }
 
                 // Write the rendered audio to the outgoing connection buffers.
-                sample::slice::write(&mut connection.buffer, output);
+                dasp::slice::write(&mut connection.buffer, output);
             }
         }
     }
@@ -779,7 +779,7 @@ where
 {
     let len = buffer.len();
     if len < target_len {
-        buffer.extend((len..target_len).map(|_| F::equilibrium()))
+        buffer.extend((len..target_len).map(|_| F::EQUILIBRIUM))
     } else if len > target_len {
         buffer.truncate(target_len);
     }

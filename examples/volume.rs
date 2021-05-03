@@ -1,6 +1,8 @@
 //! An example of a simple volume node oscillating the amplitude of a synth node.
 
-use dsp::{sample::ToFrameSliceMut, Frame, FromSample, Graph, Node, Sample};
+use dasp::slice::ToFrameSliceMut;
+use dsp::{FromSample, Graph, Node, Frame, Sample};
+
 use portaudio as pa;
 
 const CHANNELS: usize = 2;
@@ -82,7 +84,9 @@ impl Node<[f32; CHANNELS]> for DspNode {
                 *phase += SYNTH_HZ / sample_hz;
                 Frame::from_fn(|_| val)
             }),
-            DspNode::Volume(vol) => dsp::slice::map_in_place(buffer, |f| f.map(|s| s.mul_amp(vol))),
+            DspNode::Volume(vol) => dsp::slice::map_in_place(buffer, |f| {
+                dsp::Frame::map(f, |s| dsp::Sample::mul_amp(s, vol))
+            }),
         }
     }
 }
