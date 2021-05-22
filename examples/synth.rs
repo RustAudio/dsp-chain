@@ -1,7 +1,9 @@
 //! An example of using dsp-chain's `Graph` type to create a simple Synthesiser with 3 sine wave
 //! oscillators.
 
-use dsp::{sample::ToFrameSliceMut, Frame, FromSample, Graph, Node, Sample, Walker};
+use dasp::slice::ToFrameSliceMut;
+use dsp::{Frame, FromSample, Graph, Node, Sample, Walker};
+
 use portaudio as pa;
 
 /// SoundStream is currently generic over i8, i32 and f32. Feel free to change it!
@@ -33,10 +35,7 @@ fn main() -> Result<(), pa::Error> {
 
     // If adding a connection between two nodes would create a cycle, Graph will return an Err.
     if let Err(err) = graph.add_connection(synth, oscillator_a) {
-        println!(
-            "Testing for cycle error: {:?}",
-            std::error::Error::description(&err)
-        );
+        println!("Testing for cycle error: {}", &err);
     }
 
     // Set the synth as the master node for the graph.

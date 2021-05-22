@@ -20,7 +20,7 @@ path = "./src/lib.rs"
 
 [dependencies]
 daggy = "0.4.0"
-sample = "0.10.0"
+dasp = { version = "0.11.0", features = ["slice", "interpolate", "signal"] }
 
 [dev-dependencies]
 portaudio = "0.6.4"
