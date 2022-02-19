@@ -11,7 +11,7 @@ Use cases for dsp-chain include:
 - Any kind of modular audio synthesis/processing.
 
 
-Documenation
+Documentation
 ------------
 
 [API documentation here!](http://RustAudio.github.io/dsp-chain/dsp)

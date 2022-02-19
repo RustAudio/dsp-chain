@@ -16,7 +16,7 @@ fn main() -> Result<(), pa::Error> {
     // Construct our fancy Synth and add it to the graph!
     let synth = graph.add_node(DspNode::Synth(0.0));
 
-    // Output our synth to a marvellous volume node.
+    // Output our synth to a marvelous volume node.
     let (_, volume) = graph.add_output(synth, DspNode::Volume(1.0));
 
     // Set the synth as the master node for the graph.
